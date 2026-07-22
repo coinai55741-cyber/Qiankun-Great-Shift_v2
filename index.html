@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿黑的客字繪卷 | 客語聽力排列遊戲</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div id="app" class="app-container" v-cloak>
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <i class="fa-solid fa-arrows-spin logo-icon"></i>
+                <div class="logo-text">
+                    <h1>阿黑的客字繪卷</h1>
+                    <p>客語聽力排列遊戲</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="speed-control">
+                    <button class="speed-btn active" data-speed="1">1x</button>
+                    <button class="speed-btn" data-speed="1.5">1.5x</button>
+                    <button class="speed-btn" data-speed="2">2x</button>
+                </div>
+                <span class="badge badge-dialect">四縣腔</span>
+                <span class="badge badge-level hidden" id="display-level">中級</span>
+            </div>
+        </header>
+
+        <!-- Intro Card -->
+        <div class="game-card" id="intro-card">
+            <div class="intro-header">
+                <i class="fa-solid fa-scroll intro-icon"></i>
+                <h2>阿黑的客字繪卷</h2>
+            </div>
+            
+            <div class="intro-story">
+                <p>為了幫重聽的伯公收集庄頭的日常談笑，小神狗阿黑帶著神奇的「客字繪卷」出發囉！由於剛上任還不熟悉流程，需要指導員你來指引正確的客語字磚，幫助阿黑流暢地跑過懸崖、將聲音「拓印」進繪卷中，帶回去給伯公讀吧！</p>
+                <div class="warning-box">
+                    ⚠️ 請指導員在出發前，先至自學專區 I~V 級的聽力教材預習喔！
+                </div>
+            </div>
+            
+            <div class="intro-rules">
+                <h3>🐕 神犬任務說明</h3>
+                <ol>
+                    <li><strong>仔細聆聽：</strong>仔細聆聽風中傳來的社區客語語音。</li>
+                    <li><strong>搭建橋墩：</strong>在阿黑抵達斷崖前，將下方的客語字磚依正確語音順序排列好。</li>
+                    <li><strong>架橋通關：</strong>排對了，阿黑就會順利飛奔過橋；若排錯則會「噗通」落水、回到起點重試！（每題最高 10 分，最多可重試 5 次）</li>
+                    <li><strong>求助伯公：</strong>遇到難題可點擊【求助伯公】召喚仙橋安全過河（本題以 0 分結算）。若連續答錯 5 次，慈祥的伯公依然會主動施展神力幫忙架橋，讓阿黑順利通過喔！</li>
+                </ol>
+            </div>
+            
+            <button class="btn btn-primary btn-block btn-lg" id="start-adventure-btn">
+                <i class="fa-solid fa-compass"></i> 開始冒險
+            </button>
+        </div>
+
+        <!-- Main Game Area -->
+        <main class="game-card hidden" id="game-card">
+            <!-- Progress & Score -->
+            <div class="progress-section">
+                <div class="progress-info">
+                    <span id="question-number">第 1 / 10 題</span>
+                    <span id="score-display">得分: 0</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar" style="width: 10%;"></div>
+                </div>
+            </div>
+
+            <div class="gameplay-layout">
+            <section class="mission-stage" aria-label="阿黑過橋動畫區">
+                <div class="stage-heading">
+                    <div>
+                        <span class="eyebrow">聲音任務</span>
+                        <h2>聽懂這句話，替阿黑把橋搭好</h2>
+                    </div>
+                    <div class="stage-legend"><span></span> 字卡就是橋磚</div>
+                </div>
+
+                <!-- 2D Runner Game Animation Canvas -->
+                <div class="canvas-section">
+                    <canvas id="runner-canvas" width="960" height="200"></canvas>
+                    <div class="canvas-caption">阿黑會沿著你排好的字橋前進</div>
+                </div>
+
+            </section>
+
+            <aside class="mission-panel" aria-label="聽力與作答控制區">
+                <div class="workbench-main">
+                    <!-- Audio Board -->
+                    <div class="audio-section">
+                        <button class="audio-btn" id="play-audio-btn" title="播放語音">
+                            <i class="fa-solid fa-play play-icon"></i>
+                            <i class="fa-solid fa-pause pause-icon hidden"></i>
+                        </button>
+                        <div class="audio-info">
+                            <span class="panel-kicker">客語播放</span>
+                            <h3>點一下，仔細聽句子</h3>
+                            <p id="question-category">類別: 情緒用語</p>
+                        </div>
+                        <div class="soundwave" id="soundwave">
+                            <span class="stroke"></span><span class="stroke"></span>
+                            <span class="stroke"></span><span class="stroke"></span>
+                            <span class="stroke"></span><span class="stroke"></span>
+                        </div>
+                    </div>
+
+                    <!-- Answer Slots Area -->
+                    <div class="workspace-section">
+                        <div class="section-title-row">
+                            <h4><span>01</span> 回答放置區</h4>
+                            <small>點選或拖曳字卡，依聽到的順序排列</small>
+                        </div>
+                        <div class="answer-container" id="answer-container">
+                            <div class="empty-state">把下方字卡拖到這裡組合客語句子</div>
+                        </div>
+                    </div>
+
+                    <!-- Candidate Words Area -->
+                    <div class="candidates-section">
+                        <div class="section-title-row">
+                            <h4><span>02</span> 待選字卡區</h4>
+                            <small>每個字都是一張獨立字卡</small>
+                        </div>
+                        <div class="candidates-container" id="candidates-container"></div>
+                    </div>
+                </div>
+
+                <div class="workbench-actions">
+                    <button class="btn btn-primary action-submit" id="submit-btn" disabled>
+                        <i class="fa-solid fa-bridge"></i> 搭建
+                    </button>
+                    <button class="btn btn-danger" id="clear-btn" disabled>
+                        <i class="fa-solid fa-shuffle"></i> 重新排列
+                    </button>
+                    <button class="btn btn-warning" id="help-bg-btn" title="求助伯公 (跳過此題)">
+                        <i class="fa-solid fa-hands-praying"></i> 求助伯公
+                    </button>
+                    <div class="hint-section">
+                        <button class="btn btn-secondary" id="hint-btn">
+                            <i class="fa-regular fa-lightbulb"></i> 顯示中文提示
+                        </button>
+                        <span id="inline-feedback-msg" class="inline-feedback-msg hidden"></span>
+                        <p class="hint-text hidden" id="hint-text"></p>
+                    </div>
+                </div>
+
+            <!-- Feedback Details Panel (Shows after submitting) -->
+            <div class="feedback-panel hidden" id="feedback-panel">
+                <div class="feedback-status" id="feedback-status">
+                    <i class="fa-solid fa-circle-check correct-icon hidden"></i>
+                    <i class="fa-solid fa-circle-xmark incorrect-icon hidden"></i>
+                    <span id="feedback-title">答對了！</span>
+                </div>
+                <div class="feedback-details">
+                    <div class="detail-row">
+                        <span class="detail-label">客語漢字：</span>
+                        <span class="detail-val hakka-highlight" id="feedback-hakka-hanji">還暢哦，這擺考試𠊎考一百分。</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">完整翻譯：</span>
+                        <span class="detail-val" id="feedback-translation">好開心，這次考試我考一百分。</span>
+                    </div>
+                </div>
+                <button class="btn btn-accent btn-block" id="next-btn">
+                    下一題 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+            </aside>
+            </div>
+        </main>
+
+        <!-- Final Results Card -->
+        <div class="results-card hidden" id="results-card">
+            <i class="fa-solid fa-trophy trophy-icon"></i>
+            <h2>挑戰完成！</h2>
+            <p>感謝你參與「阿黑的客字繪卷」客語聽力挑戰</p>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-val" id="result-score">8 / 10</span>
+                    <span class="stat-label">答對題數</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-val" id="result-accuracy">80%</span>
+                    <span class="stat-label">正確率</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-val" id="result-time">120 秒</span>
+                    <span class="stat-label">總耗時</span>
+                </div>
+            </div>
+
+            <div class="review-section">
+                <h3>本關解答與音檔回顧</h3>
+                <div class="review-list" id="review-list">
+                    <!-- Dynamic review items will be generated here -->
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-lg" id="restart-btn">
+                <i class="fa-solid fa-rotate-left"></i> 重新挑戰
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>© 2026 客語數位學習專案. 資料來源：<a href="https://12basic.hakka.gov.tw" target="_blank">來上客入口網</a></p>
+        </footer>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="game-audio" preload="auto"></audio>
+
+    <!-- Vue 3 shell: Vue owns the rendered interface, game engine stays in app.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="vue-app.js?v=1"></script>
+    <!-- Game data and existing interaction engine -->
+    <script src="questions_data.js"></script>
+    <script src="app.js?v=3"></script>
+</body>
+</html>
