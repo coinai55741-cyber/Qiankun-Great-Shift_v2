@@ -28,6 +28,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameAudio = document.getElementById('game-audio');
     const playAudioBtn = document.getElementById('play-audio-btn');
     const soundwave = document.getElementById('soundwave');
+
+    const sfxPath = 'data/music/';
+    const sfxVersion = '20260722-1';
+    const sfx = {
+        click: new Audio(`${sfxPath}S2_m2_click.mp3?v=${sfxVersion}`),
+        wrong: new Audio(`${sfxPath}S2_m2_false.mp3?v=${sfxVersion}`),
+        next: new Audio(`${sfxPath}S2_m2_next.mp3?v=${sfxVersion}`),
+        splash: new Audio(`${sfxPath}S2_m3_splash.mp3?v=${sfxVersion}`)
+    };
+
+    function playSfx(name) {
+        const audio = sfx[name];
+        if (!audio) return;
+
+        audio.currentTime = 0;
+        audio.volume = 0.75;
+        audio.play().catch(() => {});
+    }
     
     // UI Elements
     const introCard = document.getElementById('intro-card');
@@ -105,16 +123,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let sparkles = [];
     let bridgeAlpha = 0.0;
     let isBridgeTransparent = false;
+    let isBridgeBroken = false;
 
-    const runnerAssetPath = 'data/dummy/image/';
-    const runnerAssetVersion = '20260722-2';
+    const runnerAssetPath = 'data/image/';
+    const runnerAssetVersion = '20260722-7';
+    const useRunnerImageLayers = true;
     const runnerAssets = {
         mountains: loadRunnerImage('S2_m3_yamaloop.png'),
         village: loadRunnerImage('S2_m3_village.png'),
+        grass: loadRunnerImage('S2_m3_grass.png'),
         floorLoop: loadRunnerImage('S2_m3_floorloop.png'),
         floorLeft: loadRunnerImage('S2_m3_floorL.png'),
         floorRight: loadRunnerImage('S2_m3_floorR.png'),
-        bridge: loadRunnerImage('S2_m3_bridge.png'),
+        bridge: loadRunnerImage('S2_m3_bridgeA.png'),
+        brokenBridge: loadRunnerImage('S2_m3_bridgeB.png'),
         kuroRun: loadRunnerImage('S2_m3_kuro_run.png')
     };
 
@@ -169,6 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawScrollingImage(image, y, height, scroll, speedScale = 1, trimX = 0) {
+        if (!useRunnerImageLayers) return false;
+
         const layer = getScaledRunnerLayer(image, height, trimX);
         if (!layer) return false;
 
@@ -294,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Wait for user to click Start Adventure button to start the game
             if (startAdventureBtn && introCard) {
                 startAdventureBtn.addEventListener('click', () => {
+                    playSfx('click');
                     introCard.classList.add('hidden');
                     startGame();
                 });
@@ -309,26 +334,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Event Listeners Setup
     function setupEventListeners() {
         // Audio Controls
-        playAudioBtn.addEventListener('click', toggleAudio);
+        playAudioBtn.addEventListener('click', () => {
+            playSfx('click');
+            toggleAudio();
+        });
         gameAudio.addEventListener('play', onAudioPlay);
         gameAudio.addEventListener('pause', onAudioPause);
         gameAudio.addEventListener('ended', onAudioEnded);
 
         // Hint Toggle
-        hintBtn.addEventListener('click', toggleHint);
+        hintBtn.addEventListener('click', () => {
+            playSfx('click');
+            toggleHint();
+        });
         
         // Help Po Kong Skip Button
-        helpBgBtn.addEventListener('click', askPoKongForHelp);
+        helpBgBtn.addEventListener('click', () => {
+            playSfx('click');
+            askPoKongForHelp();
+        });
 
         // Action Buttons
-        clearBtn.addEventListener('click', clearSelection);
+        clearBtn.addEventListener('click', () => {
+            playSfx('click');
+            clearSelection();
+        });
         submitBtn.addEventListener('click', submitAnswer);
-        nextBtn.addEventListener('click', nextQuestion);
-        restartBtn.addEventListener('click', startGame);
+        nextBtn.addEventListener('click', () => {
+            playSfx('next');
+            nextQuestion();
+        });
+        restartBtn.addEventListener('click', () => {
+            playSfx('click');
+            startGame();
+        });
 
         // Speed Controls
         speedButtons.forEach(btn => {
             btn.addEventListener('click', () => {
+                playSfx('click');
                 speedButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 speedMultiplier = parseFloat(btn.dataset.speed);
@@ -461,7 +505,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update Text Info
         displayLevel.textContent = q.level + '級';
-        questionCategory.textContent = '類別: ' + q.category;
+        if (questionCategory) {
+            questionCategory.textContent = '';
+        }
         questionNumber.textContent = `第 ${index + 1} / ${questions.length} 題`;
         scoreDisplay.textContent = `得分: ${totalScore}`;
         
@@ -670,6 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function selectBlock(id) {
         const index = remainingBlocks.findIndex(b => b.id === id);
         if (index > -1) {
+            playSfx('click');
             const block = remainingBlocks[index];
             remainingBlocks.splice(index, 1);
             selectedBlocks.push(block);
@@ -735,6 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function deselectBlock(id) {
         const index = selectedBlocks.findIndex(b => b.id === id);
         if (index > -1) {
+            playSfx('click');
             const block = selectedBlocks[index];
             selectedBlocks.splice(index, 1);
             remainingBlocks.push(block);
@@ -791,15 +839,18 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBtn.disabled = true;
 
         if (isCorrect) {
+            playSfx('next');
             correctCount++;
             totalScore += questionScore;
             scoreDisplay.textContent = `得分: ${totalScore}`;
             
             // Bridge cross animation
             isBridgeTransparent = false;
+            isBridgeBroken = false;
             dogState = 'crossing';
             shouldAutoTransition = true;
         } else {
+            playSfx('wrong');
             // Deduct score for wrong attempt
             questionScore = Math.max(0, questionScore - 2);
             
@@ -813,11 +864,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If they didn't place all blocks, they fall off the end of their blocks
                 wrongBreakX = cliffX + userBridgeWidth;
             } else {
-                // If they placed all blocks but wrong order, collapse in the middle
-                wrongBreakX = cliffX + cliffWidth / 2;
+                // If they placed all blocks but wrong order, fall from the broken bridge edge.
+                const bridgeSourceWidth = isImageReady(runnerAssets.bridge) ? runnerAssets.bridge.naturalWidth : 805;
+                const brokenBridgeSourceWidth = isImageReady(runnerAssets.brokenBridge) ? runnerAssets.brokenBridge.naturalWidth : bridgeSourceWidth / 2;
+                const brokenBridgeWidth = (cliffWidth + 4) * (brokenBridgeSourceWidth / bridgeSourceWidth);
+                wrongBreakX = cliffX - 2 + brokenBridgeWidth;
             }
             
             // Dog starts running towards the break point
+            isBridgeBroken = true;
             dogState = 'crossing';
         }
     }
@@ -826,11 +881,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showInlineFeedback(text, color) {
         const inlineMsg = document.getElementById('inline-feedback-msg');
-        if (!inlineMsg) return;
+        if (!inlineMsg || !hintText) return;
+
+        const isHintOpen = !hintText.classList.contains('hidden');
+        const targetMsg = isHintOpen ? hintText : inlineMsg;
+        const normalHintText = getChineseSentenceWithPunctuation(questions[currentQuestionIndex]);
         
-        inlineMsg.textContent = text;
-        inlineMsg.style.color = color;
-        inlineMsg.classList.remove('hidden');
+        inlineMsg.classList.add('hidden');
+        hintText.textContent = isHintOpen ? text : normalHintText;
+        hintText.style.color = isHintOpen ? color : '';
+
+        targetMsg.textContent = text;
+        targetMsg.style.color = color;
+        targetMsg.classList.remove('hidden');
         
         // Clear any existing timeout
         if (inlineFeedbackTimeout) {
@@ -840,7 +903,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide after 2 seconds for normal wrong answers
         if (text.includes("答錯了")) {
             inlineFeedbackTimeout = setTimeout(() => {
-                inlineMsg.classList.add('hidden');
+                targetMsg.classList.add('hidden');
+                if (isHintOpen) {
+                    hintText.textContent = normalHintText;
+                    hintText.style.color = '';
+                    hintText.classList.remove('hidden');
+                }
             }, 2000);
         }
     }
@@ -858,6 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Transparent bridge appears
         isBridgeTransparent = true;
+        isBridgeBroken = false;
         bridgeAlpha = 0.8;
         dogState = 'crossing';
         shouldAutoTransition = true;
@@ -1031,6 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dogState = 'running';
         }
         isBridgeTransparent = false;
+        isBridgeBroken = false;
         bridgeAlpha = 0.0;
         splashParticles = [];
         sparkles = [];
@@ -1180,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             // 3. Make transparent bridge appear
                             isBridgeTransparent = true;
+                            isBridgeBroken = false;
                             bridgeAlpha = 0.8;
                             
                             // 4. Fade back in
@@ -1200,6 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         dogY = -100;
                         flashTimer = 25; // Flash 2 times (25 frames)
                         isAnswerSubmitted = false;
+                        isBridgeBroken = false;
                         
                         clearSelection();
                         submitBtn.classList.remove('hidden');
@@ -1224,6 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isBridgeTransparent) {
                         isBridgeTransparent = false;
                     }
+                    isBridgeBroken = false;
                 }
             }
         } 
@@ -1235,6 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dogY >= riverY) {
                 dogY = riverY;
                 dogState = 'splashing';
+                playSfx('splash');
                 createSplash(dogX, riverY);
             }
         } 
@@ -1264,6 +1338,12 @@ document.addEventListener('DOMContentLoaded', () => {
         grad.addColorStop(1, '#d8f4ff'); 
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        const grassDrawn = drawScrollingImage(runnerAssets.grass, 96, 52, forestScrollX, 0.8, 1);
+        if (!grassDrawn) {
+            ctx.fillStyle = '#78b85a';
+            ctx.fillRect(0, groundY - 12, canvasWidth, 16);
+        }
 
         const mountainsDrawn = drawScrollingImage(runnerAssets.mountains, 18, 92, mountainScrollX, 0.45);
         if (!mountainsDrawn) {
@@ -1296,11 +1376,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 4. Draw River bed
-        ctx.fillStyle = '#174766';
+        ctx.fillStyle = '#dee0a3';
         ctx.fillRect(0, groundY, canvasWidth, canvasHeight - groundY);
         
         // Draw wavy river water
-        ctx.fillStyle = '#1b567d';
+        ctx.fillStyle = '#6daaf1';
         ctx.beginPath();
         for (let i = 0; i <= canvasWidth; i += 25) {
             let relativeScroll = (scrollX + i) % (canvasWidth * 1.5);
@@ -1316,8 +1396,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const groundTop = groundY - 8;
         const groundHeight = canvasHeight - groundTop + 8;
         const cliffInnerOverlap = 18;
-        const groundJoinOverlap = 8;
-        const cliffYOffset = -8;
+        const groundJoinOverlap = 1;
+        const cliffYOffset = 0;
         const leftCliffImage = runnerAssets.floorRight;
         const rightCliffImage = runnerAssets.floorLeft;
         const cliffHeight = groundHeight;
@@ -1394,6 +1474,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Animated Dog Drawing Function
     function drawDog(x, y, state, frame) {
+        if (state === 'splashing') return;
+
         ctx.save();
         
         // Apply flashing effect if active
@@ -1404,8 +1486,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (isImageReady(runnerAssets.kuroRun) && state !== 'splashing') {
-            const dogWidth = 86;
-            const dogHeight = 62;
+            const dogScale = 0.65;
+            const dogWidth = 86 * dogScale;
+            const dogHeight = 62 * dogScale;
             const runBob = (state === 'running' || state === 'crossing' || state === 'transition_out' || state === 'transition_in')
                 ? Math.sin(frame * 0.22) * 2
                 : 0;
@@ -1417,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.rotate(frame * 0.1);
             }
 
-            ctx.drawImage(runnerAssets.kuroRun, -48, -dogHeight + 8, dogWidth, dogHeight);
+            ctx.drawImage(runnerAssets.kuroRun, -31, -dogHeight + 5, dogWidth, dogHeight);
             ctx.restore();
             return;
         }
@@ -1614,7 +1697,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const totalChars = correctHakkaSequence.length || 1;
                     const blockWidth = cliffWidth / totalChars;
 
-                    if (isImageReady(runnerAssets.bridge)) {
+                    if (isBridgeBroken && isImageReady(runnerAssets.brokenBridge) && isImageReady(runnerAssets.bridge)) {
+                        const bridgeHeight = 22;
+                        const bridgeWidth = cliffWidth + 4;
+                        const bridgeScale = bridgeWidth / runnerAssets.bridge.naturalWidth;
+                        const brokenBridgeWidth = runnerAssets.brokenBridge.naturalWidth * bridgeScale;
+                        ctx.drawImage(runnerAssets.brokenBridge, cliffX - 2, groundY - 2, brokenBridgeWidth, bridgeHeight);
+                    } else if (isImageReady(runnerAssets.bridge)) {
                         ctx.drawImage(runnerAssets.bridge, cliffX - 2, groundY - 2, cliffWidth + 4, 22);
                     } else {
                         selectedBlocks.forEach((block, idx) => {

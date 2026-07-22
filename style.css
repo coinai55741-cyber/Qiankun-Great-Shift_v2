@@ -89,6 +89,15 @@ body {
     padding: 10px;
 }
 
+body:has(#game-card:not(.hidden)) .header-logo {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .app-header {
+    justify-content: flex-end;
+    padding: 0 10px 4px;
+}
+
 .header-logo {
     display: flex;
     align-items: center;
@@ -1291,10 +1300,27 @@ body::before {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 9px;
+    min-height: 94px;
+    align-content: start;
 }
 
 .hint-text,
-.inline-feedback-msg { grid-column: 1 / -1; color: var(--v2-ink); }
+.inline-feedback-msg {
+    grid-column: 1 / -1;
+    min-height: 34px;
+    color: var(--v2-ink);
+}
+
+.hint-text {
+    margin: 0;
+    overflow: hidden;
+}
+
+.hint-text.hidden,
+.inline-feedback-msg.hidden {
+    display: block !important;
+    visibility: hidden;
+}
 
 .btn { border-radius: 11px; }
 .btn-primary { background: var(--v2-red); box-shadow: 0 4px 0 var(--v2-red-dark); }
@@ -1601,6 +1627,7 @@ body::before {
 .hint-section {
     display: block;
     order: 4;
+    min-height: 96px;
 }
 
 .hint-section .btn { width: 100%; min-height: 42px; }
@@ -1608,6 +1635,7 @@ body::before {
 .inline-feedback-msg {
     display: block;
     margin-top: 7px;
+    min-height: 37px;
     padding: 8px;
     border-radius: 8px;
     background: #fff8e7;
@@ -1615,7 +1643,10 @@ body::before {
 }
 
 .hint-text.hidden,
-.inline-feedback-msg.hidden { display: none; }
+.inline-feedback-msg.hidden {
+    display: block;
+    visibility: hidden;
+}
 
 .feedback-panel { grid-column: 1 / -1; }
 

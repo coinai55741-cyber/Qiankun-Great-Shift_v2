@@ -83,14 +83,6 @@
 
             <div class="gameplay-layout">
             <section class="mission-stage" aria-label="阿黑過橋動畫區">
-                <div class="stage-heading">
-                    <div>
-                        <span class="eyebrow">聲音任務</span>
-                        <h2>聽懂這句話，替阿黑把橋搭好</h2>
-                    </div>
-                    <div class="stage-legend"><span></span> 字卡就是橋磚</div>
-                </div>
-
                 <!-- 2D Runner Game Animation Canvas -->
                 <div class="canvas-section">
                     <canvas id="runner-canvas" width="960" height="200"></canvas>
@@ -108,9 +100,9 @@
                             <i class="fa-solid fa-pause pause-icon hidden"></i>
                         </button>
                         <div class="audio-info">
-                            <span class="panel-kicker">客語播放</span>
-                            <h3>點一下，仔細聽句子</h3>
-                            <p id="question-category">類別: 情緒用語</p>
+                            <span class="panel-kicker">播放</span>
+                            <h3>仔細聽聽看大家的聲音吧！</h3>
+                            <p id="question-category" class="hidden"></p>
                         </div>
                         <div class="soundwave" id="soundwave">
                             <span class="stroke"></span><span class="stroke"></span>
@@ -134,7 +126,6 @@
                     <div class="candidates-section">
                         <div class="section-title-row">
                             <h4><span>02</span> 待選字卡區</h4>
-                            <small>每個字都是一張獨立字卡</small>
                         </div>
                         <div class="candidates-container" id="candidates-container"></div>
                     </div>
@@ -154,8 +145,8 @@
                         <button class="btn btn-secondary" id="hint-btn">
                             <i class="fa-regular fa-lightbulb"></i> 顯示中文提示
                         </button>
-                        <span id="inline-feedback-msg" class="inline-feedback-msg hidden"></span>
                         <p class="hint-text hidden" id="hint-text"></p>
+                        <span id="inline-feedback-msg" class="inline-feedback-msg hidden"></span>
                     </div>
                 </div>
 
@@ -217,10 +208,6 @@
             </button>
         </div>
 
-        <!-- Footer -->
-        <footer class="app-footer">
-            <p>© 2026 客語數位學習專案. 資料來源：<a href="https://12basic.hakka.gov.tw" target="_blank">來上客入口網</a></p>
-        </footer>
     </div>
 
     <!-- Audio Element -->

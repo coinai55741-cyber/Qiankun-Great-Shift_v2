@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="200" height="160">
+  <g stroke="#1f2a22" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- roof -->
+    <path d="M38 58
+             C55 56, 66 45, 78 29
+             C86 18, 94 12, 100 10
+             C106 12, 114 18, 122 29
+             C134 45, 145 56, 162 58
+             C168 59, 171 65, 168 71
+             C164 78, 151 82, 138 82
+             L62 82
+             C49 82, 36 78, 32 71
+             C29 65, 32 59, 38 58 Z"
+          fill="#fff2c8"/>
+    <!-- house body -->
+    <path d="M58 78 L142 78 L142 137 L58 137 Z" fill="#ffe7a6"/>
+    <!-- doorway -->
+    <path d="M82 137 L82 111
+             C82 95, 90 86, 100 86
+             C110 86, 118 95, 118 111
+             L118 137 Z"
+          fill="#3f5f35"/>
+    <!-- base -->
+    <path d="M49 137 H151 L154 149 H46 Z" fill="#ffe7a6"/>
+  </g>
+</svg>
