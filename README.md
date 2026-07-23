@@ -9,7 +9,8 @@ index.html          主畫面 DOM 結構
 style.css           版面與 UI 樣式
 app.js              遊戲流程、字卡邏輯、Canvas 動畫、音效
 vue-app.js          Vue 3 最小 shell，目前主要互動仍在 app.js
-questions_data.js   目前題庫資料，之後可改為 JSON fetch
+questions_data.js   舊版 fallback 題庫，JSON 載入失敗時使用
+data/quiz/          六腔 × 五級 JSON 題庫，主遊戲會動態載入
 data/image/         遊戲圖層與角色素材
 data/music/         UI 音效與落水音效
 ```
@@ -42,143 +43,132 @@ drawDog()
 
 ## 題庫資料結構
 
-目前題庫在 `questions_data.js`，格式如下：
+目前正式題庫放在 `data/quiz/`，檔名規則如下：
+
+```text
+data/quiz/questions_dialect_{dialectId}_level_{levelNo}.json
+```
+
+目前共有 30 個 JSON 檔：
+
+```text
+6 腔 × 5 級 = 30 檔
+```
+
+`questions_data.js` 仍保留作為載入失敗時的 fallback 題庫。
+
+JSON 題目格式如下：
 
 ```js
 {
-  question_id: "q_listening_001",
-  level: "中",
-  category: "情緒用語",
+  question_id: "q_listening_d1_l1_c1_1",
+  level: "I",
+  dialect_id: 1,
+  category: "身體認識",
   audio_url: "https://example.com/audio.wav",
-  hakka_hanji: "還暢哦，這擺考試𠊎考一百分。",
-  correct_sequence: ["好開心", "這次", "考試", "我", "考", "一百分"],
-  shuffled_blocks: ["考試", "我", "好開心", "一百分", "這次", "考"]
+  hakka_hanji: "𠊎个牙齒當痛哦！",
+  correct_sequence: ["𠊎", "个", "牙", "齒", "當", "痛", "哦"],
+  shuffled_blocks: ["𠊎", "哦", "當", "痛", "齒", "个", "牙"],
+  chinese_sentence: "我的牙齒好痛！",
+  hakka_char_count: 7
 }
 ```
 
-目前實際比對不是使用 `correct_sequence`，而是使用：
+目前 `app.js` 對新 JSON 題庫會優先使用：
+
+```js
+q.correct_sequence
+q.shuffled_blocks
+q.chinese_sentence
+q.hakka_char_count
+```
+
+舊 fallback 題庫沒有 `chinese_sentence` 時，才會退回使用：
 
 ```js
 getHakkaCharacters(q.hakka_hanji)
 ```
 
-也就是把 `hakka_hanji` 去掉標點後拆成單字：
+也就是把 `hakka_hanji` 去掉標點後拆成單字。
 
 ```text
 𠊎試著這題數學還難哦。
 => 𠊎 / 試 / 著 / 這 / 題 / 數 / 學 / 還 / 難 / 哦
 ```
 
-因此現階段「玩家字卡」是客語漢字單字卡，不是中文翻譯詞卡。
+目前「玩家字卡」是客語漢字單字卡，不是中文翻譯詞卡。
 
-## 題庫篩選建議
+## 動態題庫篩選
 
-目前尚未實作題庫篩選 UI。下一版若要串 JSON，建議在題目資料中加入可篩選欄位：
+目前已實作六腔動態載入與字數篩選。流程在 `app.js` 的 `startAdventureBtn` click handler：
 
 ```js
-{
-  question_id: "s2_m3_001",
-  mission_id: "S2_M3",
-  level: "中",
-  dialect: "sixian",
-  category: "情緒用語",
-  difficulty: 2,
-  enabled: true,
-  audio_url: "...",
-  hakka_hanji: "...",
-  chinese_hint: "...",
-  source: "來上客入口網"
-}
+const dialectId = selectedDialectId;
+const charLimit = 8;
+
+fetch(`data/quiz/questions_dialect_${dialectId}_level_${l}.json`)
 ```
 
-建議篩選條件：
+實際流程：
 
 ```text
-mission_id：指定本遊戲關卡
-enabled：是否上架
-level：初 / 中 / 中高 / 高
-dialect：六腔
-category：情境分類
-difficulty：題目難度
-max_cards：字卡數量上限
+1. 玩家在開始頁選擇六腔。
+2. 按「開始冒險」後，依 selectedDialectId 載入該腔調 I～V 級共 5 個 JSON。
+3. 合併 5 個 JSON 的題目。
+4. 篩選 hakka_char_count <= 8。
+5. 若篩選後為 0 題，改用該腔調全部題目。
+6. shuffle 後取 10 題作為本局題目。
+7. 更新右上角腔調 badge 和 level badge。
 ```
 
-若題庫改成 JSON，可將 `questions_data.js` 改為：
+目前資料健檢結果：30 個 JSON 都可正常 parse，且每檔 `audio_url`、`hakka_hanji`、`correct_sequence`、`shuffled_blocks`、`chinese_sentence`、`hakka_char_count` 都存在。
 
-```js
-async function loadQuestions() {
-  const res = await fetch("data/questions.json");
-  questions = await res.json();
-}
+注意：GitHub Pages 或本機 HTTP server 可以正常 `fetch(data/quiz/...)`。若直接用 `file:///.../index.html` 開檔，部分瀏覽器會擋本機 JSON fetch。
+
+若未來改串外部 API，API 必須開 CORS。
+
+## 六腔選擇
+
+目前開始頁已實作六腔選擇 UI，按鈕位於 `index.html`：
+
+```html
+<button class="dialect-btn active" data-value="1">四縣腔</button>
+<button class="dialect-btn" data-value="2">海陸腔</button>
+<button class="dialect-btn" data-value="3">大埔腔</button>
+<button class="dialect-btn" data-value="4">饒平腔</button>
+<button class="dialect-btn" data-value="5">詔安腔</button>
+<button class="dialect-btn" data-value="6">南四縣腔</button>
 ```
 
-GitHub Pages 可讀同 repo 內的 JSON；若串外部 API，API 必須開 CORS。
-
-## 六腔選擇設計
-
-目前畫面只顯示固定文字「四縣腔」，尚未實作六腔切換。
-
-建議六腔代碼：
+目前代碼：
 
 ```text
-sixian       四縣腔
-hailu        海陸腔
-dapu         大埔腔
-raoping      饒平腔
-zhaoan       詔安腔
-south_sixian 南四縣腔
+1 四縣腔
+2 海陸腔
+3 大埔腔
+4 饒平腔
+5 詔安腔
+6 南四縣腔
 ```
 
-建議資料格式有兩種：
-
-### 方案 A：每腔一筆題目
+`selectedDialectId` 預設為 `"1"`。玩家點擊腔調按鈕時會更新：
 
 ```js
-{
-  question_id: "s2_m3_001_sixian",
-  group_id: "s2_m3_001",
-  dialect: "sixian",
-  audio_url: "...",
-  hakka_hanji: "..."
-}
+selectedDialectId = btn.dataset.value;
 ```
 
-優點是篩選簡單；缺點是同題多腔會有資料重複。
-
-### 方案 B：同題內含六腔資料
-
-```js
-{
-  question_id: "s2_m3_001",
-  category: "情緒用語",
-  dialects: {
-    sixian: {
-      audio_url: "...",
-      hakka_hanji: "..."
-    },
-    hailu: {
-      audio_url: "...",
-      hakka_hanji: "..."
-    }
-  },
-  chinese_hint: "好開心，這次考試我考一百分。"
-}
-```
-
-建議採用方案 B，因為同一題的中文提示、分類、難度可以共用。
-
-前端切換邏輯建議：
-
-```js
-const selectedDialect = "sixian";
-const dialectData = q.dialects[selectedDialect];
-gameAudio.src = dialectData.audio_url;
-const cards = getHakkaCharacters(dialectData.hakka_hanji);
-```
+開始遊戲後會載入對應 `data/quiz/questions_dialect_{dialectId}_level_{levelNo}.json`。
 
 ## 字卡長度限制
 
-目前 `app.js` 會將 `hakka_hanji` 拆成「一字一卡」，排除標點符號。每張卡最小高度約 52px，候選字卡區可換行。
+目前新 JSON 題庫已預先提供 `correct_sequence` 與 `shuffled_blocks`，每個元素是一張客語漢字字卡。舊 fallback 題庫則由 `hakka_hanji` 去標點後拆成「一字一卡」。每張卡最小高度約 52px，候選字卡區可換行。
+
+目前遊戲開始時固定篩選：
+
+```js
+const charLimit = 8;
+filtered = allQuestions.filter(q => q.hakka_char_count <= charLimit);
+```
 
 目前 Canvas 橋寬：
 
@@ -201,26 +191,27 @@ const blockWidth = cliffWidth / totalChars;
 4. 題目太長時，玩家拖曳負擔過高
 ```
 
-建議限制：
+目前實作限制與建議：
 
 ```text
-桌機 / 平板橫式：最多 12 字
-手機橫式：建議 8～10 字
+目前遊戲實際篩選：最多 8 字
+桌機 / 平板橫式可承受：最多 12 字
+手機橫式建議：8～10 字
 最低題長：3 字以上
 最佳題長：4～10 字
 ```
 
-題庫篩選時可先計算：
+新 JSON 已有 `hakka_char_count`，不用前端即時計算。若後續新增題目，可用以下方式產生：
 
 ```js
 const cardCount = getHakkaCharacters(hakka_hanji).length;
 ```
 
-建議上架條件：
+建議上架條件仍是：
 
 ```text
 cardCount >= 3
-cardCount <= 10 或 12
+cardCount <= 8
 ```
 
 如果未來要支援更長句，建議改為分段題、兩段橋，或把部分字卡合併成詞卡。
@@ -371,8 +362,8 @@ data/music/
 
 ## 後續建議
 
-1. 將 `questions_data.js` 改成 `data/questions.json`。
-2. 加入六腔選擇 UI，並讓題庫依 dialect 載入音檔與漢字。
-3. 題庫上架前檢查字卡數量，建議 4～10 字，最多 12 字。
-4. 阿黑跑步建議改為 sprite sheet，目前已有 `S2_m3_kuro_run_sheet_6.png` 但尚未接進 Canvas 動畫。
+1. 將題庫載入邏輯從 `questionsData` 初始化判斷中拆出，讓 `data/quiz/` 成為完全獨立的正式資料源，`questions_data.js` 只作為可移除的開發備援。
+2. 若之後需要更精準控題，可在開始頁加入「等級 / 分類」篩選，目前版本是同一腔調 I～V 級合併後篩 `hakka_char_count <= 8`，再隨機取 10 題。
+3. 題庫上架前仍需檢查字卡數量，建議 4～8 字；若要支援 9～12 字，需同步確認回答區換行、橋磚寬度與手機橫式高度。
+4. 阿黑跑步未來可改為「逐格動畫」：準備一張 sprite sheet，裡面排列 6 格阿黑跑步姿勢，再由 Canvas 逐格切換播放；目前 Canvas 仍使用單張角色圖 `S2_m3_kuro_run.png`。
 5. 若需記錄玩家成績、帳號、老師後台編輯題目，靜態頁不夠，需要後端 API 或資料庫。
