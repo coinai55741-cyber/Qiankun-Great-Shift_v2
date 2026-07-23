@@ -3,6 +3,15 @@
    Design: Hakka Modern Forest / Glassmorphism
    ========================================================================== */
 
+@font-face {
+    font-family: 'twhei-s';
+    src: url('https://dn9mvjhbyvvpc.cloudfront.net/fonts/twhei-s.woff2') format('woff2'),
+         url('https://dn9mvjhbyvvpc.cloudfront.net/fonts/twhei-s.woff') format('woff'),
+         url('https://dn9mvjhbyvvpc.cloudfront.net/fonts/twhei-s.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* Global Variables */
 :root {
     --bg-dark-1: #0A1C13;
@@ -37,7 +46,7 @@ body {
     background-color: var(--bg-dark-2);
     background-image: linear-gradient(135deg, var(--bg-dark-1) 0%, var(--bg-dark-2) 100%);
     color: var(--text-main);
-    font-family: var(--font-outfit), var(--font-tc);
+    font-family: var(--font-outfit), 'twhei-s', var(--font-tc), sans-serif;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -392,6 +401,7 @@ h4 {
 
 /* Word Blocks styling */
 .word-block {
+    font-family: 'twhei-s', var(--font-tc), sans-serif;
     background: var(--glass-active);
     border: 1px solid var(--glass-border);
     color: white;
@@ -892,6 +902,7 @@ h4 {
 }
 
 .review-hakka {
+    font-family: 'twhei-s', var(--font-tc), sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--accent);
@@ -1687,5 +1698,65 @@ body::before {
         text-align: center;
         font-size: 1.2rem;
         font-weight: 700;
+    }
+}
+
+/* Selection Controls for Dialect, Level and Word Count */
+.selection-section {
+    margin: 20px 0;
+    padding: 16px;
+    border-radius: 12px;
+    background: #f7eed7;
+    border: 1px solid #dfcfab;
+}
+
+.selection-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #4b382a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dialect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.dialect-btn {
+    padding: 12px 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid #d3c4a6;
+    border-radius: 8px;
+    background-color: #fffdf9;
+    color: #5c4839;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialect-btn:hover {
+    background-color: #fcf4e2;
+    border-color: #bfa886;
+}
+
+.dialect-btn.active {
+    background-color: #bfa886;
+    border-color: #8c7355;
+    color: #fffdf9;
+    box-shadow: 0 4px 6px rgba(140, 115, 85, 0.15);
+}
+
+@media (max-width: 600px) {
+    .dialect-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

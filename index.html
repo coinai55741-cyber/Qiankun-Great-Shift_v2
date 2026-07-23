@@ -20,7 +20,7 @@
 
     <div id="app" class="app-container" v-cloak>
         <!-- Header -->
-        <header class="app-header">
+        <header class="app-header hidden">
             <div class="header-logo">
                 <i class="fa-solid fa-arrows-spin logo-icon"></i>
                 <div class="logo-text">
@@ -35,7 +35,6 @@
                     <button class="speed-btn" data-speed="2">2x</button>
                 </div>
                 <span class="badge badge-dialect">四縣腔</span>
-                <span class="badge badge-level hidden" id="display-level">中級</span>
             </div>
         </header>
 
@@ -63,6 +62,20 @@
                 </ol>
             </div>
             
+            
+            <!-- 選擇腔調 -->
+            <div class="selection-section">
+                <div class="selection-title"><i class="fa-solid fa-language"></i> 選擇腔調</div>
+                <div class="dialect-grid">
+                    <button type="button" class="dialect-btn active" data-value="1">四縣腔</button>
+                    <button type="button" class="dialect-btn" data-value="2">海陸腔</button>
+                    <button type="button" class="dialect-btn" data-value="3">大埔腔</button>
+                    <button type="button" class="dialect-btn" data-value="4">饒平腔</button>
+                    <button type="button" class="dialect-btn" data-value="5">詔安腔</button>
+                    <button type="button" class="dialect-btn" data-value="6">南四縣腔</button>
+                </div>
+            </div>
+
             <button class="btn btn-primary btn-block btn-lg" id="start-adventure-btn">
                 <i class="fa-solid fa-compass"></i> 開始冒險
             </button>

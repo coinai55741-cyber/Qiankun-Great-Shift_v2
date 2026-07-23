@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let shouldAutoTransition = false;
     let isTransitioning = false;
     let flashTimer = 0;
+    let selectedDialectId = "1"; // Default 四縣腔
 
     // Audio Element & Controls
     const gameAudio = document.getElementById('game-audio');
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // UI Elements
+    const appHeader = document.querySelector('.app-header');
     const introCard = document.getElementById('intro-card');
     const startAdventureBtn = document.getElementById('start-adventure-btn');
     const gameCard = document.getElementById('game-card');
@@ -244,6 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper to build Chinese sentence with punctuation matching Hakka phrasing
     function getChineseSentenceWithPunctuation(q) {
+        if (q.chinese_sentence) {
+            return q.chinese_sentence;
+        }
         const chPunctuationMap = {
             "q_listening_001": "好開心，這次考試我考一百分。",
             "q_listening_002": "太棒了，你這次一定很用功。",
@@ -319,8 +324,77 @@ document.addEventListener('DOMContentLoaded', () => {
             if (startAdventureBtn && introCard) {
                 startAdventureBtn.addEventListener('click', () => {
                     playSfx('click');
-                    introCard.classList.add('hidden');
-                    startGame();
+                    
+                    const dialectId = selectedDialectId;
+                    const charLimit = 8; // Force max 8 characters as per instruction
+                    
+                    startAdventureBtn.disabled = true;
+                    const originalBtnText = startAdventureBtn.innerHTML;
+                    startAdventureBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 載入題庫中...';
+                    
+                    // Fetch all 5 levels for the selected dialect concurrently
+                    const fetchPromises = [];
+                    for (let l = 1; l <= 5; l++) {
+                        fetchPromises.push(
+                            fetch(`data/quiz/questions_dialect_${dialectId}_level_${l}.json`)
+                                .then(res => res.json())
+                                .catch(err => {
+                                    console.warn(`無法載入腔調 ${dialectId} 級別 ${l}`, err);
+                                    return [];
+                                })
+                        );
+                    }
+                    
+                    Promise.all(fetchPromises)
+                        .then(results => {
+                            let allQuestions = [];
+                            results.forEach(resList => {
+                                allQuestions = allQuestions.concat(resList);
+                            });
+                            
+                            // Filter questions by length <= 8
+                            let filtered = allQuestions.filter(q => q.hakka_char_count <= charLimit);
+                            if (filtered.length === 0) {
+                                alert("在此腔調下，無符合 8 字元以下的題目！將載入該腔調之全數題目。");
+                                filtered = allQuestions;
+                            }
+                            
+                            // Shuffle and slice to 10 questions max for a game session
+                            questions = shuffleArray(filtered).slice(0, 10);
+                            
+                            const dialectNames = {
+                                "1": "四縣腔",
+                                "2": "海陸腔",
+                                "3": "大埔腔",
+                                "4": "饒平腔",
+                                "5": "詔安腔",
+                                "6": "南四縣腔"
+                            };
+                            const displayDialect = document.querySelector('.badge-dialect');
+                            if (displayDialect) {
+                                displayDialect.textContent = dialectNames[dialectId];
+                            }
+                            
+                            if (displayLevel) {
+                                displayLevel.classList.remove('hidden');
+                                if (questions.length > 0) {
+                                    displayLevel.textContent = questions[0].level + '級';
+                                }
+                            }
+                            
+                            startAdventureBtn.disabled = false;
+                            startAdventureBtn.innerHTML = originalBtnText;
+                            introCard.classList.add('hidden');
+                            startGame();
+                        })
+                        .catch(err => {
+                            console.error("動態載入客語題庫失敗，將載入預設第一課", err);
+                            questions = questionsData;
+                            startAdventureBtn.disabled = false;
+                            startAdventureBtn.innerHTML = originalBtnText;
+                            introCard.classList.add('hidden');
+                            startGame();
+                        });
                 });
             } else {
                 startGame();
@@ -333,6 +407,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Event Listeners Setup
     function setupEventListeners() {
+        // Dialect Buttons Selection
+        const dialectButtons = document.querySelectorAll('.dialect-btn');
+        dialectButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                dialectButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedDialectId = btn.dataset.value;
+                playSfx('click');
+            });
+        });
+
         // Audio Controls
         playAudioBtn.addEventListener('click', () => {
             playSfx('click');
@@ -452,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Start/Restart Game
     function startGame() {
+        if (appHeader) appHeader.classList.remove('hidden');
         correctCount = 0;
         totalScore = 0;
         currentQuestionIndex = 0;
@@ -504,7 +590,10 @@ document.addEventListener('DOMContentLoaded', () => {
         gameAudio.playbackRate = 1.0; // Keep audio at 1x speed
 
         // Update Text Info
-        displayLevel.textContent = q.level + '級';
+        if (displayLevel) {
+            displayLevel.textContent = q.level + '級';
+            displayLevel.classList.remove('hidden');
+        }
         if (questionCategory) {
             questionCategory.textContent = '';
         }
@@ -525,9 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Enable Po Kong Help skip button
         helpBgBtn.disabled = false;
 
-        // Extract Hakka characters dynamically as block cards
-        const hakkaChars = getHakkaCharacters(q.hakka_hanji);
-        const shuffledHakka = shuffleArray(hakkaChars);
+        // Extract Hakka characters dynamically as block cards (or use pre-defined sequence from JSON)
+        const hakkaChars = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
+        const shuffledHakka = q.chinese_sentence ? (q.shuffled_blocks || shuffleArray(hakkaChars)) : shuffleArray(hakkaChars);
 
         // Setup Blocks with Unique IDs (to handle identical strings properly)
         selectedBlocks = [];
@@ -831,7 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const userSequenceText = selectedBlocks.map(b => b.text);
         
         // Evaluate against Hakka characters
-        const currentCorrectHakkaSequence = getHakkaCharacters(q.hakka_hanji);
+        const currentCorrectHakkaSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
         const isCorrect = checkSequenceMatch(userSequenceText, currentCorrectHakkaSequence);
 
         // Disable standard game controls
@@ -856,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Calculate where the wrong bridge breaks
             const charCount = selectedBlocks.length;
-            const correctHakkaSequence = getHakkaCharacters(q.hakka_hanji);
+            const correctHakkaSequence = currentCorrectHakkaSequence;
             const totalChars = correctHakkaSequence.length || 1;
             const userBridgeWidth = (charCount / totalChars) * cliffWidth;
             
@@ -981,6 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 10. Show Results
     function showResults() {
+        if (appHeader) appHeader.classList.add('hidden');
         gameCard.classList.add('hidden');
         resultsCard.classList.remove('hidden');
 
@@ -1693,7 +1783,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const charCount = selectedBlocks.length;
                 if (charCount > 0) {
                     const q = questions[currentQuestionIndex];
-                    const correctHakkaSequence = getHakkaCharacters(q.hakka_hanji);
+                    if (!q) return;
+                    const correctHakkaSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
                     const totalChars = correctHakkaSequence.length || 1;
                     const blockWidth = cliffWidth / totalChars;
 
