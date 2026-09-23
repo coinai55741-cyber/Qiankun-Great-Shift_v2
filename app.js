@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let correctCount = 0;
     let totalScore = 0;
     let questionScore = 10; // Starts at 10 points per question
+    let questionAttempts = 0;
+    let questionUsedHelp = false;
+    let questionHelpType = '';
+    let questionRecords = [];
+    let lastUserSequence = [];
+    let storyStepIndex = 0;
     
     let gameStartTime = null;
     let questionStartTime = null;
@@ -50,6 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // UI Elements
     const appHeader = document.querySelector('.app-header');
+    const storyCard = document.getElementById('story-card');
+    const storyCanvas = document.getElementById('story-canvas');
+    const storySpeaker = document.getElementById('story-speaker');
+    const storyLine = document.getElementById('story-line');
+    const storyAvatarImg = document.getElementById('story-avatar-img');
+    const storyNextBtn = document.getElementById('story-next-btn');
+    const storySkipBtn = document.getElementById('story-skip-btn');
+    const bokongAssist = document.getElementById('bokong-assist');
     const introCard = document.getElementById('intro-card');
     const startAdventureBtn = document.getElementById('start-adventure-btn');
     const gameCard = document.getElementById('game-card');
@@ -59,6 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreDisplay = document.getElementById('score-display');
     const progressBar = document.getElementById('progress-bar');
     const questionCategory = document.getElementById('question-category');
+
+
     
     const hintBtn = document.getElementById('hint-btn');
     const hintText = document.getElementById('hint-text');
@@ -82,6 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultAccuracy = document.getElementById('result-accuracy');
     const resultTime = document.getElementById('result-time');
     const restartBtn = document.getElementById('restart-btn');
+    const resultSummary = document.getElementById('result-summary');
+    const rankingSection = document.getElementById('ranking-section');
 
     // Speed buttons
     const speedButtons = document.querySelectorAll('.speed-btn');
@@ -94,6 +112,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const canvasWidth = 960;
     const canvasHeight = 200;
+    let runnerCanvasScale = 1;
+
+    function resizeRunnerCanvasForDisplay() {
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const displayScale = Math.max(rect.width / canvasWidth, rect.height / canvasHeight);
+        const pixelRatio = window.devicePixelRatio || 1;
+        const nextScale = Math.min(4, Math.max(2, Math.ceil(displayScale * pixelRatio)));
+        const nextWidth = Math.round(canvasWidth * nextScale);
+        const nextHeight = Math.round(canvasHeight * nextScale);
+
+        if (canvas.width !== nextWidth || canvas.height !== nextHeight || runnerCanvasScale !== nextScale) {
+            canvas.width = nextWidth;
+            canvas.height = nextHeight;
+            runnerCanvasScale = nextScale;
+        }
+
+        ctx.setTransform(runnerCanvasScale, 0, 0, runnerCanvasScale, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+    }
     const groundY = 140;
     const riverY = 175;
     
@@ -128,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isBridgeBroken = false;
 
     const runnerAssetPath = 'data/image/';
-    const runnerAssetVersion = '20260722-7';
+    const runnerAssetVersion = '20260923-offline-transition1';
     const useRunnerImageLayers = true;
     const runnerAssets = {
         mountains: loadRunnerImage('S2_m3_yamaloop.png'),
@@ -139,8 +179,41 @@ document.addEventListener('DOMContentLoaded', () => {
         floorRight: loadRunnerImage('S2_m3_floorR.png'),
         bridge: loadRunnerImage('S2_m3_bridgeA.png'),
         brokenBridge: loadRunnerImage('S2_m3_bridgeB.png'),
-        kuroRun: loadRunnerImage('S2_m3_kuro_run.png')
+        kuroRun: loadRunnerImage('../dummy/Codex_角色_透明背景.gif'),
+        kuroRunFrames: [
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_00.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_01.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_02.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_03.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_04.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_05.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_06.png'),
+            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_07.png')
+        ],
+        bokong: loadRunnerImage('S2_m3_bokon1.png')
     };
+
+
+
+    const openingStory = [
+        { speaker: '指導員', text: '阿黑啊，你現在到了小明家附近的田埂對吧？繪卷有感應到小明今天在發什麼牢騷嗎？' },
+        { speaker: '阿黑', text: '汪……指導員，我第一次出任務，聽到村裡小朋友在講客語，可是繪卷突然發光，文字就全部變成字磚掉在地上了……我不知道怎麼排回去呀。' },
+        { speaker: '指導員', text: '你是實習小神狗，需要多練習是正常的！' },
+        { speaker: '指導員', text: '讓伯公把你的聽力技能加強，你仔細聽好囉～' },
+        { speaker: '背景音效', text: '𠊎試著這題數學還難哦' },
+        { speaker: '阿黑', text: '啊！聽到了！小明在抱怨數學啦！順序是：「𠊎」➔「試」➔「著」➔「這」➔「題」➔「數」➔「學」➔「還」➔「難」➔「哦」！' },
+        { speaker: '場景變化', text: '散落的字磚排回正確順序，伯公的仙光把斷橋接了起來。' },
+        { speaker: '阿黑', text: '呼！過來了！伯公，小明抱怨數學的紀錄已經好好的印在繪卷上囉，其他的內容，我等一下帶回去給你讀！' },
+        { speaker: '伯公', text: '好好好，這孩子總是怕數學。繼續吧，看看下一條路上還能幫伯公收集到什麼有趣的對話！' }
+    ];
+
+    const starResults = [
+        { stars: 5, title: '傳音神犬', note: '最高星級，僅授予排名第 1 且滿分 100 分的玩家。', comment: '你的耳朵比雷達還靈敏！繪卷紀錄得一字不漏，伯公讀完開心地哈哈大笑！' },
+        { stars: 4, title: '伯公的得力金耳', note: '前 6%～20% 玩家。', comment: '表現得非常出色！伯公戴上老花眼鏡讀得津津有味呢！' },
+        { stars: 3, title: '出擊的探聲犬', note: '前 21%～50% 玩家。', comment: '辛苦啦！這卷繪卷成功帶回了大家的聊天內容，伯公看得很開心喔！' },
+        { stars: 2, title: '客話蒐集犬', note: '前 51%～80% 玩家。', comment: '哎呀，看來今天剛上任真的很緊張！伯公看著繪卷對你點點頭，阿黑的超級聽力可能還需要多磨練磨練。' },
+        { stars: 1, title: '迷糊的小神犬', note: '後 20% 玩家。', comment: '這次的繪卷好多地方都空白了呢！下次出發前，一起先到自學專區聽聽音檔預習一下吧！' }
+    ];
 
     function loadRunnerImage(fileName) {
         const image = new Image();
@@ -319,6 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             questions = questionsData;
             setupEventListeners();
             setupCanvasEngine();
+            setupStoryScene();
             
             // Wait for user to click Start Adventure button to start the game
             if (startAdventureBtn && introCard) {
@@ -405,6 +479,175 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function setupStoryScene() {
+        if (!storyCard) return;
+        if (appHeader) appHeader.classList.remove('hidden');
+        renderStoryStep();
+        drawStoryScene();
+        if (storyNextBtn) {
+            storyNextBtn.addEventListener('click', () => {
+                playSfx('click');
+                storyStepIndex++;
+                if (storyStepIndex >= openingStory.length) showIntroCard();
+                else renderStoryStep();
+            });
+        }
+        if (storySkipBtn) {
+            storySkipBtn.addEventListener('click', () => {
+                playSfx('click');
+                showIntroCard();
+            });
+        }
+    }
+
+    function renderStoryStep() {
+        const step = openingStory[storyStepIndex] || openingStory[0];
+        if (storySpeaker) storySpeaker.textContent = step.speaker;
+        if (storyLine) storyLine.textContent = step.text;
+        if (storyAvatarImg) {
+            const isBokong = step.speaker === '伯公';
+            const isGuide = step.speaker === '指導員' || step.speaker === '背景音效' || step.speaker === '場景變化';
+            storyAvatarImg.src = isBokong ? 'data/image/S2_m3_bokon1.png' : 'data/dummy/Codex_角色_透明背景.gif';
+            storyAvatarImg.alt = isBokong ? '伯公頭像' : (isGuide ? '指導員頭像' : '阿黑頭像');
+            storyAvatarImg.className = isBokong ? 'avatar-bokong' : (isGuide ? 'avatar-guide' : 'avatar-kuro');
+        }
+        if (storyNextBtn) {
+            storyNextBtn.innerHTML = storyStepIndex >= openingStory.length - 1
+                ? '<i class="fa-solid fa-scroll"></i> 進入任務說明'
+                : '繼續 <i class="fa-solid fa-arrow-right"></i>';
+        }
+    }
+
+    function showIntroCard() {
+        if (storyCard) storyCard.classList.add('hidden');
+        if (appHeader) appHeader.classList.add('hidden');
+        if (introCard) introCard.classList.remove('hidden');
+    }
+
+    function drawStoryScene() {
+        if (!storyCanvas) return;
+        const storyCtx = storyCanvas.getContext('2d');
+        const width = storyCanvas.width;
+        const height = storyCanvas.height;
+        storyCtx.clearRect(0, 0, width, height);
+        const sky = storyCtx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, '#9ee5f1');
+        sky.addColorStop(0.55, '#dff8df');
+        sky.addColorStop(1, '#f5d487');
+        storyCtx.fillStyle = sky;
+        storyCtx.fillRect(0, 0, width, height);
+        drawStoryHills(storyCtx, width, height);
+        drawStoryField(storyCtx, width, height);
+        drawStoryDog(storyCtx, 250, 292);
+        drawStoryGuide(storyCtx, 122, 282);
+        drawStoryScroll(storyCtx, 342, 292);
+        if (isImageReady(runnerAssets.bokong)) {
+            storyCtx.globalAlpha = 0.58;
+            storyCtx.drawImage(runnerAssets.bokong, 612, 20, 270, 270);
+            storyCtx.globalAlpha = 1;
+        }
+    }
+
+    function drawStoryHills(storyCtx, width, height) {
+        storyCtx.fillStyle = 'rgba(98, 178, 186, .42)';
+        storyCtx.beginPath();
+        storyCtx.moveTo(0, 176);
+        for (let x = 0; x <= width; x += 80) storyCtx.quadraticCurveTo(x + 40, 120, x + 80, 176);
+        storyCtx.lineTo(width, height);
+        storyCtx.lineTo(0, height);
+        storyCtx.fill();
+        storyCtx.fillStyle = 'rgba(127, 185, 121, .6)';
+        storyCtx.beginPath();
+        storyCtx.moveTo(0, 238);
+        for (let x = 0; x <= width; x += 100) storyCtx.quadraticCurveTo(x + 50, 194, x + 100, 238);
+        storyCtx.lineTo(width, height);
+        storyCtx.lineTo(0, height);
+        storyCtx.fill();
+    }
+
+    function drawStoryField(storyCtx, width, height) {
+        storyCtx.fillStyle = '#83ba49';
+        storyCtx.fillRect(0, 292, width, height - 292);
+        storyCtx.fillStyle = '#c7862a';
+        storyCtx.fillRect(0, 330, width, 90);
+        storyCtx.strokeStyle = 'rgba(98, 64, 22, .32)';
+        storyCtx.lineWidth = 2;
+        for (let x = -20; x < width; x += 58) {
+            storyCtx.beginPath();
+            storyCtx.moveTo(x, 338);
+            storyCtx.quadraticCurveTo(x + 26, 370, x + 72, 416);
+            storyCtx.stroke();
+        }
+    }
+
+    function drawStoryGuide(storyCtx, x, y) {
+        storyCtx.save();
+        storyCtx.translate(x, y);
+        storyCtx.fillStyle = '#f0c38f';
+        storyCtx.beginPath();
+        storyCtx.arc(0, -42, 22, 0, Math.PI * 2);
+        storyCtx.fill();
+        storyCtx.fillStyle = '#2e6f5b';
+        storyCtx.fillRect(-26, -20, 52, 58);
+        storyCtx.fillStyle = '#f7e4bd';
+        storyCtx.fillRect(-18, -78, 36, 18);
+        storyCtx.fillStyle = '#4c3528';
+        storyCtx.fillRect(-8, -80, 16, 6);
+        storyCtx.strokeStyle = '#4c3528';
+        storyCtx.lineWidth = 4;
+        storyCtx.beginPath();
+        storyCtx.moveTo(18, -10);
+        storyCtx.lineTo(52, 20);
+        storyCtx.stroke();
+        storyCtx.restore();
+    }
+
+    function drawStoryDog(storyCtx, x, y) {
+        storyCtx.save();
+        storyCtx.translate(x, y);
+        storyCtx.fillStyle = '#182027';
+        storyCtx.beginPath();
+        storyCtx.ellipse(0, 0, 54, 28, 0, 0, Math.PI * 2);
+        storyCtx.fill();
+        storyCtx.beginPath();
+        storyCtx.arc(48, -22, 26, 0, Math.PI * 2);
+        storyCtx.fill();
+        storyCtx.fillStyle = '#f6c04f';
+        storyCtx.fillRect(16, -28, 32, 10);
+        storyCtx.fillStyle = '#fff';
+        storyCtx.beginPath();
+        storyCtx.arc(54, -28, 5, 0, Math.PI * 2);
+        storyCtx.fill();
+        storyCtx.fillStyle = '#101010';
+        storyCtx.beginPath();
+        storyCtx.arc(56, -27, 2, 0, Math.PI * 2);
+        storyCtx.fill();
+        storyCtx.strokeStyle = '#182027';
+        storyCtx.lineWidth = 10;
+        storyCtx.beginPath();
+        storyCtx.moveTo(-48, -12);
+        storyCtx.quadraticCurveTo(-86, -48, -58, -76);
+        storyCtx.stroke();
+        storyCtx.restore();
+    }
+
+    function drawStoryScroll(storyCtx, x, y) {
+        storyCtx.save();
+        storyCtx.translate(x, y);
+        storyCtx.fillStyle = '#fff5cf';
+        storyCtx.strokeStyle = '#9a6934';
+        storyCtx.lineWidth = 4;
+        storyCtx.beginPath();
+        storyCtx.roundRect(0, -36, 210, 72, 12);
+        storyCtx.fill();
+        storyCtx.stroke();
+        storyCtx.fillStyle = '#4f3b2c';
+        storyCtx.font = '700 22px "Noto Sans TC", sans-serif';
+        storyCtx.fillText('𠊎 試 著 這 題', 24, -4);
+        storyCtx.fillText('數 學 還 難 哦', 24, 25);
+        storyCtx.restore();
+    }
+
     // 2. Event Listeners Setup
     function setupEventListeners() {
         // Dialect Buttons Selection
@@ -417,8 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 playSfx('click');
             });
         });
-
-        // Audio Controls
+// Audio Controls
         playAudioBtn.addEventListener('click', () => {
             playSfx('click');
             toggleAudio();
@@ -540,12 +782,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appHeader) appHeader.classList.remove('hidden');
         correctCount = 0;
         totalScore = 0;
+        questionRecords = [];
         currentQuestionIndex = 0;
         totalElapsedSeconds = 0;
         gameStartTime = new Date();
         
         resultsCard.classList.add('hidden');
         gameCard.classList.remove('hidden');
+        if (introCard) introCard.classList.add('hidden');
+        if (storyCard) storyCard.classList.add('hidden');
         gameCard.classList.remove('fade-out');
         
         shouldAutoTransition = false;
@@ -565,6 +810,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const q = questions[index];
         isAnswerSubmitted = false;
         questionScore = 10; // Start with 10 points
+        questionAttempts = 0;
+        questionUsedHelp = false;
+        questionHelpType = '';
+        lastUserSequence = [];
         questionStartTime = new Date();
         shouldAutoTransition = false;
         flashTimer = 0;
@@ -574,6 +823,8 @@ document.addEventListener('DOMContentLoaded', () => {
             inlineMsg.textContent = '';
             inlineMsg.classList.add('hidden');
         }
+
+        if (bokongAssist) bokongAssist.classList.add('hidden');
 
         // Reset Canvas Position
         resetCanvasForQuestion(q);
@@ -607,9 +858,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset Hint to Chinese translation sentence with punctuation
         hintText.textContent = getChineseSentenceWithPunctuation(q);
         hintText.classList.add('hidden');
-        hintBtn.innerHTML = '<i class="fa-regular fa-lightbulb"></i> 顯示中文翻譯提示';
-        hintBtn.classList.remove('btn-secondary');
+        hintText.style.color = '';
+        hintBtn.classList.remove('is-flipped', 'btn-secondary');
         hintBtn.classList.add('btn-primary');
+        hintBtn.setAttribute('aria-pressed', 'false');
+        hintBtn.innerHTML = `
+            <span class="hint-card-face hint-card-front"><i class="fa-regular fa-lightbulb"></i> 顯示中文翻譯提示</span>
+            <span class="hint-card-face hint-card-back">${hintText.textContent}</span>
+        `;
 
         // Enable Po Kong Help skip button
         helpBgBtn.disabled = false;
@@ -888,17 +1144,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 7. Toggle Hint
     function toggleHint() {
-        if (hintText.classList.contains('hidden')) {
-            hintText.classList.remove('hidden');
-            hintBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> 隱藏中文翻譯提示';
-            hintBtn.classList.remove('btn-primary');
-            hintBtn.classList.add('btn-secondary');
-        } else {
-            hintText.classList.add('hidden');
-            hintBtn.innerHTML = '<i class="fa-regular fa-lightbulb"></i> 顯示中文翻譯提示';
-            hintBtn.classList.remove('btn-secondary');
-            hintBtn.classList.add('btn-primary');
-        }
+        const isOpen = hintBtn.classList.toggle('is-flipped');
+        hintBtn.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
+        hintText.classList.add('hidden');
+        hintText.style.color = '';
+        hintBtn.classList.toggle('btn-secondary', isOpen);
+        hintBtn.classList.toggle('btn-primary', !isOpen);
     }
 
     // 8. Submit & Evaluate Answer
@@ -918,6 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Build User Sequence
         const userSequenceText = selectedBlocks.map(b => b.text);
+        lastUserSequence = [...userSequenceText];
         
         // Evaluate against Hakka characters
         const currentCorrectHakkaSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
@@ -931,6 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             playSfx('next');
             correctCount++;
             totalScore += questionScore;
+            recordQuestionOutcome('correct', questionScore);
             scoreDisplay.textContent = `得分: ${totalScore}`;
             
             // Bridge cross animation
@@ -941,6 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             playSfx('wrong');
             // Deduct score for wrong attempt
+            questionAttempts++;
             questionScore = Math.max(0, questionScore - 2);
             
             // Calculate where the wrong bridge breaks
@@ -970,19 +1224,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showInlineFeedback(text, color) {
         const inlineMsg = document.getElementById('inline-feedback-msg');
-        if (!inlineMsg || !hintText) return;
+        if (!inlineMsg) return;
 
-        const isHintOpen = !hintText.classList.contains('hidden');
-        const targetMsg = isHintOpen ? hintText : inlineMsg;
-        const normalHintText = getChineseSentenceWithPunctuation(questions[currentQuestionIndex]);
-        
-        inlineMsg.classList.add('hidden');
-        hintText.textContent = isHintOpen ? text : normalHintText;
-        hintText.style.color = isHintOpen ? color : '';
-
-        targetMsg.textContent = text;
-        targetMsg.style.color = color;
-        targetMsg.classList.remove('hidden');
+        inlineMsg.textContent = text;
+        inlineMsg.style.color = color;
+        inlineMsg.classList.remove('hidden');
         
         // Clear any existing timeout
         if (inlineFeedbackTimeout) {
@@ -992,12 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide after 2 seconds for normal wrong answers
         if (text.includes("答錯了")) {
             inlineFeedbackTimeout = setTimeout(() => {
-                targetMsg.classList.add('hidden');
-                if (isHintOpen) {
-                    hintText.textContent = normalHintText;
-                    hintText.style.color = '';
-                    hintText.classList.remove('hidden');
-                }
+                inlineMsg.classList.add('hidden');
             }, 2000);
         }
     }
@@ -1011,7 +1252,12 @@ document.addEventListener('DOMContentLoaded', () => {
         helpBgBtn.disabled = true;
         
         // This question score is 0
+        questionUsedHelp = true;
+        questionHelpType = 'manual';
         questionScore = 0;
+        lastUserSequence = selectedBlocks.map(b => b.text);
+        recordQuestionOutcome('manual-help', 0);
+        if (bokongAssist) bokongAssist.classList.remove('hidden');
         
         // Transparent bridge appears
         isBridgeTransparent = true;
@@ -1052,6 +1298,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }, fadeDuration);
     }
 
+    function recordQuestionOutcome(status, earnedScore) {
+        const q = questions[currentQuestionIndex];
+        if (!q || questionRecords[currentQuestionIndex]) return;
+        const correctSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
+        questionRecords[currentQuestionIndex] = {
+            index: currentQuestionIndex + 1,
+            hakka: q.hakka_hanji || correctSequence.join(''),
+            translation: getChineseSentenceWithPunctuation(q),
+            audioUrl: q.audio_url,
+            userSequence: [...lastUserSequence],
+            correctSequence: [...correctSequence],
+            score: earnedScore,
+            wrongCount: questionAttempts,
+            helpUsed: questionUsedHelp,
+            helpType: questionHelpType,
+            status
+        };
+    }
+
+    function getStarResult(score) {
+        if (score >= 100) return starResults[0];
+        if (score >= 80) return starResults[1];
+        if (score >= 60) return starResults[2];
+        if (score >= 40) return starResults[3];
+        return starResults[4];
+    }
+
+    function formatSequence(sequence) {
+        return sequence && sequence.length ? sequence.join(' → ') : '未放置字卡';
+    }
+
     // Check if arrays are equal
     function checkSequenceMatch(arr1, arr2) {
         if (arr1.length !== arr2.length) return false;
@@ -1073,63 +1350,81 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appHeader) appHeader.classList.add('hidden');
         gameCard.classList.add('hidden');
         resultsCard.classList.remove('hidden');
+        if (bokongAssist) bokongAssist.classList.add('hidden');
 
-        // Calculate time spent
-        const now = new Date();
-        const elapsed = Math.round((now - gameStartTime) / 1000);
-        
-        const accuracy = Math.round((correctCount / questions.length) * 100);
+        const elapsed = Math.round((new Date() - gameStartTime) / 1000);
+        const completedText = `${questions.length} / ${questions.length} 題`;
+        const star = getStarResult(totalScore);
+        const starMarks = '★'.repeat(star.stars) + '☆'.repeat(5 - star.stars);
 
-        resultScore.textContent = `${totalScore} 分`;
-        resultAccuracy.textContent = `${accuracy}%`;
+        resultScore.textContent = `${totalScore} / 100 分`;
+        resultAccuracy.textContent = completedText;
         resultTime.textContent = `${elapsed} 秒`;
 
-        // Update title badge based on score
-        const resultsParagraph = resultsCard.querySelector('p');
-        let titleBadge = "探路犬";
-        if (totalScore >= 100) titleBadge = "庄頭傳音神犬 🏆";
-        else if (totalScore >= 80) titleBadge = "伯公的得力金耳 🐕";
-        else if (totalScore >= 60) titleBadge = "聲音收集犬 🦴";
-        else if (totalScore >= 40) titleBadge = "迷糊的小神犬 🐾";
-        
-        resultsParagraph.innerHTML = `修煉完成！獲得稱號：<strong>${titleBadge}</strong><br>感謝你參與「阿黑的客字繪卷」客語聽力挑戰。`;
+        if (resultSummary) {
+            resultSummary.innerHTML = `獲得稱號：<strong>${star.title}</strong><br>${star.comment}`;
+        }
 
-        // Generate review list of questions
+        if (rankingSection) {
+            rankingSection.innerHTML = `
+                <div class="star-result">
+                    <div class="star-mark">${starMarks}</div>
+                    <div>
+                        <h3>${star.title}</h3>
+                        <p>${star.note}</p>
+                        <small>目前尚未接入正式排行榜百分比，星級先依分數示意；正式規則接入後會改以排名百分比判定。</small>
+                    </div>
+                </div>
+                <div class="ranking-table" aria-label="示意排行榜">
+                    <div class="ranking-row current"><span>1</span><strong>你</strong><em>${totalScore} 分</em><time>${elapsed} 秒</time></div>
+                    <div class="ranking-row muted"><span>2</span><strong>示意玩家 A</strong><em>100 分</em><time>138 秒</time></div>
+                    <div class="ranking-row muted"><span>3</span><strong>示意玩家 B</strong><em>98 分</em><time>152 秒</time></div>
+                </div>`;
+        }
+
         const reviewList = document.getElementById('review-list');
         reviewList.innerHTML = '';
-        
         questions.forEach((q, idx) => {
-            const item = document.createElement('div');
-            item.className = 'review-item';
-            
-            const info = document.createElement('div');
-            info.className = 'review-info';
-            
-            const hakka = document.createElement('span');
-            hakka.className = 'review-hakka';
-            hakka.textContent = `第 ${idx + 1} 題：${q.hakka_hanji}`;
-            
-            const translation = document.createElement('span');
-            translation.className = 'review-translation';
-            translation.textContent = `翻譯：${getChineseSentenceWithPunctuation(q)}`;
-            
-            info.appendChild(hakka);
-            info.appendChild(translation);
-            
+            const correctSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
+            const record = questionRecords[idx] || {
+                index: idx + 1,
+                hakka: q.hakka_hanji || correctSequence.join(''),
+                translation: getChineseSentenceWithPunctuation(q),
+                audioUrl: q.audio_url,
+                userSequence: [],
+                correctSequence,
+                score: 0,
+                wrongCount: 0,
+                helpUsed: false,
+                helpType: '',
+                status: 'unanswered'
+            };
+            const item = document.createElement('details');
+            item.className = 'review-item detailed-review';
+            if (idx === 0) item.open = true;
+            item.innerHTML = `
+                <summary>
+                    <span>第 ${idx + 1} 題</span>
+                    <strong>${record.score} 分</strong>
+                    <em>${record.helpUsed ? (record.helpType === 'auto' ? '伯公自動協助' : '求助伯公') : (record.status === 'correct' ? '答對' : '未完成')}</em>
+                </summary>
+                <div class="review-detail-grid">
+                    <p><b>你的排序</b>${formatSequence(record.userSequence)}</p>
+                    <p><b>正確排序</b>${formatSequence(record.correctSequence)}</p>
+                    <p><b>完整客語</b>${record.hakka}</p>
+                    <p><b>中文翻譯</b>${record.translation}</p>
+                    <p><b>錯誤次數</b>${record.wrongCount} 次</p>
+                    <p><b>求助狀態</b>${record.helpUsed ? (record.helpType === 'auto' ? '第 5 次錯誤後伯公協助' : '玩家主動求助伯公') : '未求助'}</p>
+                </div>`;
             const playBtn = document.createElement('button');
             playBtn.className = 'review-play-btn';
-            playBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-            playBtn.title = '播放音檔';
-            
-            playBtn.addEventListener('click', () => {
-                // Play this question's audio
-                const reviewAudio = new Audio(q.audio_url);
-                reviewAudio.play().catch(err => {
-                    console.error("播放音檔失敗:", err);
-                });
+            playBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> 播放音檔';
+            playBtn.type = 'button';
+            playBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                const reviewAudio = new Audio(record.audioUrl);
+                reviewAudio.play().catch(err => console.error('播放音檔失敗:', err));
             });
-            
-            item.appendChild(info);
             item.appendChild(playBtn);
             reviewList.appendChild(item);
         });
@@ -1167,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2D Canvas Engine Support Functions
     // ---------------------------------------------------------
     function setupCanvasEngine() {
-        ctx.imageSmoothingEnabled = false;
+        resizeRunnerCanvasForDisplay();
 
         // Start animation frame loop
         if (animationFrameId) {
@@ -1175,6 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function loop() {
+            resizeRunnerCanvasForDisplay();
             updateGamePhysics();
             drawGameGraphics();
             animationFrameId = requestAnimationFrame(loop);
@@ -1274,23 +1570,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         else if (dogState === 'transition_in') {
-            // Normal scroll
-            scrollX += activeSpeed;
-            skyScrollX += activeSpeed * 0.05;
-            mountainScrollX += activeSpeed * 0.15;
-            forestScrollX += activeSpeed * 0.4;
-            
-            // Move cliff closer
-            if (!hasCliffAppeared) {
-                cliffX -= activeSpeed;
-                if (cliffX <= cliffTargetX) {
-                    cliffX = cliffTargetX;
-                    hasCliffAppeared = true;
-                }
-            }
-            
-            // Dog runs in from left to 180
-            dogX += (180 - dogX) * 0.1;
+            // Let Ah-Hei enter first. Do not move the cliff or runway until the player can see the dog.
+            dogX += Math.max(7, (180 - dogX) * 0.16);
             dogY = groundY;
             
             // If dog reaches running position, change state to running
@@ -1324,7 +1605,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const q = questions[currentQuestionIndex];
                     if (questionScore <= 0) {
                         // Auto-pass: failed 5 times (or score reaches 0)
-                        showInlineFeedback("嘗試失敗次數過多，伯公顯聖為你架起橋梁！", 'var(--accent)');
+                        questionUsedHelp = true;
+                        questionHelpType = 'auto';
+                        recordQuestionOutcome('auto-help', 0);
+                        if (bokongAssist) bokongAssist.classList.remove('hidden');
+                        showInlineFeedback("伯公協助，本題 0 分。", 'var(--accent)');
                         
                         // 1. Fade out the card
                         const fadeOutDuration = 250 / speedMultiplier;
@@ -1575,10 +1860,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (isImageReady(runnerAssets.kuroRun) && state !== 'splashing') {
-            const dogScale = 0.65;
-            const dogWidth = 86 * dogScale;
-            const dogHeight = 62 * dogScale;
+        const kuroFrames = runnerAssets.kuroRunFrames || [];
+        const readyKuroFrames = kuroFrames.filter(isImageReady);
+        const kuroImage = readyKuroFrames.length > 0
+            ? readyKuroFrames[Math.floor(frame / 6) % readyKuroFrames.length]
+            : runnerAssets.kuroRun;
+
+        if (isImageReady(kuroImage) && state !== 'splashing') {
+            const sourceWidth = kuroImage.naturalWidth || 512;
+            const sourceHeight = kuroImage.naturalHeight || 512;
+            const runnerHeight = 96;
+            const runnerWidth = runnerHeight * (sourceWidth / sourceHeight);
             const runBob = (state === 'running' || state === 'crossing' || state === 'transition_out' || state === 'transition_in')
                 ? Math.sin(frame * 0.22) * 2
                 : 0;
@@ -1590,7 +1882,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.rotate(frame * 0.1);
             }
 
-            ctx.drawImage(runnerAssets.kuroRun, -31, -dogHeight + 5, dogWidth, dogHeight);
+            ctx.drawImage(kuroImage, -runnerWidth * 0.5, -runnerHeight + 29, runnerWidth, runnerHeight);
             ctx.restore();
             return;
         }
@@ -1897,3 +2189,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     init();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

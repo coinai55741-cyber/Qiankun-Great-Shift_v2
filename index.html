@@ -5,13 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>阿黑的客字繪卷 | 客語聽力排列遊戲</title>
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom Style -->
-    <link rel="stylesheet" href="style.css?v=20260723-2">
+    <link rel="stylesheet" href="style.css?v=20260923-hint-portrait1">
 </head>
 <body>
     <!-- Background Elements -->
@@ -21,6 +17,7 @@
     <div id="app" class="app-container" v-cloak>
         <!-- Header -->
         <header class="app-header hidden">
+            <button class="lobby-back-button" type="button" aria-label="返回列表"><span class="back-icon" aria-hidden="true">↩</span>返回列表</button>
             <div class="header-logo">
                 <i class="fa-solid fa-arrows-spin logo-icon"></i>
                 <div class="logo-text">
@@ -38,15 +35,35 @@
             </div>
         </header>
 
+        <!-- Opening Story Card -->
+        <section class="story-card" id="story-card" aria-label="前導故事">
+            <div class="story-scene">
+                <canvas id="story-canvas" width="960" height="420"></canvas>
+                <div class="story-dialogue gal-dialogue">
+                    <div class="story-speaker gal-speaker">
+                        <div class="story-avatar-wrap">
+                            <img id="story-avatar-img" src="data/dummy/Codex_角色_透明背景.gif" alt="說話者頭像">
+                        </div>
+                        <span class="story-speaker-name" id="story-speaker">指導員</span>
+                    </div>
+                    <p class="story-copy" id="story-line">阿黑啊，你現在到了小明家附近的田埂對吧？繪卷有感應到小明今天在發什麼牢騷嗎？</p>
+                    <div class="story-actions">
+                        <button class="btn btn-secondary" id="story-skip-btn">略過故事</button>
+                        <button class="btn btn-primary" id="story-next-btn">繼續 <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Intro Card -->
-        <div class="game-card" id="intro-card">
+        <div class="game-card hidden" id="intro-card">
             <div class="intro-header">
                 <i class="fa-solid fa-scroll intro-icon"></i>
                 <h2>阿黑的客字繪卷</h2>
             </div>
             
             <div class="intro-story">
-                <p>為了幫重聽的伯公收集庄頭的日常談笑，小神狗阿黑帶著神奇的「客字繪卷」出發囉！由於剛上任還不熟悉流程，需要指導員你來指引正確的客語字磚，幫助阿黑流暢地跑過懸崖、將聲音「拓印」進繪卷中，帶回去給伯公讀吧！</p>
+                <p>伯公想收集庄頭的日常談笑，實習小神狗阿黑帶著神奇的「客字繪卷」出發。請指導員仔細聽語音，把散落的客語字磚排回正確順序，讓阿黑順利過橋，把聲音拓印進繪卷裡。</p>
                 <div class="warning-box">
                     ⚠️ 請指導員在出發前，先至自學專區 I~V 級的聽力教材預習喔！
                 </div>
@@ -57,8 +74,8 @@
                 <ol>
                     <li><strong>仔細聆聽：</strong>仔細聆聽風中傳來的社區客語語音。</li>
                     <li><strong>搭建橋墩：</strong>在阿黑抵達斷崖前，將下方的客語字磚依正確語音順序排列好。</li>
-                    <li><strong>架橋通關：</strong>排對了，阿黑就會順利飛奔過橋；若排錯則會「噗通」落水、回到起點重試！（每題最高 10 分，最多可重試 5 次）</li>
-                    <li><strong>求助伯公：</strong>遇到難題可點擊【求助伯公】召喚仙橋安全過河（本題以 0 分結算）。若連續答錯 5 次，慈祥的伯公依然會主動施展神力幫忙架橋，讓阿黑順利通過喔！</li>
+                    <li><strong>架橋通關：</strong>每題最高 10 分，答錯一次扣 2 分並回到起點重試；第 5 次仍錯時，伯公會自動協助過橋，本題 0 分。</li>
+                    <li><strong>求助伯公：</strong>遇到難題可點擊【求助伯公】召喚透明仙橋安全過河，本題以 0 分結算。</li>
                 </ol>
             </div>
             
@@ -83,6 +100,7 @@
 
         <!-- Main Game Area -->
         <main class="game-card hidden" id="game-card">
+            <img class="bokong-assist hidden" id="bokong-assist" src="data/image/S2_m3_bokon1.png" alt="伯公協助架橋">
             <!-- Progress & Score -->
             <div class="progress-section">
                 <div class="progress-info">
@@ -145,13 +163,13 @@
                 </div>
 
                 <div class="workbench-actions">
-                    <button class="btn btn-primary action-submit" id="submit-btn" disabled>
+                    <button class="btn btn-primary action-submit" id="submit-btn" aria-label="搭建" disabled>
                         <i class="fa-solid fa-bridge"></i> 搭建
                     </button>
-                    <button class="btn btn-danger" id="clear-btn" disabled>
+                    <button class="btn btn-danger" id="clear-btn" aria-label="重新排列" disabled>
                         <i class="fa-solid fa-shuffle"></i> 重新排列
                     </button>
-                    <button class="btn btn-warning" id="help-bg-btn" title="求助伯公 (跳過此題)">
+                    <button class="btn btn-warning" id="help-bg-btn" title="求助伯公 (跳過此題)" aria-label="求助伯公">
                         <i class="fa-solid fa-hands-praying"></i> 求助伯公
                     </button>
                     <div class="hint-section">
@@ -192,22 +210,24 @@
         <div class="results-card hidden" id="results-card">
             <i class="fa-solid fa-trophy trophy-icon"></i>
             <h2>挑戰完成！</h2>
-            <p>感謝你參與「阿黑的客字繪卷」客語聽力挑戰</p>
+            <p id="result-summary">感謝你參與「阿黑的客字繪卷」客語聽力挑戰</p>
 
             <div class="stats-grid">
                 <div class="stat-box">
                     <span class="stat-val" id="result-score">8 / 10</span>
-                    <span class="stat-label">答對題數</span>
+                    <span class="stat-label">總得分</span>
                 </div>
                 <div class="stat-box">
                     <span class="stat-val" id="result-accuracy">80%</span>
-                    <span class="stat-label">正確率</span>
+                    <span class="stat-label">完成狀態</span>
                 </div>
                 <div class="stat-box">
                     <span class="stat-val" id="result-time">120 秒</span>
-                    <span class="stat-label">總耗時</span>
+                    <span class="stat-label">完成時間</span>
                 </div>
             </div>
+
+            <div class="ranking-section" id="ranking-section"></div>
 
             <div class="review-section">
                 <h3>本關解答與音檔回顧</h3>
@@ -227,10 +247,35 @@
     <audio id="game-audio" preload="auto"></audio>
 
     <!-- Vue 3 shell: Vue owns the rendered interface, game engine stays in app.js -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="vue-app.js?v=20260723-2"></script>
+    <script src="vue-app.js?v=20260923-offline-transition1"></script>
     <!-- Game data and existing interaction engine -->
     <script src="questions_data.js"></script>
-    <script src="app.js?v=20260723-2"></script>
+    <script src="app.js?v=20260923-offline-transition1"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

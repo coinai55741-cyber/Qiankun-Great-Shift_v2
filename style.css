@@ -3,15 +3,6 @@
    Design: Hakka Modern Forest / Glassmorphism
    ========================================================================== */
 
-@font-face {
-    font-family: 'twhei-s';
-    src: url('https://dn9mvjhbyvvpc.cloudfront.net/fonts/twhei-s.woff2') format('woff2'),
-         url('https://dn9mvjhbyvvpc.cloudfront.net/fonts/twhei-s.woff') format('woff'),
-         url('https://dn9mvjhbyvvpc.cloudfront.net/fonts/twhei-s.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 /* Global Variables */
 :root {
     --bg-dark-1: #0A1C13;
@@ -1092,8 +1083,9 @@ body::before {
 
 .gameplay-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.65fr) minmax(330px, .72fr);
-    gap: 20px;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 62vh) minmax(0, 38vh);
+    gap: 0;
     align-items: stretch;
 }
 
@@ -1329,8 +1321,7 @@ body::before {
 
 .hint-text.hidden,
 .inline-feedback-msg.hidden {
-    display: block !important;
-    visibility: hidden;
+    display: none;
 }
 
 .btn { border-radius: 11px; }
@@ -1655,8 +1646,7 @@ body::before {
 
 .hint-text.hidden,
 .inline-feedback-msg.hidden {
-    display: block;
-    visibility: hidden;
+    display: none;
 }
 
 .feedback-panel { grid-column: 1 / -1; }
@@ -1682,23 +1672,6 @@ body::before {
         border-top: 1px solid #dfcfab;
     }
     .hint-section { grid-column: 1 / -1; }
-}
-
-@media (orientation: portrait) and (max-width: 900px) {
-    body::after {
-        content: '建議將裝置旋轉為橫向後開始遊玩';
-        position: fixed;
-        z-index: 9999;
-        inset: 0;
-        display: grid;
-        place-items: center;
-        padding: 32px;
-        color: #fffaf0;
-        background: #173c36;
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 700;
-    }
 }
 
 /* Selection Controls for Dialect, Level and Word Count */
@@ -1758,5 +1731,2371 @@ body::before {
 @media (max-width: 600px) {
     .dialect-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* 2026-09-23 Story and Results Implementation */
+.story-card {
+    width: min(1440px, calc(100vw - 40px));
+    min-height: min(820px, calc(100vh - 60px));
+    border-radius: 18px;
+    overflow: hidden;
+    background: #bce9f5;
+    border: 1px solid #dec991;
+    box-shadow: 0 18px 40px rgba(9, 34, 31, .32);
+    position: relative;
+}
+
+.story-scene {
+    position: relative;
+    width: 100%;
+    min-height: min(820px, calc(100vh - 60px));
+}
+
+#story-canvas {
+    width: 100%;
+    height: min(820px, calc(100vh - 60px));
+    display: block;
+    object-fit: cover;
+}
+
+.story-dialogue {
+    position: absolute;
+    left: clamp(24px, 6vw, 96px);
+    right: clamp(24px, 6vw, 96px);
+    bottom: clamp(24px, 5vh, 64px);
+    padding: 22px 26px;
+    border-radius: 16px;
+    color: #473528;
+    background: rgba(255, 250, 240, .96);
+    border: 1px solid #d8bf80;
+    box-shadow: 0 12px 26px rgba(86, 59, 32, .18);
+}
+
+.story-speaker {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    color: #fffaf0;
+    background: #2f6f5b;
+    font-weight: 800;
+}
+
+.story-dialogue p {
+    min-height: 64px;
+    color: #473528;
+    font-size: clamp(1.1rem, 2vw, 1.65rem);
+    line-height: 1.65;
+    font-weight: 700;
+}
+
+.story-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.bokong-assist {
+    position: absolute;
+    z-index: 10;
+    right: clamp(22px, 4vw, 58px);
+    top: clamp(80px, 12vh, 132px);
+    width: clamp(170px, 18vw, 270px);
+    pointer-events: none;
+    filter: drop-shadow(0 12px 18px rgba(79, 51, 17, .25));
+    animation: bokongFloat 2.4s ease-in-out infinite;
+}
+
+@keyframes bokongFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.results-card {
+    width: min(1120px, calc(100vw - 40px));
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.ranking-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+    gap: 16px;
+}
+
+.star-result,
+.ranking-table,
+.detailed-review {
+    border: 1px solid #dec991;
+    border-radius: 14px;
+    background: rgba(255, 250, 240, .94);
+    color: #4b382a;
+}
+
+.star-result {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    padding: 18px;
+}
+
+.star-mark {
+    color: #d89416;
+    font-size: 2rem;
+    white-space: nowrap;
+}
+
+.star-result h3 { margin: 0 0 6px; font-size: 1.35rem; }
+.star-result p { margin: 0 0 8px; color: #4b382a; }
+.star-result small { color: #7a6049; line-height: 1.5; }
+
+.ranking-table {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+}
+
+.ranking-row {
+    display: grid;
+    grid-template-columns: 34px 1fr 82px 70px;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fffdf7;
+}
+
+.ranking-row.current {
+    color: #fffaf0;
+    background: #2f6f5b;
+}
+
+.ranking-row.muted { opacity: .72; }
+.ranking-row em,
+.ranking-row time { font-style: normal; text-align: right; }
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detailed-review {
+    padding: 0;
+    overflow: hidden;
+}
+
+.detailed-review summary {
+    display: grid;
+    grid-template-columns: 90px 90px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: #4b382a;
+    background: #fff7df;
+    font-weight: 800;
+}
+
+.detailed-review summary::marker { content: ''; }
+.detailed-review summary em { font-style: normal; color: #2f6f5b; }
+
+.review-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px 16px;
+}
+
+.review-detail-grid p {
+    margin: 0;
+    padding: 10px;
+    border-radius: 10px;
+    background: #fffdf7;
+    color: #4b382a;
+    line-height: 1.55;
+}
+
+.review-detail-grid b {
+    display: block;
+    margin-bottom: 4px;
+    color: #9a3d2e;
+}
+
+.detailed-review .review-play-btn {
+    margin: 0 16px 16px;
+    width: auto;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 9px;
+    color: #fffaf0;
+    background: #2f6f5b;
+    border: 0;
+    font-family: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+@media (max-width: 860px) {
+    .ranking-section,
+    .review-detail-grid { grid-template-columns: 1fr; }
+    .story-dialogue { left: 14px; right: 14px; bottom: 14px; }
+    .story-actions { flex-direction: column; }
+}
+
+/* Gameplay fullscreen layout: default game state is not wrapped in a white card */
+body:has(#game-card:not(.hidden)) {
+    width: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: block;
+    background: #86e2eb;
+}
+
+body:has(#game-card:not(.hidden)) .bg-glow {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) > #app.app-container {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: block;
+    overflow: hidden;
+    background: #86e2eb;
+    transform: none;
+}
+
+body:has(#game-card:not(.hidden)) .app-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    width: 100vw;
+    height: 92px;
+    min-height: 92px;
+    margin: 0;
+    padding: 0;
+    display: block;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    filter: none;
+    z-index: 60;
+    pointer-events: none;
+}
+
+body:has(#game-card:not(.hidden)) .app-header::before,
+body:has(#game-card:not(.hidden)) .app-header::after {
+    content: none;
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .header-logo {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .lobby-back-button {
+    position: absolute;
+    top: 18px;
+    left: 24px;
+    height: 46px;
+    min-width: 126px;
+    padding: 0 18px 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, .76);
+    border-radius: 0 0 18px 0;
+    background: rgba(255, 255, 255, .72);
+    color: #2d4f45;
+    font-size: .92rem;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(78, 55, 31, .12);
+    pointer-events: auto;
+}
+
+body:has(#game-card:not(.hidden)) .lobby-back-button img {
+    width: 24px;
+    height: 24px;
+}
+
+body:has(#game-card:not(.hidden)) .header-status {
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    pointer-events: auto;
+}
+
+body:has(#game-card:not(.hidden)) .speed-control {
+    height: 54px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .72);
+    box-shadow: 0 8px 18px rgba(31, 65, 57, .18);
+}
+
+body:has(#game-card:not(.hidden)) .speed-btn {
+    min-width: 74px;
+    height: 46px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-size: 1.08rem;
+    color: #122927;
+}
+
+body:has(#game-card:not(.hidden)) .speed-btn.active {
+    color: #fff;
+    background: #299848;
+}
+
+body:has(#game-card:not(.hidden)) .badge-dialect {
+    min-height: 54px;
+    padding: 0 30px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    color: #fff;
+    background: #104b43;
+    font-size: clamp(.82rem, .95vw, 1rem);
+    line-height: 1.15;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(31, 65, 57, .2);
+}
+
+body:has(#game-card:not(.hidden)) .badge-level {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) #game-card {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    overflow: hidden;
+    display: block;
+}
+
+body:has(#game-card:not(.hidden)) #game-card::before {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .progress-section {
+    position: fixed;
+    top: 38px;
+    left: 360px;
+    right: 520px;
+    height: 28px;
+    display: grid;
+    grid-template-columns: auto auto minmax(220px, 1fr);
+    align-items: center;
+    gap: 22px;
+    padding: 0;
+    z-index: 65;
+    pointer-events: none;
+}
+
+body:has(#game-card:not(.hidden)) .progress-info {
+    display: contents;
+    color: #051b1a;
+    font-size: 1.02rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+body:has(#game-card:not(.hidden)) #score-display {
+    color: #e5281d;
+}
+
+body:has(#game-card:not(.hidden)) .progress-bar-container {
+    height: 12px;
+    min-width: 220px;
+    border: 1px solid rgba(119, 92, 48, .42);
+    border-radius: 999px;
+    background: rgba(255, 246, 218, .8);
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #24785e, #61aa71);
+}
+
+body:has(#game-card:not(.hidden)) #game-card > .gameplay-layout {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 62vh) minmax(0, 38vh);
+    gap: 0;
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) .mission-stage,
+body:has(#game-card:not(.hidden)) .canvas-section {
+    min-height: 0;
+    height: 62vh;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) #runner-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+    border-radius: 0;
+}
+
+body:has(#game-card:not(.hidden)) .mission-panel {
+    height: 38vh;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    grid-template-areas: 'main actions';
+    gap: 32px;
+    padding: 26px 54px 30px;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(180deg, rgba(255, 250, 237, .98), rgba(245, 232, 203, .98));
+    box-shadow: 0 -5px 18px rgba(95, 73, 38, .12);
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) .workbench-main {
+    grid-area: main;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+        'audio answer'
+        'audio cards';
+    gap: 8px 30px;
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) .audio-section {
+    grid-area: audio;
+    align-self: center;
+    justify-self: center;
+    width: 220px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+}
+
+body:has(#game-card:not(.hidden)) .audio-section::before {
+    content: '';
+    position: absolute;
+    width: 156px;
+    height: 156px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(241, 210, 133, .9), rgba(241, 210, 133, 0) 68%);
+    transform: translateY(-8px);
+    z-index: -1;
+}
+
+body:has(#game-card:not(.hidden)) .audio-btn {
+    width: 132px;
+    height: 132px;
+    flex-basis: 132px;
+    border: 8px solid #d8c78b;
+    border-radius: 50%;
+    background: #087153;
+    color: #fff;
+    font-size: 3rem;
+    box-shadow: 0 12px 24px rgba(10, 73, 53, .28);
+}
+
+body:has(#game-card:not(.hidden)) .audio-info {
+    color: #0f1d17;
+    text-align: center;
+}
+
+body:has(#game-card:not(.hidden)) .audio-info .panel-kicker,
+body:has(#game-card:not(.hidden)) .audio-info p,
+body:has(#game-card:not(.hidden)) .audio-info small,
+body:has(#game-card:not(.hidden)) .hint-text,
+body:has(#game-card:not(.hidden)) .inline-feedback-msg {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .audio-info h3 {
+    margin: 0;
+    color: #151d18;
+    font-size: 0;
+    line-height: 1;
+    font-weight: 900;
+}
+
+body:has(#game-card:not(.hidden)) .audio-info h3::before {
+    content: '播放語音';
+    display: block;
+    font-size: clamp(.92rem, 1.15vw, 1.08rem);
+    line-height: 1.08;
+}
+
+body:has(#game-card:not(.hidden)) .workspace-section,
+body:has(#game-card:not(.hidden)) .candidates-section {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+body:has(#game-card:not(.hidden)) .workspace-section { grid-area: answer; }
+body:has(#game-card:not(.hidden)) .candidates-section { grid-area: cards; }
+
+body:has(#game-card:not(.hidden)) .section-title-row {
+    min-height: 34px;
+    margin: 0 0 8px;
+    justify-content: center;
+}
+
+body:has(#game-card:not(.hidden)) .section-title-row h4 {
+    min-width: 166px;
+    padding: 7px 20px;
+    border-radius: 999px;
+    background: #ead5aa;
+    color: #111;
+    text-align: center;
+    font-size: clamp(.82rem, .95vw, .96rem);
+    line-height: 1.08;
+    font-weight: 900;
+}
+
+body:has(#game-card:not(.hidden)) .section-title-row h4 span,
+body:has(#game-card:not(.hidden)) .section-title-row small {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .answer-container {
+    min-height: 78px;
+    padding: 10px 18px;
+    border: 2px dashed #b99b64;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .5);
+    box-shadow: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) .answer-container:empty::before,
+body:has(#game-card:not(.hidden)) .answer-container .empty-state {
+    content: '從右側挑選字卡，依聽到的順序搭橋';
+    color: #7b6d5d;
+    font-size: clamp(.76rem, .9vw, .92rem);
+    font-weight: 800;
+    line-height: 1.18;
+    text-align: center;
+}
+
+body:has(#game-card:not(.hidden)) .candidates-container {
+    min-height: 90px;
+    padding: 6px 10px 10px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+body:has(#game-card:not(.hidden)) .word-block {
+    min-width: 66px;
+    min-height: 66px;
+    padding: 6px 14px;
+    border: 2px solid #bf8149;
+    border-radius: 10px;
+    background: #fffaf0;
+    color: #111;
+    font-family: 'twhei-s', 'Noto Sans TC', sans-serif;
+    font-size: clamp(1.32rem, min(2vw, 3.2vh), 1.82rem);
+    line-height: 1;
+    font-weight: 900;
+    box-shadow: 0 5px 0 #9a6636, 0 10px 18px rgba(91, 62, 28, .2);
+}
+
+body:has(#game-card:not(.hidden)) .word-block::before {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .workbench-actions {
+    grid-area: actions;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    align-content: start;
+    padding: 0;
+    border-left: 0;
+}
+
+body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+body:has(#game-card:not(.hidden)) .workbench-actions .action-submit,
+body:has(#game-card:not(.hidden)) .hint-section .btn {
+    width: 100%;
+    min-height: 72px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: clamp(.94rem, 1.12vw, 1.08rem);
+    line-height: 1.05;
+    font-weight: 900;
+}
+
+body:has(#game-card:not(.hidden)) .hint-section {
+    min-height: 40px;
+    display: block;
+}
+/* Story fullscreen layout: opening dialogue uses the same full-browser stage */
+body:has(#story-card:not(.hidden)) {
+    width: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: block;
+    background: #86e2eb;
+}
+
+body:has(#story-card:not(.hidden)) .bg-glow {
+    display: none;
+}
+
+body:has(#story-card:not(.hidden)) > #app.app-container {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: block;
+    overflow: hidden;
+    background: #86e2eb;
+    transform: none;
+}
+
+body:has(#story-card:not(.hidden)) .app-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    width: 100vw;
+    height: 92px;
+    min-height: 92px;
+    margin: 0;
+    padding: 0;
+    display: block;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    filter: none;
+    z-index: 60;
+    pointer-events: none;
+}
+
+body:has(#story-card:not(.hidden)) .app-header::before,
+body:has(#story-card:not(.hidden)) .app-header::after {
+    content: none;
+    display: none;
+}
+
+body:has(#story-card:not(.hidden)) .header-logo,
+body:has(#story-card:not(.hidden)) .badge-level {
+    display: none;
+}
+
+body:has(#story-card:not(.hidden)) .lobby-back-button {
+    position: absolute;
+    top: 18px;
+    left: 24px;
+    height: 46px;
+    min-width: 126px;
+    padding: 0 18px 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, .76);
+    border-radius: 0 0 18px 0;
+    background: rgba(255, 255, 255, .72);
+    color: #2d4f45;
+    font-size: .92rem;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(78, 55, 31, .12);
+    pointer-events: auto;
+}
+
+body:has(#story-card:not(.hidden)) .lobby-back-button img {
+    width: 24px;
+    height: 24px;
+}
+
+body:has(#story-card:not(.hidden)) .header-status {
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    pointer-events: auto;
+}
+
+body:has(#story-card:not(.hidden)) .speed-control {
+    height: 54px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .72);
+    box-shadow: 0 8px 18px rgba(31, 65, 57, .18);
+}
+
+body:has(#story-card:not(.hidden)) .speed-btn {
+    min-width: 74px;
+    height: 46px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-size: 1.08rem;
+    color: #122927;
+}
+
+body:has(#story-card:not(.hidden)) .speed-btn.active {
+    color: #fff;
+    background: #299848;
+}
+
+body:has(#story-card:not(.hidden)) .badge-dialect {
+    min-height: 54px;
+    padding: 0 30px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    color: #fff;
+    background: #104b43;
+    font-size: 1.02rem;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(31, 65, 57, .2);
+}
+
+body:has(#story-card:not(.hidden)) #story-card.story-card {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #86e2eb;
+    overflow: hidden;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-scene {
+    position: absolute;
+    inset: 0 0 34vh 0;
+    width: 100vw;
+    height: 66vh;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+body:has(#story-card:not(.hidden)) #story-card #story-canvas {
+    width: 100vw;
+    height: 66vh;
+    display: block;
+    border: 0;
+    border-radius: 0;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-scene::before,
+body:has(#story-card:not(.hidden)) #story-card .story-scene::after {
+    content: none;
+    display: none;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-dialogue {
+        position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    min-height: 34vh;
+    max-height: 34vh;
+    margin: 0;
+    padding: 28px 42px 26px;
+    border: 0;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(180deg, rgba(255, 252, 244, .98), rgba(255, 247, 225, .98));
+    color: #2c251c;
+    box-shadow: 0 -12px 34px rgba(76, 55, 26, .15);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    z-index: 20;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-speaker,
+body:has(#story-card:not(.hidden)) #story-card .story-speaker-name {
+    margin: 0 0 8px;
+    padding: 0;
+    color: #c46b13;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-avatar-wrap {
+    display: none;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-copy,
+body:has(#story-card:not(.hidden)) #story-card .story-dialogue p {
+    max-width: 74vw;
+    min-height: 0;
+    margin: 0;
+    color: #2c251c;
+    font-size: 1.08rem;
+    line-height: 1.55;
+    font-weight: 800;
+    text-shadow: none;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-actions {
+    position: absolute;
+    right: 42px;
+    bottom: 26px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 0;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-actions .btn,
+body:has(#story-card:not(.hidden)) #story-card .story-dialogue .btn {
+    min-height: 42px;
+    padding: 8px 20px;
+    border-radius: 12px;
+    font-size: .95rem;
+    font-weight: 900;
+}
+
+body:has(#story-card:not(.hidden)) #story-card #story-skip-btn {
+    background: transparent;
+    border: 0;
+    color: #4d9a55;
+    box-shadow: none;
+}
+
+/* ========================================================================== 
+   Clean landscape phone layout
+   One source of truth for story/game fullscreen UI. Keep this as the final
+   responsive block instead of stacking temporary overrides.
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 980px) {
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        min-width: 100vw;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #86e2eb;
+    }
+
+    body:has(#story-card:not(.hidden)),
+    body:has(#game-card:not(.hidden)) {
+        display: block;
+        align-items: stretch;
+        justify-content: stretch;
+    }
+
+    body:has(#story-card:not(.hidden)) .bg-glow,
+    body:has(#game-card:not(.hidden)) .bg-glow {
+        display: none;
+    }
+
+    body:has(#story-card:not(.hidden)) > #app.app-container,
+    body:has(#game-card:not(.hidden)) > #app.app-container {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        max-width: none;
+        height: 100vh;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: block;
+        overflow: hidden;
+        background: #86e2eb;
+        transform: none;
+    }
+
+    body:has(#story-card:not(.hidden)) .app-header,
+    body:has(#game-card:not(.hidden)) .app-header {
+        position: fixed;
+        inset: 0 0 auto 0;
+        width: 100vw;
+        height: 44px;
+        min-height: 44px;
+        margin: 0;
+        padding: 0;
+        display: block;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        filter: none;
+        z-index: 60;
+        pointer-events: none;
+    }
+
+    body:has(#story-card:not(.hidden)) .app-header::before,
+    body:has(#story-card:not(.hidden)) .app-header::after,
+    body:has(#game-card:not(.hidden)) .app-header::before,
+    body:has(#game-card:not(.hidden)) .app-header::after {
+        content: none;
+        display: none;
+    }
+
+    body:has(#story-card:not(.hidden)) .header-logo,
+    body:has(#game-card:not(.hidden)) .header-logo {
+        display: none;
+    }
+
+    body:has(#story-card:not(.hidden)) .lobby-back-button,
+    body:has(#game-card:not(.hidden)) .lobby-back-button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 36px;
+        min-width: 98px;
+        padding: 0 12px 0 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid rgba(255, 255, 255, .76);
+        border-radius: 0 0 14px 0;
+        background: rgba(255, 255, 255, .72);
+        color: #2d4f45;
+        font-size: clamp(.62rem, 1.35vw, .72rem);
+        line-height: 1.08;
+        font-weight: 900;
+        box-shadow: 0 5px 14px rgba(78, 55, 31, .12);
+        pointer-events: auto;
+    }
+
+    body:has(#story-card:not(.hidden)) .lobby-back-button img,
+    body:has(#game-card:not(.hidden)) .lobby-back-button img {
+        width: 18px;
+        height: 18px;
+    }
+
+    body:has(#story-card:not(.hidden)) .header-status,
+    body:has(#game-card:not(.hidden)) .header-status {
+        position: absolute;
+        top: 2px;
+        right: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        pointer-events: auto;
+    }
+
+    body:has(#story-card:not(.hidden)) .speed-control,
+    body:has(#game-card:not(.hidden)) .speed-control {
+        height: 40px;
+        padding: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .68);
+        box-shadow: 0 5px 12px rgba(31, 65, 57, .18);
+    }
+
+    body:has(#story-card:not(.hidden)) .speed-btn,
+    body:has(#game-card:not(.hidden)) .speed-btn {
+        min-width: 48px;
+        height: 34px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: .78rem;
+        color: #122927;
+    }
+
+    body:has(#story-card:not(.hidden)) .speed-btn.active,
+    body:has(#game-card:not(.hidden)) .speed-btn.active {
+        color: #fff;
+        background: #299848;
+    }
+
+    body:has(#story-card:not(.hidden)) .badge-dialect,
+    body:has(#game-card:not(.hidden)) .badge-dialect {
+        min-height: 38px;
+        padding: 0 18px;
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        color: #fff;
+        background: #104b43;
+        font-size: .78rem;
+        font-weight: 900;
+        box-shadow: 0 5px 12px rgba(31, 65, 57, .2);
+    }
+
+    body:has(#story-card:not(.hidden)) .badge-level,
+    body:has(#game-card:not(.hidden)) .badge-level {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) #game-card {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        max-width: none;
+        height: 100vh;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        overflow: hidden;
+        display: block;
+    }
+
+    body:has(#game-card:not(.hidden)) #game-card::before {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-section {
+        position: fixed;
+        top: 10px;
+        left: 178px;
+        right: 258px;
+        height: 24px;
+        display: grid;
+        grid-template-columns: auto auto minmax(90px, 1fr);
+        align-items: center;
+        gap: 10px;
+        padding: 0;
+        z-index: 65;
+        pointer-events: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-info {
+        display: contents;
+        color: #051b1a;
+        font-size: .72rem;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    body:has(#game-card:not(.hidden)) #score-display {
+        color: #e5281d;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-bar-container {
+        height: 7px;
+        min-width: 88px;
+        border: 1px solid rgba(119, 92, 48, .42);
+        border-radius: 999px;
+        background: rgba(255, 246, 218, .8);
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #24785e, #61aa71);
+    }
+
+    body:has(#game-card:not(.hidden)) #game-card > .gameplay-layout {
+        position: absolute;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 52vh) minmax(0, 48vh);
+        gap: 0;
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-stage {
+        min-height: 0;
+        height: 52vh;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .canvas-section {
+        width: 100%;
+        height: 52vh;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) #runner-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border: 0;
+        border-radius: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-panel {
+        height: 48vh;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 180px;
+        grid-template-areas: 'main actions';
+        gap: 16px;
+        padding: 14px 16px 12px;
+        border: 0;
+        border-radius: 0;
+        background: linear-gradient(180deg, rgba(255, 250, 237, .98), rgba(245, 232, 203, .98));
+        box-shadow: 0 -5px 18px rgba(95, 73, 38, .12);
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-main {
+        grid-area: main;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 122px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            'audio answer'
+            'audio cards';
+        gap: 4px 10px;
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section {
+        grid-area: audio;
+        align-self: center;
+        justify-self: center;
+        width: 104px;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        display: grid;
+        justify-items: center;
+        gap: 5px;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section::before {
+        content: '';
+        position: absolute;
+        width: 78px;
+        height: 78px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(241, 210, 133, .9), rgba(241, 210, 133, 0) 68%);
+        transform: translateY(-5px);
+        z-index: -1;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-btn {
+        width: 68px;
+        height: 68px;
+        flex-basis: 68px;
+        border: 5px solid #d8c78b;
+        border-radius: 50%;
+        background: #087153;
+        color: #fff;
+        font-size: 1.6rem;
+        box-shadow: 0 8px 16px rgba(10, 73, 53, .28);
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-info {
+        color: #0f1d17;
+        text-align: center;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-info .panel-kicker,
+    body:has(#game-card:not(.hidden)) .audio-info p,
+    body:has(#game-card:not(.hidden)) .audio-info small,
+    body:has(#game-card:not(.hidden)) .hint-text,
+    body:has(#game-card:not(.hidden)) .inline-feedback-msg {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-info h3 {
+        margin: 0;
+        color: #151d18;
+        font-size: 0;
+        line-height: 1;
+        font-weight: 900;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-info h3::before {
+        content: '播放語音';
+        display: block;
+        font-size: clamp(.62rem, 1.35vw, .72rem);
+        line-height: 1.06;
+    }
+
+    body:has(#game-card:not(.hidden)) .workspace-section {
+        grid-area: answer;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    body:has(#game-card:not(.hidden)) .candidates-section {
+        grid-area: cards;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row {
+        min-height: 20px;
+        margin: 0 0 2px;
+        justify-content: center;
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row h4 {
+        min-width: 100px;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: #ead5aa;
+        color: #111;
+        text-align: center;
+        font-size: .72rem;
+        font-weight: 900;
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row h4 span,
+    body:has(#game-card:not(.hidden)) .section-title-row small {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container {
+        min-height: 42px;
+        padding: 4px 8px;
+        border: 2px dashed #b99b64;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .5);
+        box-shadow: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container:empty::before,
+    body:has(#game-card:not(.hidden)) .answer-container .empty-state {
+        content: '從右側挑選字卡，依聽到的順序搭橋';
+        color: #7b6d5d;
+        font-size: clamp(.58rem, 1.25vw, .66rem);
+        font-weight: 800;
+        line-height: 1.08;
+        text-align: center;
+    }
+
+    body:has(#game-card:not(.hidden)) .candidates-container {
+        min-height: 48px;
+        padding: 2px 5px 4px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+        overflow: hidden;
+    }
+
+    body:has(#game-card:not(.hidden)) .word-block {
+        min-width: 38px;
+        min-height: 38px;
+        padding: 2px 7px;
+        border: 2px solid #bf8149;
+        border-radius: 8px;
+        background: #fffaf0;
+        color: #111;
+        font-family: 'twhei-s', 'Noto Sans TC', sans-serif;
+        font-size: clamp(.98rem, min(2.6vw, 4vh), 1.12rem);
+        line-height: 1;
+        font-weight: 900;
+        box-shadow: 0 3px 0 #9a6636, 0 6px 12px rgba(91, 62, 28, .2);
+    }
+
+    body:has(#game-card:not(.hidden)) .word-block::before {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .word-block.placed {
+        box-shadow: 0 2px 0 #9a6636;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions {
+        grid-area: actions;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        align-content: start;
+        padding: 0;
+        border-left: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit,
+    body:has(#game-card:not(.hidden)) .hint-section .btn {
+        width: 100%;
+        min-height: 42px;
+        padding: 0 8px;
+        border-radius: 9px;
+        font-size: clamp(.66rem, 1.45vw, .78rem);
+        line-height: 1.05;
+        font-weight: 900;
+    }
+
+    body:has(#game-card:not(.hidden)) .hint-section {
+        min-height: 30px;
+        display: block;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card.story-card {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        max-width: none;
+        height: 100vh;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: #86e2eb;
+        overflow: hidden;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-scene {
+        position: absolute;
+        inset: 0 0 36vh 0;
+        width: 100vw;
+        height: 64vh;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        overflow: hidden;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card #story-canvas {
+        width: 100vw;
+        height: 64vh;
+        display: block;
+        border: 0;
+        border-radius: 0;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-scene::before,
+    body:has(#story-card:not(.hidden)) #story-card .story-scene::after {
+        content: none;
+        display: none;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-dialogue {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        min-height: 36vh;
+        max-height: 38vh;
+        margin: 0;
+        padding: 12px 18px 10px;
+        border: 0;
+        border-radius: 18px 18px 0 0;
+        background: linear-gradient(180deg, rgba(255, 252, 244, .98), rgba(255, 247, 225, .98));
+        color: #2c251c;
+        box-shadow: 0 -12px 34px rgba(76, 55, 26, .15);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        z-index: 20;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-speaker,
+    body:has(#story-card:not(.hidden)) #story-card .story-speaker-name {
+        margin: 0 0 4px;
+        padding: 0;
+        color: #c46b13;
+        background: transparent;
+        font-size: .78rem;
+        font-weight: 900;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-avatar-wrap {
+        display: none;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-copy,
+    body:has(#story-card:not(.hidden)) #story-card .story-dialogue p {
+        max-width: 74vw;
+        min-height: 0;
+        margin: 0;
+        color: #2c251c;
+        font-size: .72rem;
+        line-height: 1.45;
+        font-weight: 800;
+        text-shadow: none;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-actions {
+        position: absolute;
+        right: 18px;
+        bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-actions .btn,
+    body:has(#story-card:not(.hidden)) #story-card .story-dialogue .btn {
+        min-height: 30px;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: .7rem;
+        font-weight: 900;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card #story-skip-btn {
+        background: transparent;
+        border: 0;
+        color: #4d9a55;
+        box-shadow: none;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 430px) and (max-width: 980px) {
+    body:has(#game-card:not(.hidden)) #game-card > .gameplay-layout {
+        grid-template-rows: minmax(0, 48vh) minmax(0, 52vh);
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-stage,
+    body:has(#game-card:not(.hidden)) .canvas-section {
+        height: 48vh;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-panel {
+        height: 52vh;
+        padding: 8px 12px 8px;
+        gap: 8px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-main {
+        grid-template-columns: 104px minmax(0, 1fr);
+        grid-template-rows: 72px 76px;
+        gap: 2px 8px;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section {
+        width: 88px;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-btn {
+        width: 58px;
+        height: 58px;
+        flex-basis: 58px;
+        font-size: 1.35rem;
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container {
+        min-height: 39px;
+    }
+
+    body:has(#game-card:not(.hidden)) .candidates-container {
+        min-height: 47px;
+    }
+
+    body:has(#game-card:not(.hidden)) .word-block {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 1px 6px;
+        font-size: clamp(.92rem, min(2.55vw, 3.8vh), 1.06rem);
+        line-height: 1;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 380px) and (max-width: 980px) {
+    body:has(#game-card:not(.hidden)) #game-card > .gameplay-layout {
+        grid-template-rows: minmax(0, 49vh) minmax(0, 51vh);
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-stage,
+    body:has(#game-card:not(.hidden)) .canvas-section {
+        height: 49vh;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-panel {
+        height: 51vh;
+        padding: 7px 10px 6px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-main {
+        grid-template-rows: 76px 74px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit,
+    body:has(#game-card:not(.hidden)) .hint-section .btn {
+        min-height: 38px;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 760px) and (max-height: 560px) {
+    body:has(#game-card:not(.hidden)) .mission-panel {
+        grid-template-columns: minmax(0, 1fr) 66px;
+        gap: 6px;
+        padding-left: 12px;
+        padding-right: 10px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-main {
+        grid-template-columns: 98px minmax(0, 1fr);
+        gap: 2px 6px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions {
+        width: 66px;
+        gap: 6px;
+        grid-auto-rows: 40px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit,
+    body:has(#game-card:not(.hidden)) .hint-section .btn {
+        min-width: 0;
+        width: 100%;
+        padding: 0;
+        font-size: 0;
+        line-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn i,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit i,
+    body:has(#game-card:not(.hidden)) .hint-section .btn i {
+        font-size: 1rem;
+        line-height: 1;
+        margin: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .hint-section {
+        width: 66px;
+        min-height: 40px;
+    }
+}
+
+
+
+
+
+
+/* Tablet landscape: iPad mini / iPad Pro 4:3 needs more room for the bottom controls */
+@media (orientation: landscape) and (min-width: 981px) and (max-aspect-ratio: 1.36) {
+    body:has(#game-card:not(.hidden)) .app-header {
+        height: 74px;
+        min-height: 74px;
+    }
+
+    body:has(#game-card:not(.hidden)) .lobby-back-button {
+        top: 14px;
+        left: 18px;
+        height: 40px;
+        min-width: 116px;
+        padding: 0 14px 0 12px;
+        font-size: clamp(.78rem, 1.05vw, .9rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .lobby-back-button img {
+        width: 21px;
+        height: 21px;
+    }
+
+    body:has(#game-card:not(.hidden)) .header-status {
+        top: 14px;
+        right: 18px;
+        gap: 14px;
+    }
+
+    body:has(#game-card:not(.hidden)) .speed-control {
+        height: 46px;
+        padding: 4px;
+    }
+
+    body:has(#game-card:not(.hidden)) .speed-btn {
+        min-width: 58px;
+        height: 38px;
+        padding: 0 12px;
+        font-size: clamp(.82rem, 1.05vw, .96rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .badge-dialect {
+        min-height: 46px;
+        padding: 0 22px;
+        font-size: clamp(.82rem, 1vw, .94rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-section {
+        top: 25px;
+        left: clamp(230px, 26vw, 340px);
+        right: clamp(360px, 38vw, 470px);
+        height: 24px;
+        gap: 14px;
+        grid-template-columns: auto auto minmax(150px, 1fr);
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-info {
+        font-size: clamp(.82rem, 1.05vw, .95rem);
+        line-height: 1.1;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-bar-container {
+        height: 9px;
+        min-width: 150px;
+    }
+
+    body:has(#game-card:not(.hidden)) #game-card > .gameplay-layout {
+        grid-template-rows: minmax(0, 54vh) minmax(0, 46vh);
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-stage,
+    body:has(#game-card:not(.hidden)) .canvas-section {
+        height: 54vh;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-panel {
+        height: 46vh;
+        grid-template-columns: minmax(0, 1fr) clamp(220px, 25vw, 300px);
+        gap: clamp(16px, 2vw, 24px);
+        padding: clamp(18px, 2vh, 22px) clamp(28px, 3.2vw, 42px) clamp(18px, 2vh, 24px);
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-main {
+        grid-template-columns: clamp(160px, 18vw, 220px) minmax(0, 1fr);
+        gap: 6px clamp(18px, 2.2vw, 26px);
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section {
+        width: clamp(150px, 17vw, 190px);
+        gap: 8px;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section::before {
+        width: clamp(104px, 13vw, 136px);
+        height: clamp(104px, 13vw, 136px);
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-btn {
+        width: clamp(88px, 11vw, 112px);
+        height: clamp(88px, 11vw, 112px);
+        flex-basis: clamp(88px, 11vw, 112px);
+        border-width: 7px;
+        font-size: clamp(2rem, 3vw, 2.6rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-info h3::before {
+        font-size: clamp(.82rem, 1.15vw, 1rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row {
+        min-height: 28px;
+        margin-bottom: 5px;
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row h4 {
+        min-width: 136px;
+        padding: 5px 16px;
+        font-size: clamp(.78rem, 1vw, .9rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container {
+        min-height: clamp(54px, 7vh, 68px);
+        padding: 8px 14px;
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container:empty::before,
+    body:has(#game-card:not(.hidden)) .answer-container .empty-state {
+        font-size: clamp(.72rem, 1vw, .86rem);
+        line-height: 1.12;
+    }
+
+    body:has(#game-card:not(.hidden)) .candidates-container {
+        min-height: clamp(64px, 8vh, 78px);
+        gap: 8px;
+        padding: 4px 8px 8px;
+    }
+
+    body:has(#game-card:not(.hidden)) .word-block {
+        min-width: clamp(48px, 5.8vw, 58px);
+        min-height: clamp(48px, 5.8vw, 58px);
+        padding: 4px 10px;
+        font-size: clamp(1.18rem, min(2vw, 2.8vh), 1.58rem);
+        line-height: 1;
+        box-shadow: 0 4px 0 #9a6636, 0 8px 14px rgba(91, 62, 28, .18);
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions {
+        gap: 10px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit,
+    body:has(#game-card:not(.hidden)) .hint-section .btn {
+        min-height: clamp(48px, 6.2vh, 58px);
+        padding: 0 12px;
+        font-size: clamp(.82rem, 1.1vw, 1rem);
+        line-height: 1.05;
+    }
+
+    body:has(#game-card:not(.hidden)) .hint-section {
+        min-height: clamp(36px, 5vh, 46px);
+    }
+}
+
+
+/* Flip-card Chinese translation hint: the answer lives on the button back face and does not reserve extra layout space */
+body:has(#game-card:not(.hidden)) .hint-section {
+    position: relative;
+    perspective: 900px;
+}
+
+body:has(#game-card:not(.hidden)) #hint-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    visibility: hidden;
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn {
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform .32s ease, background .2s ease, color .2s ease;
+    white-space: normal;
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn.is-flipped {
+    transform: rotateY(180deg);
+    background: #fff8e6;
+    color: #7a3f16;
+    border-color: #d29b55;
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn .hint-card-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45em;
+    padding: 0 12px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    text-align: center;
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn .hint-card-front {
+    transform: rotateY(0deg);
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn .hint-card-back {
+    transform: rotateY(180deg);
+    font-size: clamp(.72rem, .95vw, .92rem);
+    line-height: 1.18;
+    font-weight: 900;
+    letter-spacing: .02em;
+}
+
+@media (orientation: landscape) and (max-width: 980px) {
+    body:has(#game-card:not(.hidden)) #hint-btn .hint-card-face {
+        padding: 0 8px;
+    }
+
+    body:has(#game-card:not(.hidden)) #hint-btn .hint-card-back {
+        font-size: clamp(.56rem, 1.28vw, .68rem);
+        line-height: 1.08;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 760px) and (max-height: 560px) {
+    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        z-index: 12;
+        width: min(260px, calc(100vw - 24px));
+        min-height: 44px;
+        padding: 0 10px;
+        transform: none;
+        background: #fff8e6;
+        color: #7a3f16;
+        border-color: #d29b55;
+        box-shadow: 0 10px 24px rgba(80, 45, 10, .2);
+    }
+
+    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-front {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-back {
+        display: flex;
+        transform: none;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 981px) and (max-aspect-ratio: 1.36) {
+    body:has(#game-card:not(.hidden)) #hint-btn .hint-card-back {
+        font-size: clamp(.68rem, .9vw, .84rem);
+        line-height: 1.12;
+    }
+}
+
+body:has(#game-card:not(.hidden)) #hint-text,
+body:has(#game-card:not(.hidden)) #hint-text.hidden {
+    display: none;
+}
+
+body:has(#game-card:not(.hidden)) .hint-section {
+    min-height: 72px;
+}
+
+body:has(#game-card:not(.hidden)) #hint-text,
+body:has(#game-card:not(.hidden)) #hint-text.hidden {
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+@media (orientation: landscape) and (max-width: 980px) {
+    body:has(#game-card:not(.hidden)) .hint-section {
+        min-height: 42px;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 380px) and (max-width: 980px) {
+    body:has(#game-card:not(.hidden)) .hint-section {
+        min-height: 38px;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 981px) and (max-aspect-ratio: 1.36) {
+    body:has(#game-card:not(.hidden)) .hint-section {
+        min-height: clamp(48px, 6.2vh, 58px);
+    }
+}
+
+
+
+/* Final alignment fixes: gameplay/story back button must stay attached to the browser viewport corner. */
+body:has(#story-card:not(.hidden)) .lobby-back-button,
+body:has(#game-card:not(.hidden)) .lobby-back-button {
+    top: 0 !important;
+    left: 0 !important;
+}
+
+/* Portrait gameplay action layout: additive rules only, keeps landscape layout unchanged. */
+@media (orientation: portrait) {
+    body:has(#game-card:not(.hidden)) {
+        overflow-y: auto;
+    }
+
+    body:has(#game-card:not(.hidden))::before,
+    body:has(#game-card:not(.hidden))::after {
+        content: none;
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: minmax(56px, auto);
+        align-items: stretch;
+    }
+
+    body:has(#game-card:not(.hidden)) #help-bg-btn {
+        order: 1;
+    }
+
+    body:has(#game-card:not(.hidden)) #clear-btn {
+        order: 2;
+    }
+
+    body:has(#game-card:not(.hidden)) #submit-btn {
+        order: 3;
+    }
+}
+
+@media (orientation: portrait) and (min-width: 768px) {
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit {
+        font-size: clamp(.94rem, 1.9vw, 1.12rem);
+        gap: .45em;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 767px) {
+    body:has(#game-card:not(.hidden)) .workbench-actions {
+        gap: 10px;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit {
+        min-width: 0;
+        min-height: 54px;
+        padding: 0;
+        font-size: 0;
+        line-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn i,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit i {
+        font-size: clamp(1.35rem, 6vw, 1.75rem);
+        line-height: 1;
+        margin: 0;
+    }
+}
+
+/* Portrait gameplay full layout: stack the real game UI instead of squeezing the landscape layout. */
+@media (orientation: portrait) {
+    body:has(#game-card:not(.hidden)) {
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 0;
+        background: #86e2eb;
+    }
+
+    body:has(#game-card:not(.hidden)) > #app.app-container {
+        position: relative;
+        inset: auto;
+        width: 100vw;
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+        background: #86e2eb;
+    }
+
+    body:has(#game-card:not(.hidden)) .app-header {
+        position: sticky;
+        top: 0;
+        width: 100vw;
+        height: 52px;
+        min-height: 52px;
+        z-index: 80;
+        pointer-events: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .lobby-back-button {
+        top: 0;
+        left: 0;
+        height: 36px;
+        min-width: 98px;
+        padding: 0 10px 0 8px;
+        font-size: .72rem;
+        pointer-events: auto;
+    }
+
+    body:has(#game-card:not(.hidden)) .lobby-back-button img {
+        width: 18px;
+        height: 18px;
+    }
+
+    body:has(#game-card:not(.hidden)) .header-status {
+        top: 7px;
+        right: 8px;
+        gap: 8px;
+        pointer-events: auto;
+    }
+
+    body:has(#game-card:not(.hidden)) .speed-control {
+        height: 36px;
+        padding: 3px;
+    }
+
+    body:has(#game-card:not(.hidden)) .speed-btn {
+        min-width: 42px;
+        height: 30px;
+        padding: 0 8px;
+        font-size: .78rem;
+    }
+
+    body:has(#game-card:not(.hidden)) .badge-dialect {
+        min-height: 36px;
+        padding: 0 14px;
+        font-size: .78rem;
+    }
+
+    body:has(#game-card:not(.hidden)) #game-card {
+        position: relative;
+        inset: auto;
+        width: 100vw;
+        height: auto;
+        min-height: calc(100dvh - 52px);
+        overflow: visible;
+        display: block;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-section {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        width: calc(100vw - 20px);
+        height: auto;
+        margin: -44px 10px 8px;
+        padding: 0 112px 0 104px;
+        display: grid;
+        grid-template-columns: auto auto minmax(72px, 1fr);
+        gap: 8px;
+        z-index: 70;
+        pointer-events: none;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-info {
+        font-size: clamp(.72rem, 3vw, .9rem);
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-bar-container {
+        min-width: 0;
+        height: 8px;
+    }
+
+    body:has(#game-card:not(.hidden)) #game-card > .gameplay-layout {
+        position: relative;
+        inset: auto;
+        width: 100vw;
+        height: auto;
+        min-height: 0;
+        display: block;
+        overflow: visible;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-stage,
+    body:has(#game-card:not(.hidden)) .canvas-section {
+        width: 100vw;
+        height: auto;
+        min-height: 0;
+        overflow: hidden;
+        background: #86e2eb;
+    }
+
+    body:has(#game-card:not(.hidden)) #runner-canvas {
+        width: 100vw;
+        height: auto;
+        aspect-ratio: 960 / 200;
+        display: block;
+    }
+
+    body:has(#game-card:not(.hidden)) .mission-panel {
+        width: 100vw;
+        height: auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px 14px calc(16px + env(safe-area-inset-bottom));
+        overflow: visible;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-main {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        grid-template-areas:
+            'audio answer'
+            'cards cards';
+        gap: 10px 12px;
+        overflow: visible;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section {
+        width: 92px;
+        align-self: start;
+        gap: 6px;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-section::before {
+        width: 82px;
+        height: 82px;
+        transform: translateY(-3px);
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-btn {
+        width: 72px;
+        height: 72px;
+        flex-basis: 72px;
+        border-width: 5px;
+        font-size: 1.55rem;
+    }
+
+    body:has(#game-card:not(.hidden)) .audio-info h3::before {
+        font-size: .78rem;
+    }
+
+    body:has(#game-card:not(.hidden)) .workspace-section,
+    body:has(#game-card:not(.hidden)) .candidates-section {
+        justify-content: flex-start;
+        overflow: visible;
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row {
+        min-height: 26px;
+        margin-bottom: 6px;
+    }
+
+    body:has(#game-card:not(.hidden)) .section-title-row h4 {
+        min-width: 112px;
+        padding: 5px 12px;
+        font-size: .78rem;
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container {
+        min-height: 64px;
+        padding: 8px;
+        gap: 6px;
+        overflow: visible;
+        flex-wrap: wrap;
+    }
+
+    body:has(#game-card:not(.hidden)) .answer-container:empty::before,
+    body:has(#game-card:not(.hidden)) .answer-container .empty-state {
+        font-size: .72rem;
+    }
+
+    body:has(#game-card:not(.hidden)) .candidates-container {
+        min-height: 88px;
+        padding: 6px 4px 8px;
+        gap: 8px;
+        overflow: visible;
+        flex-wrap: wrap;
+    }
+
+    body:has(#game-card:not(.hidden)) .word-block {
+        min-width: 48px;
+        min-height: 50px;
+        padding: 4px 10px;
+        font-size: clamp(1.18rem, 7vw, 1.62rem);
+        box-shadow: 0 4px 0 #9a6636, 0 8px 14px rgba(91, 62, 28, .18);
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: 48px;
+        gap: 10px;
+        order: 2;
+        padding: 0;
+        border: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .hint-section {
+        width: 100%;
+        min-height: 48px;
+        grid-column: 1 / -1;
+        order: 4;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit,
+    body:has(#game-card:not(.hidden)) .hint-section .btn {
+        min-height: 48px;
+        border-radius: 10px;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 767px) {
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit {
+        font-size: 0;
+        line-height: 0;
+        padding: 0;
+    }
+
+    body:has(#game-card:not(.hidden)) .workbench-actions > .btn i,
+    body:has(#game-card:not(.hidden)) .workbench-actions .action-submit i {
+        font-size: 1.42rem;
+    }
+}
+
+/* Portrait runner framing: crop the wide stage to the useful bridge area so Ah-Hei and the far bank read larger. */
+@media (orientation: portrait) {
+    body:has(#game-card:not(.hidden)) .canvas-section {
+        height: clamp(188px, 32vh, 260px);
+    }
+
+    body:has(#game-card:not(.hidden)) #runner-canvas {
+        width: 180vw;
+        max-width: none;
+        height: 100%;
+        aspect-ratio: auto;
+        transform: translateX(-28vw);
+        transform-origin: left top;
+    }
+}
+
+/* Phone portrait HUD: keep only question count and score; hide progress bar. */
+@media (orientation: portrait) and (max-width: 767px) {
+    body:has(#game-card:not(.hidden)) .progress-section {
+        grid-template-columns: auto auto;
+        padding-right: 112px;
+    }
+
+    body:has(#game-card:not(.hidden)) .progress-bar-container {
+        display: none;
+    }
+}
+
+
+/* Offline icon fallbacks: no CDN required. */
+.back-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35em;
+    height: 1.35em;
+    font-weight: 900;
+}
+.fa-solid,
+.fa-regular {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
+    font-weight: 900;
+    line-height: 1;
+}
+.fa-arrows-spin::before { content: '↻'; }
+.fa-arrow-right::before { content: '›'; }
+.fa-scroll::before { content: '卷'; font-size: .85em; }
+.fa-language::before { content: '文'; font-size: .85em; }
+.fa-compass::before { content: '◎'; }
+.fa-play::before { content: '▶'; }
+.fa-pause::before { content: 'Ⅱ'; }
+.fa-bridge::before { content: '▰'; }
+.fa-shuffle::before { content: '⇄'; }
+.fa-hands-praying::before { content: '🙏'; }
+.fa-lightbulb::before { content: '？'; }
+.fa-circle-check::before { content: '✓'; }
+.fa-circle-xmark::before { content: '✕'; }
+.fa-trophy::before { content: '★'; }
+.fa-rotate-left::before { content: '↺'; }
+.fa-spinner::before { content: '◌'; }
+.fa-volume-high::before { content: '🔊'; }
+.fa-spin { animation: offline-spin 1s linear infinite; }
+@keyframes offline-spin { to { transform: rotate(360deg); } }
+
+/* Portrait Chinese hint: show the JSON Chinese sentence directly in the button area. */
+@media (orientation: portrait) {
+    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped {
+        transform: none;
+        background: #fff8e6;
+        color: #7a3f16;
+        border-color: #d29b55;
+        box-shadow: 0 6px 16px rgba(80, 45, 10, .16);
+    }
+
+    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-front {
+        display: none;
+    }
+
+    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-back {
+        display: flex;
+        transform: none;
+        padding: 0 12px;
+        font-size: clamp(.82rem, 3.4vw, 1rem);
+        line-height: 1.18;
     }
 }
