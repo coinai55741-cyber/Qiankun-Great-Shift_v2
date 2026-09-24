@@ -1137,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Extract Hakka characters dynamically as block cards (or use pre-defined sequence from JSON)
         const hakkaChars = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
-        const shuffledHakka = q.chinese_sentence ? (q.shuffled_blocks || shuffleArray(hakkaChars)) : shuffleArray(hakkaChars);
+        const shuffledHakka = shuffleArray(hakkaChars);
 
         // Setup Blocks with Unique IDs (to handle identical strings properly)
         selectedBlocks = [];
@@ -2583,6 +2583,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     init();
 });
+
 
 
 
