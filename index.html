@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <!-- Font Awesome Icons -->
     <!-- Custom Style -->
-    <link rel="stylesheet" href="style.css?v=20260923-hint-portrait1">
+    <link rel="stylesheet" href="style.css?v=20260924-local-icons1">
 </head>
 <body>
     <!-- Background Elements -->
@@ -15,10 +15,10 @@
     <div class="bg-glow bg-glow-2"></div>
 
     <div id="app" class="app-container" v-cloak>
+        <button class="lobby-back-button" type="button" aria-label="返回列表"><img src="data/ui/back.png" alt="" aria-hidden="true">返回列表</button>
         <!-- Header -->
         <header class="app-header hidden">
-            <button class="lobby-back-button" type="button" aria-label="返回列表"><span class="back-icon" aria-hidden="true">↩</span>返回列表</button>
-            <div class="header-logo">
+<div class="header-logo">
                 <i class="fa-solid fa-arrows-spin logo-icon"></i>
                 <div class="logo-text">
                     <h1>阿黑的客字繪卷</h1>
@@ -35,14 +35,35 @@
             </div>
         </header>
 
+        <aside class="lobby-leaderboard" aria-label="即時排行榜">
+                <img class="lobby-rank-banner" src="data/ui/rank_banner.png" alt="即時排行榜">
+                <div class="lobby-rank-summary">
+                    <p>您目前的排名：<b>16</b></p>
+                    <p>最佳紀錄：<b>00:00:32.31</b></p>
+                </div>
+                <button class="lobby-rank-link" type="button">排行榜</button>
+                <ol>
+                    <li><span class="lobby-rank-place" tabindex="0" aria-label="第 1 名，林O恩，計時 00:05，分數 100"><img src="data/ui/icon_rank1.png" alt="第 1 名金牌"><span class="sr-only">第 1 名</span></span><span class="lobby-rank-name">林O恩</span><time>00:05</time></li>
+                    <li><span class="lobby-rank-place" tabindex="0" aria-label="第 2 名，張O彤，計時 00:09，分數 100"><img src="data/ui/icon_rank2.png" alt="第 2 名銀牌"><span class="sr-only">第 2 名</span></span><span class="lobby-rank-name">張O彤</span><time>00:09</time></li>
+                    <li><span class="lobby-rank-place" tabindex="0" aria-label="第 3 名，陳O宇，計時 00:10，分數 100"><img src="data/ui/icon_rank3.png" alt="第 3 名銅牌"><span class="sr-only">第 3 名</span></span><span class="lobby-rank-name">陳O宇</span><time>00:10</time></li>
+                    <li><span class="lobby-rank-place" tabindex="0" aria-label="第 4 名，李O澄，計時 00:11，分數 100"><b>4</b></span><span class="lobby-rank-name">李O澄</span><time>00:11</time></li>
+                    <li><span class="lobby-rank-place" tabindex="0" aria-label="第 5 名，黃O妍，計時 00:12，分數 100"><b>5</b></span><span class="lobby-rank-name">黃O妍</span><time>00:12</time></li>
+                </ol>
+            </aside>
+
         <!-- Opening Story Card -->
         <section class="story-card" id="story-card" aria-label="前導故事">
             <div class="story-scene">
-                <canvas id="story-canvas" width="960" height="420"></canvas>
+                <canvas id="story-canvas" width="1920" height="1080"></canvas>
+                <div class="story-character-layer" aria-hidden="true">
+                    <img class="story-standing story-standing-kuro" data-story-character="阿黑" src="data/image/kuro_high_frames_keyed/kuro_high_02.png" alt="">
+                    <img class="story-standing story-standing-guide" data-story-character="指導員" src="data/image/S2_m1_ame1.png" alt="">
+                    <img class="story-standing story-standing-bokong" data-story-character="伯公" src="data/image/S2_m3_bokon1.png" alt="">
+                </div>
                 <div class="story-dialogue gal-dialogue">
                     <div class="story-speaker gal-speaker">
                         <div class="story-avatar-wrap">
-                            <img id="story-avatar-img" src="data/dummy/Codex_角色_透明背景.gif" alt="說話者頭像">
+                            <img id="story-avatar-img" src="data/image/S2_m3_kuro_run_transparent.gif" alt="說話者頭像">
                         </div>
                         <span class="story-speaker-name" id="story-speaker">指導員</span>
                     </div>
@@ -82,7 +103,7 @@
             
             <!-- 選擇腔調 -->
             <div class="selection-section">
-                <div class="selection-title"><i class="fa-solid fa-language"></i> 選擇腔調</div>
+                <div class="selection-title">選擇腔調</div>
                 <div class="dialect-grid">
                     <button type="button" class="dialect-btn active" data-value="1">四縣腔</button>
                     <button type="button" class="dialect-btn" data-value="2">海陸腔</button>
@@ -92,8 +113,7 @@
                     <button type="button" class="dialect-btn" data-value="6">南四縣腔</button>
                 </div>
             </div>
-
-            <button class="btn btn-primary btn-block btn-lg" id="start-adventure-btn">
+<button class="btn btn-primary btn-block btn-lg" id="start-adventure-btn">
                 <i class="fa-solid fa-compass"></i> 開始冒險
             </button>
         </div>
@@ -104,7 +124,7 @@
             <!-- Progress & Score -->
             <div class="progress-section">
                 <div class="progress-info">
-                    <span id="question-number">第 1 / 10 題</span>
+                    <span id="question-number">第 1 / 5 題</span>
                     <span id="score-display">得分: 0</span>
                 </div>
                 <div class="progress-bar-container">
@@ -116,7 +136,7 @@
             <section class="mission-stage" aria-label="阿黑過橋動畫區">
                 <!-- 2D Runner Game Animation Canvas -->
                 <div class="canvas-section">
-                    <canvas id="runner-canvas" width="960" height="200"></canvas>
+                    <canvas id="runner-canvas" width="1440" height="300"></canvas>
                     <div class="canvas-caption">阿黑會沿著你排好的字橋前進</div>
                 </div>
 
@@ -208,37 +228,43 @@
 
         <!-- Final Results Card -->
         <div class="results-card hidden" id="results-card">
-            <i class="fa-solid fa-trophy trophy-icon"></i>
-            <h2>挑戰完成！</h2>
-            <p id="result-summary">感謝你參與「阿黑的客字繪卷」客語聽力挑戰</p>
+            <section class="result-summary-card" tabindex="0" aria-label="闖關結果摘要">
+                <i class="fa-solid fa-trophy trophy-icon"></i>
+                <h2>恭喜過關！</h2>
+                <p id="result-summary">感謝你參與「阿黑的客字繪卷」客語聽力挑戰</p>
 
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <span class="stat-val" id="result-score">8 / 10</span>
-                    <span class="stat-label">總得分</span>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">名次</span>
+                        <span class="stat-val" id="result-rank">第16名</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">花費時間</span>
+                        <span class="stat-val" id="result-time">00:00:00.00</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">總分數</span>
+                        <span class="stat-val" id="result-score">0 / 100</span>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-val" id="result-accuracy">80%</span>
-                    <span class="stat-label">完成狀態</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-val" id="result-time">120 秒</span>
-                    <span class="stat-label">完成時間</span>
-                </div>
-            </div>
+                <p class="result-accuracy-line" id="result-accuracy">0 / 5 題</p>
 
-            <div class="ranking-section" id="ranking-section"></div>
+                <div class="result-actions result-summary-actions">
+                    <button class="btn btn-secondary" type="button" id="result-back-btn">返回列表</button>
+                    <button class="btn btn-primary" type="button" id="restart-btn">
+                        <i class="fa-solid fa-rotate-left"></i> 重玩一次
+                    </button>
+                </div>
+            </section>
 
-            <div class="review-section">
-                <h3>本關解答與音檔回顧</h3>
-                <div class="review-list" id="review-list">
+            <section class="result-ranking-card" id="ranking-section" tabindex="0" aria-label="排行榜"></section>
+
+            <section class="review-section sentence-review-card" aria-labelledby="sentence-review-title">
+                <h3 id="sentence-review-title">本關解答與音檔回顧</h3>
+                <div class="review-list sentence-review-list" id="review-list">
                     <!-- Dynamic review items will be generated here -->
                 </div>
-            </div>
-
-            <button class="btn btn-primary btn-block btn-lg" id="restart-btn">
-                <i class="fa-solid fa-rotate-left"></i> 重新挑戰
-            </button>
+            </section>
         </div>
 
     </div>
@@ -247,12 +273,43 @@
     <audio id="game-audio" preload="auto"></audio>
 
     <!-- Vue 3 shell: Vue owns the rendered interface, game engine stays in app.js -->
-    <script src="vue-app.js?v=20260923-offline-transition1"></script>
+    <script src="vue-app.js?v=20260924-kuro-image-assets1"></script>
     <!-- Game data and existing interaction engine -->
     <script src="questions_data.js"></script>
-    <script src="app.js?v=20260923-offline-transition1"></script>
+    <script src="app.js?v=20260924-smooth-stop1"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

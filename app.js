@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let correctCount = 0;
     let totalScore = 0;
-    let questionScore = 10; // Starts at 10 points per question
+    let questionScore = 20; // Starts at 20 points per question in the 5-question mode
     let questionAttempts = 0;
     let questionUsedHelp = false;
     let questionHelpType = '';
@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameStartTime = null;
     let questionStartTime = null;
     let totalElapsedSeconds = 0;
+    let resultLocked = false;
+    let resultElapsedMs = 0;
     let isAnswerSubmitted = false;
     let draggedBlockId = null;
     let wrongBreakX = null;
@@ -29,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let shouldAutoTransition = false;
     let isTransitioning = false;
     let flashTimer = 0;
+    let openingCountdownActive = false;
+    let openingCountdownStartedAt = 0;
+    const openingCountdownDuration = 3600;
     let selectedDialectId = "1"; // Default 四縣腔
 
     // Audio Element & Controls
@@ -61,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const storySpeaker = document.getElementById('story-speaker');
     const storyLine = document.getElementById('story-line');
     const storyAvatarImg = document.getElementById('story-avatar-img');
+    const storyStandingCharacters = document.querySelectorAll('[data-story-character]');
     const storyNextBtn = document.getElementById('story-next-btn');
     const storySkipBtn = document.getElementById('story-skip-btn');
     const bokongAssist = document.getElementById('bokong-assist');
@@ -97,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultScore = document.getElementById('result-score');
     const resultAccuracy = document.getElementById('result-accuracy');
     const resultTime = document.getElementById('result-time');
+    const resultRank = document.getElementById('result-rank');
+    const resultBackBtn = document.getElementById('result-back-btn');
     const restartBtn = document.getElementById('restart-btn');
     const resultSummary = document.getElementById('result-summary');
     const rankingSection = document.getElementById('ranking-section');
@@ -110,8 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('runner-canvas');
     const ctx = canvas.getContext('2d');
     
-    const canvasWidth = 960;
-    const canvasHeight = 200;
+    const runnerStageScale = 1.5;
+    const baseCanvasWidth = 960;
+    const baseCanvasHeight = 200;
+    const canvasWidth = Math.round(baseCanvasWidth * runnerStageScale);
+    const canvasHeight = Math.round(baseCanvasHeight * runnerStageScale);
+    const rs = (value) => value * runnerStageScale;
     let runnerCanvasScale = 1;
 
     function resizeRunnerCanvasForDisplay() {
@@ -134,8 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
     }
-    const groundY = 140;
-    const riverY = 175;
+    const groundY = rs(140);
+    const riverY = rs(175);
     
     let scrollX = 0;
     let skyScrollX = 0;
@@ -143,18 +155,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let forestScrollX = 0;
     
     let speedMultiplier = 1.0;
-    const baseSpeed = 2.0; 
-    let activeSpeed = 2.0;
+    const baseSpeed = rs(2.0); 
+    let activeSpeed = baseSpeed;
     
-    let dogX = 180;
+    const getDogStartX = () => canvasWidth / 3;
+    const getDogEntryX = () => getDogStartX() - rs(300);
+    const getCliffTargetX = () => getDogStartX() + rs(50);
+    let dogX = getDogStartX();
     let dogY = groundY;
     let dogState = 'running'; // 'running', 'crossing', 'falling', 'splashing', 'recovering'
     let dogFrame = 0;
     
-    // Cliff settings (Cliff width is 200px)
-    let cliffX = 1200; 
-    const cliffWidth = 200;
-    const cliffTargetX = 230; 
+    // Cliff settings are authored against a 960x200 base stage, then scaled for sharper drawing.
+    let cliffX = rs(1200); 
+    const bridgeGapScale = 0.84;
+    const fallbackCliffWidth = rs(154);
+    const getBridgeHeight = () => rs(22);
+    const getBridgeLandingOverlap = () => rs(18);
+    const getCliffWidth = () => isImageReady(runnerAssets.bridge)
+        ? (runnerAssets.bridge.naturalWidth * (getBridgeHeight() / runnerAssets.bridge.naturalHeight) - rs(4)) * bridgeGapScale
+        : fallbackCliffWidth;
+    const getBridgeDrawX = () => cliffX - getBridgeLandingOverlap();
+    const getBridgeDrawWidth = () => getCliffWidth() + getBridgeLandingOverlap() * 2;
     let hasCliffAppeared = false;
     
     let animationFrameId = null;
@@ -168,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isBridgeBroken = false;
 
     const runnerAssetPath = 'data/image/';
-    const runnerAssetVersion = '20260923-offline-transition1';
+    const runnerAssetVersion = '20260924-kuro-image-assets1';
     const useRunnerImageLayers = true;
     const runnerAssets = {
         mountains: loadRunnerImage('S2_m3_yamaloop.png'),
@@ -179,16 +201,16 @@ document.addEventListener('DOMContentLoaded', () => {
         floorRight: loadRunnerImage('S2_m3_floorR.png'),
         bridge: loadRunnerImage('S2_m3_bridgeA.png'),
         brokenBridge: loadRunnerImage('S2_m3_bridgeB.png'),
-        kuroRun: loadRunnerImage('../dummy/Codex_角色_透明背景.gif'),
+        kuroRun: loadRunnerImage('S2_m3_kuro_run_transparent.gif'),
         kuroRunFrames: [
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_00.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_01.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_02.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_03.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_04.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_05.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_06.png'),
-            loadRunnerImage('../dummy/kuro_high_frames_keyed/kuro_high_07.png')
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_00.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_01.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_02.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_03.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_04.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_05.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_06.png'),
+            loadRunnerImage('kuro_high_frames_keyed/kuro_high_07.png')
         ],
         bokong: loadRunnerImage('S2_m3_bokon1.png')
     };
@@ -208,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const starResults = [
-        { stars: 5, title: '傳音神犬', note: '最高星級，僅授予排名第 1 且滿分 100 分的玩家。', comment: '你的耳朵比雷達還靈敏！繪卷紀錄得一字不漏，伯公讀完開心地哈哈大笑！' },
+        { stars: 5, title: '傳音神犬', note: '最高星級，授予滿分且表現最出色的玩家。', comment: '你的耳朵比雷達還靈敏！繪卷紀錄得一字不漏，伯公讀完開心地哈哈大笑！' },
         { stars: 4, title: '伯公的得力金耳', note: '前 6%～20% 玩家。', comment: '表現得非常出色！伯公戴上老花眼鏡讀得津津有味呢！' },
         { stars: 3, title: '出擊的探聲犬', note: '前 21%～50% 玩家。', comment: '辛苦啦！這卷繪卷成功帶回了大家的聊天內容，伯公看得很開心喔！' },
         { stars: 2, title: '客話蒐集犬', note: '前 51%～80% 玩家。', comment: '哎呀，看來今天剛上任真的很緊張！伯公看著繪卷對你點點頭，阿黑的超級聽力可能還需要多磨練磨練。' },
@@ -237,8 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const layer = document.createElement('canvas');
+        const scaledWidth = sourceWidth * (height / image.naturalHeight);
         layer.height = Math.ceil(height);
-        layer.width = Math.ceil(sourceWidth * (height / image.naturalHeight));
+        layer.width = Math.ceil(scaledWidth);
 
         const layerCtx = layer.getContext('2d');
         layerCtx.imageSmoothingEnabled = true;
@@ -258,8 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
         image._runnerLayerCache = {
             key: cacheKey,
             canvas: layer,
-            width: layer.width,
-            height: layer.height
+            width: scaledWidth,
+            height: height
         };
 
         return image._runnerLayerCache;
@@ -278,10 +301,37 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let x = offset - width; x < canvasWidth + width; x += width) {
             ctx.drawImage(
                 layer.canvas,
-                Math.round(x),
-                Math.round(y),
-                Math.ceil(width) + seamOverlap,
-                layer.height
+                x,
+                y,
+                width + seamOverlap,
+                height
+            );
+        }
+
+        return true;
+    }
+
+    function drawTiledImageRange(image, startX, endX, y, height, anchorX = startX, trimX = 0) {
+        if (!useRunnerImageLayers) return false;
+
+        const layer = getScaledRunnerLayer(image, height, trimX);
+        if (!layer) return false;
+
+        const width = layer.width;
+        const seamOverlap = 1;
+        let x = anchorX;
+
+        while (x > startX) {
+            x -= width;
+        }
+
+        for (; x < endX; x += width) {
+            ctx.drawImage(
+                layer.canvas,
+                x,
+                y,
+                width + seamOverlap,
+                height
             );
         }
 
@@ -294,10 +344,80 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+
+    function drawCroppedImageByHeight(image, x, y, height, cropLeft = 0, cropRight = 0) {
+        if (!isImageReady(image)) return 0;
+        const sourceWidth = image.naturalWidth;
+        const sourceHeight = image.naturalHeight;
+        const sx = Math.max(0, Math.min(sourceWidth - 1, cropLeft));
+        const sw = Math.max(1, sourceWidth - sx - Math.max(0, cropRight));
+        const scale = height / sourceHeight;
+        const width = sw * scale;
+        ctx.drawImage(image, sx, 0, sw, sourceHeight, x, y, width, height);
+        return width;
+    }
+
     function drawImageByHeight(image, x, y, height) {
         if (!isImageReady(image)) return 0;
         const width = image.naturalWidth * (height / image.naturalHeight);
         ctx.drawImage(image, x, y, width, height);
+        return width;
+    }
+
+    function getImageAlphaBounds(image) {
+        if (!isImageReady(image)) return null;
+        if (image._alphaBounds) return image._alphaBounds;
+
+        const probe = document.createElement('canvas');
+        probe.width = image.naturalWidth;
+        probe.height = image.naturalHeight;
+        const probeCtx = probe.getContext('2d', { willReadFrequently: true });
+        probeCtx.drawImage(image, 0, 0);
+        const pixels = probeCtx.getImageData(0, 0, probe.width, probe.height).data;
+        let left = probe.width;
+        let right = -1;
+        let top = probe.height;
+        let bottom = -1;
+
+        for (let py = 0; py < probe.height; py++) {
+            for (let px = 0; px < probe.width; px++) {
+                const alpha = pixels[(py * probe.width + px) * 4 + 3];
+                if (alpha > 8) {
+                    if (px < left) left = px;
+                    if (px > right) right = px;
+                    if (py < top) top = py;
+                    if (py > bottom) bottom = py;
+                }
+            }
+        }
+
+        image._alphaBounds = right >= left
+            ? { left, right, top, bottom, width: right - left + 1, height: bottom - top + 1 }
+            : { left: 0, right: image.naturalWidth - 1, top: 0, bottom: image.naturalHeight - 1, width: image.naturalWidth, height: image.naturalHeight };
+        return image._alphaBounds;
+    }
+
+    function getAlphaContentWidthByHeight(image, height) {
+        if (!isImageReady(image)) return 0;
+        const bounds = getImageAlphaBounds(image);
+        return bounds.width * (height / image.naturalHeight);
+    }
+
+    function drawAlphaContentByHeight(image, x, y, height) {
+        if (!isImageReady(image)) return 0;
+        const bounds = getImageAlphaBounds(image);
+        const width = bounds.width * (height / image.naturalHeight);
+        ctx.drawImage(
+            image,
+            bounds.left,
+            0,
+            bounds.width,
+            image.naturalHeight,
+            x,
+            y,
+            width,
+            height
+        );
         return width;
     }
 
@@ -433,8 +553,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 filtered = allQuestions;
                             }
                             
-                            // Shuffle and slice to 10 questions max for a game session
-                            questions = shuffleArray(filtered).slice(0, 10);
+                            // Shuffle and slice to 5 questions max for a game session
+                            questions = shuffleArray(filtered).slice(0, 5);
                             
                             const dialectNames = {
                                 "1": "四縣腔",
@@ -504,13 +624,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const step = openingStory[storyStepIndex] || openingStory[0];
         if (storySpeaker) storySpeaker.textContent = step.speaker;
         if (storyLine) storyLine.textContent = step.text;
+        const activeStoryCharacter = step.speaker === '伯公'
+            ? '伯公'
+            : (step.speaker === '阿黑' ? '阿黑' : '指導員');
         if (storyAvatarImg) {
-            const isBokong = step.speaker === '伯公';
-            const isGuide = step.speaker === '指導員' || step.speaker === '背景音效' || step.speaker === '場景變化';
-            storyAvatarImg.src = isBokong ? 'data/image/S2_m3_bokon1.png' : 'data/dummy/Codex_角色_透明背景.gif';
-            storyAvatarImg.alt = isBokong ? '伯公頭像' : (isGuide ? '指導員頭像' : '阿黑頭像');
-            storyAvatarImg.className = isBokong ? 'avatar-bokong' : (isGuide ? 'avatar-guide' : 'avatar-kuro');
+            storyAvatarImg.src = activeStoryCharacter === '伯公'
+                ? 'data/image/S2_m3_bokon1.png'
+                : (activeStoryCharacter === '阿黑' ? 'data/image/kuro_high_frames_keyed/kuro_high_02.png' : 'data/image/S2_m1_ame1.png');
+            storyAvatarImg.alt = `${activeStoryCharacter}頭像`;
+            storyAvatarImg.className = activeStoryCharacter === '伯公' ? 'avatar-bokong' : (activeStoryCharacter === '阿黑' ? 'avatar-kuro' : 'avatar-guide');
         }
+        storyStandingCharacters.forEach((character) => {
+            character.classList.toggle('is-active', character.dataset.storyCharacter === activeStoryCharacter);
+            character.classList.toggle('is-dimmed', character.dataset.storyCharacter !== activeStoryCharacter);
+        });
         if (storyNextBtn) {
             storyNextBtn.innerHTML = storyStepIndex >= openingStory.length - 1
                 ? '<i class="fa-solid fa-scroll"></i> 進入任務說明'
@@ -530,22 +657,107 @@ document.addEventListener('DOMContentLoaded', () => {
         const width = storyCanvas.width;
         const height = storyCanvas.height;
         storyCtx.clearRect(0, 0, width, height);
-        const sky = storyCtx.createLinearGradient(0, 0, 0, height);
-        sky.addColorStop(0, '#9ee5f1');
-        sky.addColorStop(0.55, '#dff8df');
-        sky.addColorStop(1, '#f5d487');
-        storyCtx.fillStyle = sky;
+
+        const wall = storyCtx.createLinearGradient(0, 0, 0, height);
+        wall.addColorStop(0, '#fff0c8');
+        wall.addColorStop(0.58, '#f8dfb0');
+        wall.addColorStop(1, '#efcf97');
+        storyCtx.fillStyle = wall;
         storyCtx.fillRect(0, 0, width, height);
-        drawStoryHills(storyCtx, width, height);
-        drawStoryField(storyCtx, width, height);
-        drawStoryDog(storyCtx, 250, 292);
-        drawStoryGuide(storyCtx, 122, 282);
-        drawStoryScroll(storyCtx, 342, 292);
-        if (isImageReady(runnerAssets.bokong)) {
-            storyCtx.globalAlpha = 0.58;
-            storyCtx.drawImage(runnerAssets.bokong, 612, 20, 270, 270);
-            storyCtx.globalAlpha = 1;
+
+        // Soft paper texture dots.
+        storyCtx.save();
+        storyCtx.globalAlpha = 0.12;
+        storyCtx.fillStyle = '#b8874c';
+        for (let i = 0; i < 140; i++) {
+            const x = (i * 137) % width;
+            const y = (i * 251) % height;
+            storyCtx.beginPath();
+            storyCtx.arc(x, y, 1.2 + (i % 3), 0, Math.PI * 2);
+            storyCtx.fill();
         }
+        storyCtx.restore();
+
+        // Floor and rug.
+        storyCtx.fillStyle = '#efcf98';
+        storyCtx.fillRect(0, height * 0.76, width, height * 0.24);
+        storyCtx.strokeStyle = 'rgba(156, 105, 50, .18)';
+        storyCtx.lineWidth = 3;
+        for (let x = -40; x < width; x += 84) {
+            storyCtx.beginPath();
+            storyCtx.moveTo(x, height * 0.76);
+            storyCtx.lineTo(x + 42, height);
+            storyCtx.stroke();
+        }
+        storyCtx.fillStyle = 'rgba(255,255,255,.34)';
+        storyCtx.fillRect(width * 0.39, height * 0.78, width * 0.25, height * 0.08);
+
+        // Open door and outdoor path.
+        const doorX = width * 0.36;
+        const doorY = height * 0.08;
+        const doorW = width * 0.28;
+        const doorH = height * 0.67;
+        storyCtx.fillStyle = '#9b6b3e';
+        storyCtx.fillRect(doorX - 18, doorY - 18, doorW + 36, doorH + 36);
+        const outside = storyCtx.createLinearGradient(0, doorY, 0, doorY + doorH);
+        outside.addColorStop(0, '#aee6ff');
+        outside.addColorStop(0.55, '#d9edb5');
+        outside.addColorStop(1, '#f6dd9c');
+        storyCtx.fillStyle = outside;
+        storyCtx.fillRect(doorX, doorY, doorW, doorH);
+        storyCtx.fillStyle = 'rgba(116, 172, 121, .65)';
+        for (let i = 0; i < 7; i++) {
+            storyCtx.beginPath();
+            storyCtx.ellipse(doorX + doorW * (0.1 + i * 0.14), doorY + doorH * (0.55 + (i % 2) * .04), 120, 42, 0, 0, Math.PI * 2);
+            storyCtx.fill();
+        }
+        storyCtx.fillStyle = 'rgba(115, 156, 190, .38)';
+        storyCtx.beginPath();
+        storyCtx.moveTo(doorX, doorY + doorH * .45);
+        storyCtx.quadraticCurveTo(doorX + doorW * .25, doorY + doorH * .25, doorX + doorW * .5, doorY + doorH * .42);
+        storyCtx.quadraticCurveTo(doorX + doorW * .75, doorY + doorH * .25, doorX + doorW, doorY + doorH * .45);
+        storyCtx.lineTo(doorX + doorW, doorY + doorH * .58);
+        storyCtx.lineTo(doorX, doorY + doorH * .58);
+        storyCtx.fill();
+        storyCtx.strokeStyle = 'rgba(151, 104, 52, .35)';
+        storyCtx.lineWidth = 8;
+        storyCtx.beginPath();
+        storyCtx.moveTo(doorX + doorW * .5, doorY + doorH);
+        storyCtx.quadraticCurveTo(doorX + doorW * .46, doorY + doorH * .83, doorX + doorW * .5, doorY + doorH * .65);
+        storyCtx.stroke();
+
+        // Left shelf, bags, and cabinet.
+        storyCtx.fillStyle = '#9c683b';
+        storyCtx.fillRect(width * .04, height * .18, width * .23, 18);
+        storyCtx.fillRect(width * .08, height * .2, 12, 80);
+        storyCtx.fillRect(width * .22, height * .2, 12, 80);
+        storyCtx.fillStyle = 'rgba(255,255,255,.45)';
+        storyCtx.fillRect(width * .06, height * .58, width * .2, height * .18);
+        storyCtx.strokeStyle = '#9c683b';
+        storyCtx.lineWidth = 5;
+        storyCtx.strokeRect(width * .06, height * .58, width * .2, height * .18);
+        storyCtx.fillStyle = '#6b8fa3';
+        storyCtx.fillRect(width * .16, height * .27, 44, 190);
+        storyCtx.fillStyle = '#fff8e8';
+        storyCtx.beginPath();
+        storyCtx.roundRect(width * .08, height * .3, 76, 140, 18);
+        storyCtx.fill();
+
+        // Right wall props.
+        storyCtx.fillStyle = '#c26848';
+        storyCtx.fillRect(width * .73, height * .18, 78, 170);
+        storyCtx.fillStyle = '#34251d';
+        storyCtx.font = '42px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif';
+        storyCtx.fillText('平', width * .745, height * .24);
+        storyCtx.fillText('安', width * .745, height * .31);
+        storyCtx.fillText('喜', width * .745, height * .38);
+        storyCtx.fillText('樂', width * .745, height * .45);
+        storyCtx.fillStyle = '#9c683b';
+        storyCtx.fillRect(width * .79, height * .25, width * .17, 18);
+        storyCtx.fillStyle = 'rgba(255,255,255,.48)';
+        storyCtx.fillRect(width * .78, height * .61, width * .18, height * .12);
+        storyCtx.strokeStyle = '#9c683b';
+        storyCtx.strokeRect(width * .78, height * .61, width * .18, height * .12);
     }
 
     function drawStoryHills(storyCtx, width, height) {
@@ -642,7 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
         storyCtx.fill();
         storyCtx.stroke();
         storyCtx.fillStyle = '#4f3b2c';
-        storyCtx.font = '700 22px "Noto Sans TC", sans-serif';
+        storyCtx.font = '700 22px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif';
         storyCtx.fillText('𠊎 試 著 這 題', 24, -4);
         storyCtx.fillText('數 學 還 難 哦', 24, 25);
         storyCtx.restore();
@@ -695,6 +907,14 @@ document.addEventListener('DOMContentLoaded', () => {
             playSfx('click');
             startGame();
         });
+        if (resultBackBtn) {
+            resultBackBtn.addEventListener('click', () => {
+                playSfx('click');
+                resultsCard.classList.add('hidden');
+                introCard.classList.remove('hidden');
+                if (appHeader) appHeader.classList.add('hidden');
+            });
+        }
 
         // Speed Controls
         speedButtons.forEach(btn => {
@@ -785,6 +1005,8 @@ document.addEventListener('DOMContentLoaded', () => {
         questionRecords = [];
         currentQuestionIndex = 0;
         totalElapsedSeconds = 0;
+        resultLocked = false;
+        resultElapsedMs = 0;
         gameStartTime = new Date();
         
         resultsCard.classList.add('hidden');
@@ -796,11 +1018,54 @@ document.addEventListener('DOMContentLoaded', () => {
         shouldAutoTransition = false;
         isTransitioning = false;
         flashTimer = 0;
+        openingCountdownActive = false;
+        openingCountdownStartedAt = 0;
+        resetRunnerViewForGameStart();
         
         loadQuestion(currentQuestionIndex);
     }
 
     // 4. Load Question at Index
+    function lockQuestionControlsForOpening(lock) {
+        if (playAudioBtn) playAudioBtn.disabled = lock;
+        if (helpBgBtn) helpBgBtn.disabled = lock;
+        if (submitBtn) submitBtn.disabled = true;
+        if (clearBtn) clearBtn.disabled = lock || selectedBlocks.length === 0;
+        if (gameCard) gameCard.classList.toggle('opening-countdown', lock);
+    }
+
+    function playQuestionAudioOnceReady() {
+        if (gameAudio._playListener) {
+            gameAudio.removeEventListener('canplay', gameAudio._playListener);
+            gameAudio._playListener = null;
+        }
+        if (gameAudio.paused) {
+            gameAudio.play().catch(e => {
+                console.log("Autoplay blocked: user interaction required.", e);
+            });
+        }
+    }
+
+    function startOpeningCountdown() {
+        openingCountdownActive = true;
+        openingCountdownStartedAt = Date.now();
+        dogX = getDogStartX();
+        dogY = rs(-100);
+        dogState = 'recovering';
+        flashTimer = 70;
+        lockQuestionControlsForOpening(true);
+
+        setTimeout(() => {
+            openingCountdownActive = false;
+            dogX = getDogStartX();
+            dogY = groundY;
+            dogState = 'running';
+            flashTimer = 0;
+            lockQuestionControlsForOpening(false);
+            playQuestionAudioOnceReady();
+        }, openingCountdownDuration);
+    }
+
     function loadQuestion(index) {
         if (index >= questions.length) {
             showResults();
@@ -809,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const q = questions[index];
         isAnswerSubmitted = false;
-        questionScore = 10; // Start with 10 points
+        questionScore = 20; // Start with 20 points
         questionAttempts = 0;
         questionUsedHelp = false;
         questionHelpType = '';
@@ -890,17 +1155,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderBlocks();
         
-        // Auto play audio when ready
+        // Auto play audio when ready. The first question waits for the opening countdown.
         gameAudio._playListener = function() {
-            if (gameAudio.paused) {
-                gameAudio.play().catch(e => {
-                    console.log("Autoplay blocked: user interaction required.", e);
-                });
-            }
-            gameAudio.removeEventListener('canplay', gameAudio._playListener);
-            gameAudio._playListener = null;
+            if (openingCountdownActive) return;
+            playQuestionAudioOnceReady();
         };
         gameAudio.addEventListener('canplay', gameAudio._playListener);
+
+        if (index === 0) {
+            startOpeningCountdown();
+        }
     }
 
     // 5. Render Blocks to UI
@@ -1195,13 +1459,14 @@ document.addEventListener('DOMContentLoaded', () => {
             playSfx('wrong');
             // Deduct score for wrong attempt
             questionAttempts++;
-            questionScore = Math.max(0, questionScore - 2);
+            questionScore = Math.max(0, questionScore - 4);
             
             // Calculate where the wrong bridge breaks
             const charCount = selectedBlocks.length;
             const correctHakkaSequence = currentCorrectHakkaSequence;
             const totalChars = correctHakkaSequence.length || 1;
-            const userBridgeWidth = (charCount / totalChars) * cliffWidth;
+            const currentCliffWidth = getCliffWidth();
+            const userBridgeWidth = (charCount / totalChars) * currentCliffWidth;
             
             if (charCount < totalChars) {
                 // If they didn't place all blocks, they fall off the end of their blocks
@@ -1210,8 +1475,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If they placed all blocks but wrong order, fall from the broken bridge edge.
                 const bridgeSourceWidth = isImageReady(runnerAssets.bridge) ? runnerAssets.bridge.naturalWidth : 805;
                 const brokenBridgeSourceWidth = isImageReady(runnerAssets.brokenBridge) ? runnerAssets.brokenBridge.naturalWidth : bridgeSourceWidth / 2;
-                const brokenBridgeWidth = (cliffWidth + 4) * (brokenBridgeSourceWidth / bridgeSourceWidth);
-                wrongBreakX = cliffX - 2 + brokenBridgeWidth;
+                const brokenBridgeWidth = getBridgeDrawWidth() * (brokenBridgeSourceWidth / bridgeSourceWidth);
+                wrongBreakX = getBridgeDrawX() + brokenBridgeWidth;
             }
             
             // Dog starts running towards the break point
@@ -1287,7 +1552,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadQuestion(currentQuestionIndex);
             
             if (currentQuestionIndex < questions.length) {
-                dogX = -100;
+                dogX = getDogEntryX();
                 dogState = 'transition_in';
             }
             
@@ -1317,11 +1582,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function getStarResult(score) {
-        if (score >= 100) return starResults[0];
-        if (score >= 80) return starResults[1];
-        if (score >= 60) return starResults[2];
-        if (score >= 40) return starResults[3];
+    function getStarResult(score, maxScore = 100) {
+        const percent = maxScore > 0 ? (score / maxScore) * 100 : 0;
+        if (percent >= 100) return starResults[0];
+        if (percent >= 80) return starResults[1];
+        if (percent >= 60) return starResults[2];
+        if (percent >= 40) return starResults[3];
         return starResults[4];
     }
 
@@ -1345,41 +1611,70 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackPanel.classList.add('hidden');
     }
 
+    function formatResultTime(totalMs) {
+        const safeMs = Math.max(0, Math.floor(totalMs || 0));
+        const minutes = Math.floor(safeMs / 60000).toString().padStart(2, '0');
+        const seconds = Math.floor((safeMs % 60000) / 1000).toString().padStart(2, '0');
+        const centiseconds = Math.floor((safeMs % 1000) / 10).toString().padStart(2, '0');
+        return `00:${minutes}:${seconds}.${centiseconds}`;
+    }
+
     // 10. Show Results
     function showResults() {
+        if (!resultLocked) {
+            resultElapsedMs = gameStartTime ? Math.max(0, Date.now() - gameStartTime.getTime()) : 0;
+            resultLocked = true;
+        }
+        dogState = 'idle';
+        shouldAutoTransition = false;
+        isTransitioning = false;
         if (appHeader) appHeader.classList.add('hidden');
         gameCard.classList.add('hidden');
         resultsCard.classList.remove('hidden');
         if (bokongAssist) bokongAssist.classList.add('hidden');
 
-        const elapsed = Math.round((new Date() - gameStartTime) / 1000);
+        const elapsedMs = resultElapsedMs;
+        totalElapsedSeconds = Math.round(elapsedMs / 1000);
+        const elapsedText = formatResultTime(elapsedMs);
+        const maxScore = 100;
         const completedText = `${questions.length} / ${questions.length} 題`;
-        const star = getStarResult(totalScore);
-        const starMarks = '★'.repeat(star.stars) + '☆'.repeat(5 - star.stars);
+        const star = getStarResult(totalScore, maxScore);
 
-        resultScore.textContent = `${totalScore} / 100 分`;
+        resultScore.textContent = `${totalScore} / ${maxScore}`;
         resultAccuracy.textContent = completedText;
-        resultTime.textContent = `${elapsed} 秒`;
+        resultTime.textContent = elapsedText;
+        if (resultRank) resultRank.textContent = '第16名';
 
         if (resultSummary) {
-            resultSummary.innerHTML = `獲得稱號：<strong>${star.title}</strong><br>${star.comment}`;
+            resultSummary.innerHTML = `多聽幾次再挑戰，阿黑一定會更會聽！<br><strong>${star.title}</strong>`;
         }
 
         if (rankingSection) {
             rankingSection.innerHTML = `
-                <div class="star-result">
-                    <div class="star-mark">${starMarks}</div>
-                    <div>
-                        <h3>${star.title}</h3>
-                        <p>${star.note}</p>
-                        <small>目前尚未接入正式排行榜百分比，星級先依分數示意；正式規則接入後會改以排名百分比判定。</small>
-                    </div>
-                </div>
-                <div class="ranking-table" aria-label="示意排行榜">
-                    <div class="ranking-row current"><span>1</span><strong>你</strong><em>${totalScore} 分</em><time>${elapsed} 秒</time></div>
-                    <div class="ranking-row muted"><span>2</span><strong>示意玩家 A</strong><em>100 分</em><time>138 秒</time></div>
-                    <div class="ranking-row muted"><span>3</span><strong>示意玩家 B</strong><em>98 分</em><time>152 秒</time></div>
-                </div>`;
+                <h2 id="result-ranking-title" tabindex="-1">排行榜</h2>
+                <div class="result-rank-head"><span>排名</span><span>學員</span><span>分數</span><span>計時</span></div>
+                <ol class="result-rank-list">
+                    <li class="rank-first"><span class="result-rank-place"><img src="data/ui/icon_rank1.png" alt="第 1 名金牌"><span class="sr-only">第 1 名</span></span><span>林O恩</span><b>${maxScore}</b><time>00:00:05.00</time></li>
+                    <li class="rank-second"><span class="result-rank-place"><img src="data/ui/icon_rank2.png" alt="第 2 名銀牌"><span class="sr-only">第 2 名</span></span><span>張O彤</span><b>${maxScore}</b><time>00:00:09.00</time></li>
+                    <li class="rank-third"><span class="result-rank-place"><img src="data/ui/icon_rank3.png" alt="第 3 名銅牌"><span class="sr-only">第 3 名</span></span><span>陳O宇</span><b>${maxScore}</b><time>00:00:10.00</time></li>
+                    <li><span class="result-rank-place"><b>4</b></span><span>李O澄</span><b>${maxScore}</b><time>00:00:11.00</time></li>
+                    <li><span class="result-rank-place"><b>5</b></span><span>黃O妍</span><b>${maxScore}</b><time>00:00:12.00</time></li>
+                    <li><span class="result-rank-place"><b>6</b></span><span>劉O安</span><b>90</b><time>00:00:08.00</time></li>
+                    <li><span class="result-rank-place"><b>7</b></span><span>曾O晴</span><b>90</b><time>00:00:11.00</time></li>
+                    <li><span class="result-rank-place"><b>8</b></span><span>羅O庭</span><b>80</b><time>00:00:07.00</time></li>
+                    <li><span class="result-rank-place"><b>9</b></span><span>鍾O睿</span><b>80</b><time>00:00:10.00</time></li>
+                    <li><span class="result-rank-place"><b>10</b></span><span>彭O萱</span><b>70</b><time>00:00:09.00</time></li>
+                    <li class="result-rank-ellipsis" aria-hidden="true"><span>·</span><span>·</span><span>·</span></li>
+                    <li class="mine"><span class="result-rank-place"><b>16</b></span><span>你</span><b>${totalScore}</b><time>${elapsedText}</time></li>
+                </ol>
+                <p class="rank-foot">目前共 <b>54</b> 人參加，共玩 <b>121</b> 次</p>
+                <aside class="result-ranking-note">
+                    <b>注意事項</b>
+                    <ol>
+                        <li>同分且作答時間相同時，依活動參加先後進行排序。</li>
+                        <li>本關總分 100 分；共 5 題，每題 20 分，錯一次扣 4 分。</li>
+                    </ol>
+                </aside>`;
         }
 
         const reviewList = document.getElementById('review-list');
@@ -1399,31 +1694,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 helpType: '',
                 status: 'unanswered'
             };
-            const item = document.createElement('details');
-            item.className = 'review-item detailed-review';
-            if (idx === 0) item.open = true;
+            const isFailedByAttempts = record.wrongCount >= 5 && record.score <= 0;
+            const isHelped = !isFailedByAttempts && record.helpUsed;
+            const isPassed = !isFailedByAttempts && record.status === 'correct';
+            let statusClass = 'status-pass';
+            let statusText = '✓ 已通關';
+            if (isFailedByAttempts || (!isPassed && record.status !== 'unanswered')) {
+                statusClass = 'status-fail';
+                statusText = '✘ 未通關';
+            } else if (isHelped) {
+                statusClass = 'status-help';
+                statusText = '求助伯公';
+            } else if (record.wrongCount > 0) {
+                statusClass = 'status-wrong';
+                statusText = `錯 ${record.wrongCount} 次`;
+            }
+            const item = document.createElement('article');
+            item.className = `review-item sentence-review-item simple-review-item ${isFailedByAttempts ? 'failed' : isHelped ? 'helped' : isPassed ? 'passed' : 'failed'}`;
             item.innerHTML = `
-                <summary>
-                    <span>第 ${idx + 1} 題</span>
-                    <strong>${record.score} 分</strong>
-                    <em>${record.helpUsed ? (record.helpType === 'auto' ? '伯公自動協助' : '求助伯公') : (record.status === 'correct' ? '答對' : '未完成')}</em>
-                </summary>
-                <div class="review-detail-grid">
-                    <p><b>你的排序</b>${formatSequence(record.userSequence)}</p>
-                    <p><b>正確排序</b>${formatSequence(record.correctSequence)}</p>
-                    <p><b>完整客語</b>${record.hakka}</p>
-                    <p><b>中文翻譯</b>${record.translation}</p>
-                    <p><b>錯誤次數</b>${record.wrongCount} 次</p>
-                    <p><b>求助狀態</b>${record.helpUsed ? (record.helpType === 'auto' ? '第 5 次錯誤後伯公協助' : '玩家主動求助伯公') : '未求助'}</p>
+                <div class="review-card-head">
+                    <h4>第 ${idx + 1} 題</h4>
+                    <div class="review-badges">
+                        <span>得分：${record.score} 分</span>
+                        <em class="${statusClass}">${statusText}</em>
+                    </div>
+                </div>
+                <div class="review-sentence-body">
+                    <p class="review-hakka-line">${record.hakka}</p>
+                    <p class="review-translation-line">${record.translation}</p>
                 </div>`;
             const playBtn = document.createElement('button');
-            playBtn.className = 'review-play-btn';
-            playBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> 播放音檔';
+            playBtn.className = 'review-play-btn review-audio-icon-btn';
+            playBtn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
             playBtn.type = 'button';
+            playBtn.setAttribute('aria-label', `播放第 ${idx + 1} 題音檔`);
+            let reviewAudio = null;
             playBtn.addEventListener('click', (event) => {
                 event.preventDefault();
-                const reviewAudio = new Audio(record.audioUrl);
-                reviewAudio.play().catch(err => console.error('播放音檔失敗:', err));
+                if (!reviewAudio) {
+                    reviewAudio = new Audio(record.audioUrl);
+                    reviewAudio.addEventListener('ended', () => {
+                        playBtn.classList.remove('is-playing');
+                        playBtn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
+                        playBtn.setAttribute('aria-label', `播放第 ${idx + 1} 題音檔`);
+                    });
+                    reviewAudio.addEventListener('pause', () => {
+                        if (!reviewAudio.ended) {
+                            playBtn.classList.remove('is-playing');
+                            playBtn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
+                            playBtn.setAttribute('aria-label', `播放第 ${idx + 1} 題音檔`);
+                        }
+                    });
+                }
+                if (reviewAudio.paused) {
+                    reviewAudio.play().then(() => {
+                        playBtn.classList.add('is-playing');
+                        playBtn.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i><span class="sr-only">暫停音檔</span>';
+                        playBtn.setAttribute('aria-label', `暫停第 ${idx + 1} 題音檔`);
+                    }).catch(err => console.error('播放音檔失敗:', err));
+                } else {
+                    reviewAudio.pause();
+                }
             });
             item.appendChild(playBtn);
             reviewList.appendChild(item);
@@ -1432,6 +1763,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Audio Event Handlers
     function toggleAudio() {
+        if (openingCountdownActive) return;
         if (gameAudio.paused) {
             gameAudio.play().catch(e => {
                 console.error("播放音檔失敗:", e);
@@ -1479,9 +1811,33 @@ document.addEventListener('DOMContentLoaded', () => {
         loop();
     }
 
+    function getQuestionCliffStartX(index = currentQuestionIndex) {
+        const roadStarts = [rs(1040), rs(1140), rs(1260), rs(1100), rs(1320)];
+        return roadStarts[index % roadStarts.length];
+    }
+
+    function resetRunnerViewForGameStart() {
+        scrollX = 0;
+        skyScrollX = 0;
+        mountainScrollX = 0;
+        forestScrollX = 0;
+        dogX = getDogStartX();
+        dogY = groundY;
+        dogState = 'running';
+        hasCliffAppeared = false;
+        cliffX = getQuestionCliffStartX(0);
+        wrongBreakX = null;
+        isBridgeTransparent = false;
+        isBridgeBroken = false;
+        bridgeAlpha = 0.0;
+        splashParticles = [];
+        sparkles = [];
+        flashTimer = 0;
+    }
+
     function resetCanvasForQuestion(q) {
         hasCliffAppeared = false;
-        cliffX = 1160; // Place cliff completely off-screen to the right (continuous loop)
+        cliffX = getQuestionCliffStartX(currentQuestionIndex); // Variable road length per question.
         if (dogState !== 'transition_in') {
             dogState = 'running';
         }
@@ -1492,22 +1848,9 @@ document.addEventListener('DOMContentLoaded', () => {
         sparkles = [];
         wrongBreakX = null;
         
-        // Dynamically compute speed based on audio duration (Section IV formula)
-        // Set L = 930 px (1160 - 230). Time duration is D seconds.
-        // We calculate base speed at 1x so the cliff arrives exactly when the audio finishes.
-        gameAudio.addEventListener('loadedmetadata', function durationListener() {
-            const D = gameAudio.duration || 3.0; // fallback if metadata not loaded
-            questionBaseSpeed = Math.max(1.0, 930 / (D * 60));
-            activeSpeed = questionBaseSpeed * speedMultiplier;
-            gameAudio.removeEventListener('loadedmetadata', durationListener);
-        });
-        
-        // If metadata is already loaded:
-        if (gameAudio.duration) {
-            const D = gameAudio.duration;
-            questionBaseSpeed = Math.max(1.0, 930 / (D * 60));
-            activeSpeed = questionBaseSpeed * speedMultiplier;
-        }
+        // Keep runner speed steady; each question can have a different road length.
+        questionBaseSpeed = rs(2.2);
+        activeSpeed = questionBaseSpeed * speedMultiplier;
     }
 
     function updateGamePhysics() {
@@ -1526,23 +1869,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Handle physical movement based on dogState
-        if (dogState === 'running') {
+        if (openingCountdownActive && dogState === 'running') {
+            dogX += (getDogStartX() - dogX) * 0.1;
+            dogY = groundY;
+        }
+        else if (dogState === 'running') {
             // Move cliff closer and scroll background layers ONLY before cliff appears
             if (!hasCliffAppeared) {
-                scrollX += activeSpeed;
-                skyScrollX += activeSpeed * 0.05;
-                mountainScrollX += activeSpeed * 0.15;
-                forestScrollX += activeSpeed * 0.4;
-                
-                cliffX -= activeSpeed;
-                if (cliffX <= cliffTargetX) {
+                const cliffTargetX = getCliffTargetX();
+                const distanceToTarget = Math.max(0, cliffX - cliffTargetX);
+                const approachSpeed = distanceToTarget < rs(95)
+                    ? Math.max(rs(0.45), distanceToTarget * 0.18)
+                    : activeSpeed;
+                const step = Math.min(activeSpeed, approachSpeed, distanceToTarget);
+
+                scrollX += step;
+                skyScrollX += step * 0.05;
+                mountainScrollX += step * 0.15;
+                forestScrollX += step * 0.4;
+                cliffX -= step;
+
+                if (distanceToTarget <= rs(0.5) || step <= 0) {
                     cliffX = cliffTargetX;
                     hasCliffAppeared = true;
                 }
             }
             
             // Ensure dog is in running position
-            dogX += (180 - dogX) * 0.1;
+            dogX += (getDogStartX() - dogX) * 0.1;
             dogY = groundY;
         } 
         else if (dogState === 'transition_out') {
@@ -1558,25 +1912,25 @@ document.addEventListener('DOMContentLoaded', () => {
             dogY = groundY;
             
             // If dog is fully off-screen, load the next question
-            if (dogX >= canvasWidth + 100) {
+            if (dogX >= canvasWidth + rs(100)) {
                 currentQuestionIndex++;
                 loadQuestion(currentQuestionIndex);
                 
                 // If it's not the end of the game, prepare transition_in
                 if (currentQuestionIndex < questions.length) {
-                    dogX = -100;
+                    dogX = getDogEntryX();
                     dogState = 'transition_in';
                 }
             }
         }
         else if (dogState === 'transition_in') {
             // Let Ah-Hei enter first. Do not move the cliff or runway until the player can see the dog.
-            dogX += Math.max(7, (180 - dogX) * 0.16);
+            dogX += Math.max(rs(7), (getDogStartX() - dogX) * 0.16);
             dogY = groundY;
             
             // If dog reaches running position, change state to running
-            if (dogX >= 175) {
-                dogX = 180;
+            if (dogX >= getDogStartX() - rs(5)) {
+                dogX = getDogStartX();
                 dogState = 'running';
             }
         } 
@@ -1587,9 +1941,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sparkle effects on the bridge
             if (dogFrame % 6 === 0) {
                 sparkles.push({
-                    x: dogX - 10,
-                    y: groundY - 5 + Math.random() * 10,
-                    size: 2 + Math.random() * 3,
+                    x: dogX - rs(10),
+                    y: groundY - rs(5) + Math.random() * rs(10),
+                    size: rs(2) + Math.random() * rs(3),
                     alpha: 1.0,
                     color: isBridgeTransparent ? 'var(--accent)' : 'var(--primary-light)'
                 });
@@ -1618,8 +1972,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         setTimeout(() => {
                             // 2. Put the dog back in the sky above starting point (to drop and flash)
-                            dogX = 180;
-                            dogY = -100;
+                            dogX = getDogStartX();
+                            dogY = rs(-100);
                             dogState = 'recovering';
                             flashTimer = 25;
                             
@@ -1642,8 +1996,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         showInlineFeedback("答錯了！字卡已還原請重新排列！", 'var(--danger)');
                         
                         dogState = 'recovering';
-                        dogX = 180;
-                        dogY = -100;
+                        dogX = getDogStartX();
+                        dogY = rs(-100);
                         flashTimer = 25; // Flash 2 times (25 frames)
                         isAnswerSubmitted = false;
                         isBridgeBroken = false;
@@ -1657,7 +2011,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 1200);
             }
             // Otherwise, check if dog reached the other side (only if not falling)
-            else if (wrongBreakX === null && dogX >= cliffX + cliffWidth + 12) {
+            else if (wrongBreakX === null && dogX >= cliffX + getCliffWidth() + getBridgeLandingOverlap() + rs(12)) {
                 // Successfully crossed! Transition to running on the other side or start fade out
                 if (shouldAutoTransition) {
                     startFadeOutAndTransition();
@@ -1678,7 +2032,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (dogState === 'falling') {
             // Dog falls off the cliff into the river
             dogX += activeSpeed * 0.5;
-            dogY += 6.5; // gravity pull
+            dogY += rs(6.5); // gravity pull
             
             if (dogY >= riverY) {
                 dogY = riverY;
@@ -1693,7 +2047,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
         else if (dogState === 'recovering') {
             // Dog falls down from the sky vertically to groundY
-            dogX = 180;
+            dogX = getDogStartX();
             dogY += (groundY - dogY) * 0.15;
             
             if (Math.abs(dogY - groundY) < 1) {
@@ -1714,19 +2068,19 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        const grassDrawn = drawScrollingImage(runnerAssets.grass, 96, 52, forestScrollX, 0.8, 1);
+        const grassDrawn = drawScrollingImage(runnerAssets.grass, rs(96), rs(52), forestScrollX, 0.8, 1);
         if (!grassDrawn) {
             ctx.fillStyle = '#78b85a';
-            ctx.fillRect(0, groundY - 12, canvasWidth, 16);
+            ctx.fillRect(0, groundY - rs(12), canvasWidth, rs(16));
         }
 
-        const mountainsDrawn = drawScrollingImage(runnerAssets.mountains, 18, 92, mountainScrollX, 0.45);
+        const mountainsDrawn = drawScrollingImage(runnerAssets.mountains, rs(18), rs(92), mountainScrollX, 0.45);
         if (!mountainsDrawn) {
             ctx.fillStyle = '#8fbf73';
             ctx.beginPath();
-            for (let i = 0; i <= canvasWidth; i += 20) {
+            for (let i = 0; i <= canvasWidth; i += rs(20)) {
                 let relativeScroll = (mountainScrollX + i) % (canvasWidth * 1.5);
-                let y = groundY - 45 + Math.sin(relativeScroll * 0.004) * 25 + Math.cos(relativeScroll * 0.008) * 10;
+                let y = groundY - rs(45) + Math.sin(relativeScroll * 0.004) * rs(25) + Math.cos(relativeScroll * 0.008) * rs(10);
                 if (i === 0) ctx.moveTo(i, y);
                 else ctx.lineTo(i, y);
             }
@@ -1735,13 +2089,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fill();
         }
 
-        const villageDrawn = drawScrollingImage(runnerAssets.village, 48, 88, forestScrollX, 0.65);
+        const villageDrawn = drawScrollingImage(runnerAssets.village, rs(48), rs(88), forestScrollX, 0.65);
         if (!villageDrawn) {
             ctx.fillStyle = '#71a858';
             ctx.beginPath();
-            for (let i = 0; i <= canvasWidth; i += 15) {
+            for (let i = 0; i <= canvasWidth; i += rs(15)) {
                 let relativeScroll = (forestScrollX + i) % (canvasWidth * 1.5);
-                let y = groundY - 15 + Math.sin(relativeScroll * 0.008) * 12;
+                let y = groundY - rs(15) + Math.sin(relativeScroll * 0.008) * rs(12);
                 if (i === 0) ctx.moveTo(i, y);
                 else ctx.lineTo(i, y);
             }
@@ -1757,9 +2111,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Draw wavy river water
         ctx.fillStyle = '#6daaf1';
         ctx.beginPath();
-        for (let i = 0; i <= canvasWidth; i += 25) {
+        for (let i = 0; i <= canvasWidth; i += rs(25)) {
             let relativeScroll = (scrollX + i) % (canvasWidth * 1.5);
-            let y = riverY + Math.sin(relativeScroll * 0.03 + dogFrame * 0.08) * 6;
+            let y = riverY + Math.sin(relativeScroll * 0.03 + dogFrame * 0.08) * rs(6);
             if (i === 0) ctx.moveTo(i, y);
             else ctx.lineTo(i, y);
         }
@@ -1768,10 +2122,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fill();
         
         // 5. Draw flat image ground.
-        const groundTop = groundY - 8;
-        const groundHeight = canvasHeight - groundTop + 8;
-        const cliffInnerOverlap = 18;
-        const groundJoinOverlap = 1;
+        const groundTop = groundY - rs(8);
+        const groundHeight = canvasHeight - groundTop + rs(8);
+        const cliffInnerOverlap = 0;
+        const groundJoinOverlap = 0;
+        const floorLoopToFloorROverlap = 1;
         const cliffYOffset = 0;
         const leftCliffImage = runnerAssets.floorRight;
         const rightCliffImage = runnerAssets.floorLeft;
@@ -1784,8 +2139,9 @@ document.addEventListener('DOMContentLoaded', () => {
             : 0;
         const cliffDrawTop = groundTop + cliffYOffset;
         const leftCliffX = cliffX - leftCliffWidth + cliffInnerOverlap;
-        const rightCliffX = (cliffX + cliffWidth) - cliffInnerOverlap;
-        const leftGroundEndX = leftCliffX + groundJoinOverlap;
+        const currentCliffWidth = getCliffWidth();
+        const rightCliffX = (cliffX + currentCliffWidth) - cliffInnerOverlap;
+        const leftGroundEndX = leftCliffX + floorLoopToFloorROverlap;
         const rightGroundStartX = rightCliffX + rightCliffWidth - groundJoinOverlap;
 
         if (hasCliffAppeared || cliffX < canvasWidth) {
@@ -1795,27 +2151,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.beginPath();
                 ctx.rect(0, groundTop, Math.max(0, leftGroundEndX), groundHeight);
                 ctx.clip();
-                if (!drawScrollingImage(runnerAssets.floorLoop, groundTop, groundHeight, scrollX, 1, 6)) {
+                if (!drawTiledImageRange(runnerAssets.floorLoop, 0, leftGroundEndX, groundTop, groundHeight, leftGroundEndX, 0)) {
                     ctx.fillStyle = '#c97820';
-                    ctx.fillRect(0, groundY, cliffX, riverY - groundY - 4);
+                    ctx.fillRect(0, groundY, cliffX, riverY - groundY - rs(4));
                     ctx.fillStyle = '#76aa25';
-                    ctx.fillRect(0, groundY - 4, cliffX, 10);
+                    ctx.fillRect(0, groundY - rs(4), cliffX, rs(10));
                 }
                 ctx.restore();
             }
             
             // Right platform
-            let rightStart = cliffX + cliffWidth;
+            let rightStart = cliffX + currentCliffWidth;
             if (rightStart < canvasWidth) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(rightGroundStartX, groundTop, Math.max(0, canvasWidth - rightGroundStartX), groundHeight);
                 ctx.clip();
-                if (!drawScrollingImage(runnerAssets.floorLoop, groundTop, groundHeight, scrollX, 1, 6)) {
+                if (!drawTiledImageRange(runnerAssets.floorLoop, rightGroundStartX, canvasWidth, groundTop, groundHeight, rightGroundStartX, 0)) {
                     ctx.fillStyle = '#c97820';
-                    ctx.fillRect(rightStart, groundY, canvasWidth - rightStart, riverY - groundY - 4);
+                    ctx.fillRect(rightStart, groundY, canvasWidth - rightStart, riverY - groundY - rs(4));
                     ctx.fillStyle = '#76aa25';
-                    ctx.fillRect(rightStart, groundY - 4, canvasWidth - rightStart, 10);
+                    ctx.fillRect(rightStart, groundY - rs(4), canvasWidth - rightStart, rs(10));
                 }
                 ctx.restore();
             }
@@ -1828,11 +2184,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // Normal solid ground
-            if (!drawScrollingImage(runnerAssets.floorLoop, groundTop, groundHeight, scrollX, 1, 6)) {
+            if (!drawScrollingImage(runnerAssets.floorLoop, groundTop, groundHeight, scrollX, 1, 0)) {
                 ctx.fillStyle = '#c97820';
-                ctx.fillRect(0, groundY, canvasWidth, riverY - groundY - 4);
+                ctx.fillRect(0, groundY, canvasWidth, riverY - groundY - rs(4));
                 ctx.fillStyle = '#76aa25';
-                ctx.fillRect(0, groundY - 4, canvasWidth, 10);
+                ctx.fillRect(0, groundY - rs(4), canvasWidth, rs(10));
             }
         }
         
@@ -1845,6 +2201,36 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 8. Draw Dog (阿黑)
         drawDog(dogX, dogY, dogState, dogFrame);
+        drawOpeningCountdown();
+    }
+
+    function drawOpeningCountdown() {
+        if (!openingCountdownActive) return;
+        const elapsed = Date.now() - openingCountdownStartedAt;
+        const remaining = Math.max(0, openingCountdownDuration - elapsed);
+        const label = remaining > 2600 ? '3' : remaining > 1700 ? '2' : remaining > 800 ? '1' : '開始';
+        const pulse = 1 + Math.sin(dogFrame * 0.16) * 0.04;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(12, 37, 31, .28)';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        ctx.translate(canvasWidth / 2, rs(74));
+        ctx.scale(pulse, pulse);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${label === '開始' ? rs(48) : rs(68)}px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+        ctx.lineWidth = rs(8);
+        ctx.strokeStyle = 'rgba(255, 255, 255, .95)';
+        ctx.fillStyle = '#0f7d5c';
+        ctx.strokeText(label, 0, 0);
+        ctx.fillText(label, 0, 0);
+        ctx.font = `800 ${rs(18)}px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+        ctx.lineWidth = rs(4);
+        ctx.fillStyle = '#fff8c5';
+        ctx.strokeStyle = 'rgba(79, 59, 44, .78)';
+        ctx.strokeText('阿黑準備出發', 0, rs(54));
+        ctx.fillText('阿黑準備出發', 0, rs(54));
+        ctx.restore();
     }
 
     // Animated Dog Drawing Function
@@ -1869,20 +2255,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isImageReady(kuroImage) && state !== 'splashing') {
             const sourceWidth = kuroImage.naturalWidth || 512;
             const sourceHeight = kuroImage.naturalHeight || 512;
-            const runnerHeight = 96;
+            const runnerHeight = rs(96);
             const runnerWidth = runnerHeight * (sourceWidth / sourceHeight);
             const runBob = (state === 'running' || state === 'crossing' || state === 'transition_out' || state === 'transition_in')
-                ? Math.sin(frame * 0.22) * 2
+                ? Math.sin(frame * 0.22) * rs(2)
                 : 0;
 
             ctx.translate(x, y + runBob);
 
             if (state === 'falling') {
-                ctx.translate(0, -10);
+                ctx.translate(0, rs(-10));
                 ctx.rotate(frame * 0.1);
             }
 
-            ctx.drawImage(kuroImage, -runnerWidth * 0.5, -runnerHeight + 29, runnerWidth, runnerHeight);
+            ctx.drawImage(kuroImage, -runnerWidth * 0.5, -runnerHeight + rs(29), runnerWidth, runnerHeight);
             ctx.restore();
             return;
         }
@@ -1890,7 +2276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.translate(x, y);
         
         if (state === 'falling') {
-            ctx.translate(0, -10);
+            ctx.translate(0, rs(-10));
             ctx.rotate(frame * 0.1);
         }
         
@@ -2021,7 +2407,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fill();
             
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 9px Arial';
+            ctx.font = 'bold 9px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('X', -3, -10);
             ctx.fillText('X', 3, -10);
@@ -2058,18 +2444,21 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (isBridgeTransparent) {
                 // Glow Transparent bridge (Ask Po Kong for help)
-                ctx.lineWidth = 6;
+                ctx.lineWidth = rs(6);
                 ctx.strokeStyle = `rgba(255, 183, 3, ${bridgeAlpha})`;
                 ctx.shadowColor = 'var(--accent)';
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = rs(15);
                 ctx.beginPath();
-                ctx.moveTo(cliffX, groundY + 4);
-                ctx.lineTo(cliffX + cliffWidth, groundY + 4);
+                const currentCliffWidth = getCliffWidth();
+                const bridgeDrawX = getBridgeDrawX();
+                const bridgeDrawWidth = getBridgeDrawWidth();
+                ctx.moveTo(bridgeDrawX, groundY + rs(4));
+                ctx.lineTo(bridgeDrawX + bridgeDrawWidth, groundY + rs(4));
                 ctx.stroke();
                 
                 // Draw glass transparent deck
                 ctx.fillStyle = `rgba(255, 255, 255, ${bridgeAlpha * 0.15})`;
-                ctx.fillRect(cliffX, groundY + 4, cliffWidth, 10);
+                ctx.fillRect(bridgeDrawX, groundY + rs(4), bridgeDrawWidth, rs(10));
             } else {
                 // Solid wood plank bridge (No text)
                 const charCount = selectedBlocks.length;
@@ -2078,39 +2467,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!q) return;
                     const correctHakkaSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
                     const totalChars = correctHakkaSequence.length || 1;
-                    const blockWidth = cliffWidth / totalChars;
+                    const currentCliffWidth = getCliffWidth();
+                    const bridgeDrawX = getBridgeDrawX();
+                    const bridgeDrawWidth = getBridgeDrawWidth();
+                    const blockWidth = bridgeDrawWidth / totalChars;
 
                     if (isBridgeBroken && isImageReady(runnerAssets.brokenBridge) && isImageReady(runnerAssets.bridge)) {
-                        const bridgeHeight = 22;
-                        const bridgeWidth = cliffWidth + 4;
+                        const bridgeHeight = getBridgeHeight();
+                        const bridgeWidth = bridgeDrawWidth;
                         const bridgeScale = bridgeWidth / runnerAssets.bridge.naturalWidth;
                         const brokenBridgeWidth = runnerAssets.brokenBridge.naturalWidth * bridgeScale;
-                        ctx.drawImage(runnerAssets.brokenBridge, cliffX - 2, groundY - 2, brokenBridgeWidth, bridgeHeight);
+                        ctx.drawImage(runnerAssets.brokenBridge, bridgeDrawX, groundY - rs(2), brokenBridgeWidth, bridgeHeight);
                     } else if (isImageReady(runnerAssets.bridge)) {
-                        ctx.drawImage(runnerAssets.bridge, cliffX - 2, groundY - 2, cliffWidth + 4, 22);
+                        const bridgeHeight = getBridgeHeight();
+                        const bridgeWidth = bridgeDrawWidth;
+                        ctx.drawImage(runnerAssets.bridge, bridgeDrawX, groundY - rs(2), bridgeWidth, bridgeHeight);
                     } else {
                         selectedBlocks.forEach((block, idx) => {
-                            let bx = cliffX + idx * blockWidth;
-                            let by = groundY + 2;
+                            let bx = bridgeDrawX + idx * blockWidth;
+                            let by = groundY + rs(2);
                             
                             // Solid wooden plank styling
                             ctx.fillStyle = '#8B5A2B'; // Solid wood brown
                             ctx.strokeStyle = '#5c3a1a'; // Darker brown border
-                            ctx.lineWidth = 2;
+                            ctx.lineWidth = rs(2);
                             
                             ctx.beginPath();
-                            ctx.roundRect(bx + 1, by, blockWidth - 2, 12, 3);
+                            ctx.roundRect(bx + rs(1), by, blockWidth - rs(2), rs(12), rs(3));
                             ctx.fill();
                             ctx.stroke();
                             
                             // Subtle wooden grain lines
                             ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-                            ctx.lineWidth = 1;
+                            ctx.lineWidth = rs(1);
                             ctx.beginPath();
-                            ctx.moveTo(bx + 3, by + 4);
-                            ctx.lineTo(bx + blockWidth - 5, by + 4);
-                            ctx.moveTo(bx + 5, by + 8);
-                            ctx.lineTo(bx + blockWidth - 7, by + 8);
+                            ctx.moveTo(bx + rs(3), by + rs(4));
+                            ctx.lineTo(bx + blockWidth - rs(5), by + rs(4));
+                            ctx.moveTo(bx + rs(5), by + rs(8));
+                            ctx.lineTo(bx + blockWidth - rs(7), by + rs(8));
                             ctx.stroke();
                         });
                     }
@@ -2148,9 +2542,9 @@ document.addEventListener('DOMContentLoaded', () => {
             splashParticles.push({
                 x: x,
                 y: y,
-                vx: (Math.random() - 0.5) * 6,
-                vy: -Math.random() * 8 - 4,
-                size: 2 + Math.random() * 5,
+                vx: (Math.random() - 0.5) * rs(6),
+                vy: -Math.random() * rs(8) - rs(4),
+                size: rs(2) + Math.random() * rs(5),
                 color: '#8ecae6',
                 alpha: 1.0
             });
@@ -2162,7 +2556,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let p = splashParticles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.vy += 0.45; // gravity
+            p.vy += rs(0.45); // gravity
             p.alpha -= 0.025;
             
             if (p.alpha <= 0) {
@@ -2189,6 +2583,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     init();
 });
+
+
+
+
+
+
+
+
+
 
 
 

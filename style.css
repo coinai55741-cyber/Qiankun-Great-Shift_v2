@@ -1,3 +1,18 @@
+@font-face {
+    font-family: "GenSekiGothic2TW";
+    src: url("data/fonts/GenSekiGothic2TW-R.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "GenSekiGothic2TW";
+    src: url("data/fonts/GenSekiGothic2TW-B.otf") format("opentype");
+    font-weight: 700 900;
+    font-style: normal;
+    font-display: swap;
+}
 /* ==========================================================================
    阿黑的客字繪卷 客語排列遊戲 Style System
    Design: Hakka Modern Forest / Glassmorphism
@@ -22,8 +37,9 @@
     --glass-active: rgba(255, 255, 255, 0.16);
     --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --font-outfit: 'Outfit', sans-serif;
-    --font-tc: 'Noto Sans TC', sans-serif;
+    --font-hakka: "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    --font-outfit: var(--font-hakka);
+    --font-tc: var(--font-hakka);
 }
 
 /* Reset */
@@ -37,7 +53,7 @@ body {
     background-color: var(--bg-dark-2);
     background-image: linear-gradient(135deg, var(--bg-dark-1) 0%, var(--bg-dark-2) 100%);
     color: var(--text-main);
-    font-family: var(--font-outfit), 'twhei-s', var(--font-tc), sans-serif;
+    font-family: var(--font-hakka);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -392,7 +408,7 @@ h4 {
 
 /* Word Blocks styling */
 .word-block {
-    font-family: 'twhei-s', var(--font-tc), sans-serif;
+    font-family: var(--font-hakka);
     background: var(--glass-active);
     border: 1px solid var(--glass-border);
     color: white;
@@ -812,7 +828,7 @@ h4 {
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 960 / 200;
+    aspect-ratio: 1440 / 300;
     background: transparent;
 }
 
@@ -893,7 +909,7 @@ h4 {
 }
 
 .review-hakka {
-    font-family: 'twhei-s', var(--font-tc), sans-serif;
+    font-family: var(--font-hakka);
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--accent);
@@ -2355,7 +2371,7 @@ body:has(#game-card:not(.hidden)) .word-block {
     border-radius: 10px;
     background: #fffaf0;
     color: #111;
-    font-family: 'twhei-s', 'Noto Sans TC', sans-serif;
+    font-family: var(--font-hakka);
     font-size: clamp(1.32rem, min(2vw, 3.2vh), 1.82rem);
     line-height: 1;
     font-weight: 900;
@@ -3086,7 +3102,7 @@ body:has(#story-card:not(.hidden)) #story-card #story-skip-btn {
         border-radius: 8px;
         background: #fffaf0;
         color: #111;
-        font-family: 'twhei-s', 'Noto Sans TC', sans-serif;
+        font-family: var(--font-hakka);
         font-size: clamp(.98rem, min(2.6vw, 4vh), 1.12rem);
         line-height: 1;
         font-weight: 900;
@@ -3557,12 +3573,11 @@ body:has(#game-card:not(.hidden)) #hint-btn {
     position: relative;
     overflow: hidden;
     transform-style: preserve-3d;
-    transition: transform .32s ease, background .2s ease, color .2s ease;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
     white-space: normal;
 }
 
 body:has(#game-card:not(.hidden)) #hint-btn.is-flipped {
-    transform: rotateY(180deg);
     background: #fff8e6;
     color: #7a3f16;
     border-color: #d29b55;
@@ -3576,21 +3591,33 @@ body:has(#game-card:not(.hidden)) #hint-btn .hint-card-face {
     justify-content: center;
     gap: .45em;
     padding: 0 12px;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
     text-align: center;
+    transition: opacity .18s ease, transform .18s ease;
 }
 
 body:has(#game-card:not(.hidden)) #hint-btn .hint-card-front {
-    transform: rotateY(0deg);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 body:has(#game-card:not(.hidden)) #hint-btn .hint-card-back {
-    transform: rotateY(180deg);
+    opacity: 0;
+    transform: translateY(8px);
     font-size: clamp(.72rem, .95vw, .92rem);
     line-height: 1.18;
     font-weight: 900;
     letter-spacing: .02em;
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-front {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-back {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 @media (orientation: landscape) and (max-width: 980px) {
@@ -3613,20 +3640,10 @@ body:has(#game-card:not(.hidden)) #hint-btn .hint-card-back {
         width: min(260px, calc(100vw - 24px));
         min-height: 44px;
         padding: 0 10px;
-        transform: none;
         background: #fff8e6;
         color: #7a3f16;
         border-color: #d29b55;
         box-shadow: 0 10px 24px rgba(80, 45, 10, .2);
-    }
-
-    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-front {
-        display: none;
-    }
-
-    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-back {
-        display: flex;
-        transform: none;
     }
 }
 
@@ -3875,7 +3892,7 @@ body:has(#game-card:not(.hidden)) .lobby-back-button {
     body:has(#game-card:not(.hidden)) #runner-canvas {
         width: 100vw;
         height: auto;
-        aspect-ratio: 960 / 200;
+        aspect-ratio: 1440 / 300;
         display: block;
     }
 
@@ -4080,22 +4097,1838 @@ body:has(#game-card:not(.hidden)) .lobby-back-button {
 /* Portrait Chinese hint: show the JSON Chinese sentence directly in the button area. */
 @media (orientation: portrait) {
     body:has(#game-card:not(.hidden)) #hint-btn.is-flipped {
-        transform: none;
         background: #fff8e6;
         color: #7a3f16;
         border-color: #d29b55;
         box-shadow: 0 6px 16px rgba(80, 45, 10, .16);
     }
 
-    body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-front {
-        display: none;
-    }
-
     body:has(#game-card:not(.hidden)) #hint-btn.is-flipped .hint-card-back {
-        display: flex;
-        transform: none;
         padding: 0 12px;
         font-size: clamp(.82rem, 3.4vw, 1rem);
         line-height: 1.18;
     }
+}
+
+/* Story screen: only show the back button; speed and dialect HUD belong to gameplay. */
+body:has(#story-card:not(.hidden)) .header-status {
+    display: none !important;
+}
+
+/* Lobby leaderboard, using local data/ui assets. */
+.lobby-leaderboard {
+    margin: 18px 0 20px;
+    padding: 16px;
+    border: 1px solid #dfcfab;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fffaf0, #f2e5c4);
+    box-shadow: 0 12px 26px rgba(82, 58, 27, .12);
+    color: #4b382a;
+}
+.lobby-rank-banner {
+    display: block;
+    width: min(230px, 76%);
+    height: auto;
+    margin: -2px auto 10px;
+}
+.lobby-rank-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.lobby-rank-summary p {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(47, 108, 90, .1);
+    color: #2f4b40;
+    font-size: .92rem;
+    font-weight: 800;
+    text-align: center;
+}
+.lobby-rank-summary b { color: #a03b28; }
+.lobby-rank-link {
+    width: 100%;
+    min-height: 40px;
+    margin: 0 0 10px;
+    border: 0;
+    border-radius: 999px;
+    background: #2f6c5a;
+    color: #fffaf0;
+    font: inherit;
+    font-size: .95rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #214f42;
+}
+.lobby-leaderboard ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 7px;
+}
+.lobby-leaderboard li {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .62);
+    border: 1px solid rgba(196, 166, 103, .5);
+}
+.lobby-rank-place {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #ead5aa;
+    color: #6a4922;
+    font-weight: 900;
+}
+.lobby-rank-place img {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+}
+.lobby-rank-name {
+    overflow: hidden;
+    color: #3f3127;
+    font-weight: 900;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.lobby-leaderboard time {
+    color: #a03b28;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+@media (min-width: 920px) {
+    #intro-card .selection-section {
+        max-width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+@media (max-width: 600px) {
+    .lobby-rank-summary { grid-template-columns: 1fr; }
+    .lobby-leaderboard { padding: 12px; }
+}
+
+/* Floating lobby leaderboard: above all lobby containers, anchored to browser top-right. */
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+    position: fixed;
+    top: clamp(16px, 2.4vw, 32px);
+    right: clamp(16px, 3vw, 44px);
+    z-index: 90;
+    width: min(300px, 26vw);
+    margin: 0;
+}
+
+@media (max-width: 1111px) {
+    body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+        width: auto;
+        min-width: 96px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-banner,
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary,
+    body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard ol {
+        display: none;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link {
+        min-height: 42px;
+        margin: 0;
+        padding: 0 18px;
+        border-radius: 999px;
+        background: #104b43;
+        color: #fffaf0;
+        box-shadow: 0 8px 18px rgba(31, 65, 57, .22);
+        white-space: nowrap;
+    }
+}
+
+
+
+/* Global navigation and lobby leaderboard placement */
+#app > .lobby-back-button {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 160;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: clamp(78px, 8vw, 112px);
+    height: clamp(30px, 4.2vw, 42px);
+    padding: 0 clamp(8px, 1.2vw, 14px);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    border-radius: 0 0 16px 0;
+    background: rgba(255, 255, 255, 0.82);
+    color: #1f4f43;
+    font-size: clamp(11px, 1.2vw, 15px);
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(20, 65, 58, 0.14);
+    backdrop-filter: blur(8px);
+}
+
+#app > .lobby-back-button img {
+    width: clamp(15px, 1.8vw, 22px);
+    height: clamp(15px, 1.8vw, 22px);
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.lobby-leaderboard {
+    display: none;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+    display: block;
+}
+
+body:not(:has(#intro-card:not(.hidden))) > #app .lobby-leaderboard {
+    display: none !important;
+}
+
+/* Leaderboard floats without an outer aside card. */
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-banner {
+    width: min(266px, 100%);
+    margin: 0 auto -4px;
+    filter: drop-shadow(0 8px 12px rgba(50, 30, 12, 0.18));
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary,
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard ol {
+    width: min(224px, 92%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link {
+    width: min(224px, 92%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Unified back button sizing across story, lobby, gameplay, and results. */
+body #app > .lobby-back-button,
+body:has(#story-card:not(.hidden)) #app > .lobby-back-button,
+body:has(#intro-card:not(.hidden)) #app > .lobby-back-button,
+body:has(#game-card:not(.hidden)) #app > .lobby-back-button,
+body:has(#results-card:not(.hidden)) #app > .lobby-back-button {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 180 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: clamp(4px, 0.7vw, 7px) !important;
+    width: auto !important;
+    min-width: clamp(76px, 8vw, 108px) !important;
+    height: clamp(30px, 3.8vw, 40px) !important;
+    padding: 0 clamp(8px, 1.1vw, 13px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.78) !important;
+    border-radius: 0 0 16px 0 !important;
+    background: rgba(255, 255, 255, 0.84) !important;
+    color: #1f4f43 !important;
+    font-size: clamp(11px, 1.05vw, 14px) !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    box-shadow: 0 8px 18px rgba(20, 65, 58, 0.14) !important;
+    backdrop-filter: blur(8px) !important;
+    transform: none !important;
+}
+
+body #app > .lobby-back-button img,
+body:has(#story-card:not(.hidden)) #app > .lobby-back-button img,
+body:has(#intro-card:not(.hidden)) #app > .lobby-back-button img,
+body:has(#game-card:not(.hidden)) #app > .lobby-back-button img,
+body:has(#results-card:not(.hidden)) #app > .lobby-back-button img {
+    width: clamp(15px, 1.55vw, 20px) !important;
+    height: clamp(15px, 1.55vw, 20px) !important;
+    object-fit: contain !important;
+    flex: 0 0 auto !important;
+}
+
+/* Leaderboard keeps a white content surface while the aside itself has no frame. */
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary,
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link,
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard ol {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 20px rgba(67, 46, 22, 0.12);
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary {
+    padding: 12px 12px 8px;
+    border-radius: 14px 14px 0 0;
+    margin-bottom: 0;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link {
+    display: block;
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard ol {
+    padding: 8px;
+    border-radius: 0 0 14px 14px;
+}
+
+/* Lobby phone layout: keep PC-readable sizing and let the page scroll vertically. */
+@media (max-width: 767px) {
+    body:has(#intro-card:not(.hidden)) {
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 0;
+        background: #f7efd9;
+    }
+
+    body:has(#intro-card:not(.hidden)) #app.app-container {
+        width: 100vw;
+        min-height: 100dvh;
+        padding: 48px 0 28px;
+        gap: 0;
+        align-items: center;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card.game-card {
+        width: min(390px, calc(100vw - 32px));
+        max-width: none;
+        margin: 14px auto 28px;
+        padding: 22px 18px 20px;
+        border-radius: 24px;
+        gap: 16px;
+        transform: none !important;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-header {
+        padding-bottom: 12px;
+        margin-bottom: 4px;
+        gap: 10px;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-header h2 {
+        font-size: 1.62rem;
+        line-height: 1.18;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-story,
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li,
+    body:has(#intro-card:not(.hidden)) #intro-card .warning-box {
+        font-size: 1rem;
+        line-height: 1.58;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-rules h3,
+    body:has(#intro-card:not(.hidden)) #intro-card .selection-title {
+        font-size: 1.08rem;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .selection-section {
+        width: 100%;
+        margin: 14px 0;
+        padding: 14px 12px;
+        border-radius: 16px;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .dialect-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn {
+        min-height: 42px;
+        padding: 9px 8px;
+        font-size: 1rem;
+        border-radius: 12px;
+    }
+
+    body:has(#intro-card:not(.hidden)) #start-adventure-btn {
+        min-height: 54px;
+        font-size: 1.18rem;
+        border-radius: 14px;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+        top: 10px;
+        right: 10px;
+        min-width: 96px;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link {
+        min-height: 38px;
+        padding: 0 15px;
+        font-size: .92rem;
+    }
+}
+
+/* Back button uses one fixed readable size on phone and PC. */
+body #app > .lobby-back-button,
+body:has(#story-card:not(.hidden)) #app > .lobby-back-button,
+body:has(#intro-card:not(.hidden)) #app > .lobby-back-button,
+body:has(#game-card:not(.hidden)) #app > .lobby-back-button,
+body:has(#results-card:not(.hidden)) #app > .lobby-back-button {
+    min-width: 108px !important;
+    height: 40px !important;
+    padding: 0 13px !important;
+    gap: 7px !important;
+    font-size: 14px !important;
+}
+
+body #app > .lobby-back-button img,
+body:has(#story-card:not(.hidden)) #app > .lobby-back-button img,
+body:has(#intro-card:not(.hidden)) #app > .lobby-back-button img,
+body:has(#game-card:not(.hidden)) #app > .lobby-back-button img,
+body:has(#results-card:not(.hidden)) #app > .lobby-back-button img {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+
+/* Runner canvas now renders at 1440x300 internally to keep the floor texture sharp. */
+#runner-canvas,
+body:has(#game-card:not(.hidden)) #runner-canvas {
+    aspect-ratio: 1440 / 300;
+}
+
+/* Leaderboard RWD aligned with fukuchange lobby: white card, banner above, compact button on smaller widths. */
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+    display: block;
+    position: fixed;
+    z-index: 90;
+    top: clamp(96px, 17vh, 160px);
+    right: max(16px, calc(50vw - 650px));
+    width: 248.6px;
+    min-height: 359px;
+    margin: 0;
+    padding: 60px 10px 19px !important;
+    border: 0 !important;
+    border-radius: 0 0 19px 19px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: none !important;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-banner {
+    display: block;
+    position: absolute;
+    top: -41px;
+    left: 50%;
+    width: 266px;
+    height: auto;
+    margin: 0;
+    transform: translateX(calc(-50% - 5px));
+    filter: none;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary {
+    display: grid;
+    place-items: center;
+    gap: 0;
+    width: auto;
+    min-height: 54px;
+    margin: 0 0 4px;
+    padding: 6px 10px;
+    border-radius: 0;
+    color: #4a4b4d;
+    background: transparent;
+    box-shadow: none;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary p {
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary b {
+    color: #836225;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link {
+    display: block;
+    width: 168px;
+    min-height: 30px;
+    margin: 0 auto 5px;
+    padding: 3px 13px;
+    border-radius: 13px;
+    color: #836225;
+    background: transparent;
+    box-shadow: none;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link::after {
+    content: '›';
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 25px;
+    line-height: .7;
+    vertical-align: -2px;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard ol {
+    display: grid;
+    gap: 6px;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    list-style: none;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard li {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 52px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 35px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,.8), rgba(255,255,255,.8)), #f7d134;
+    color: #4a4b4d;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard li:nth-child(-n + 3) {
+    background: #ffa197;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-place {
+    width: 26px;
+    height: 26px;
+    border-radius: 0;
+    background: transparent;
+    color: #4a4b4d;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-place img {
+    width: 26px;
+    height: 32px;
+    object-fit: contain;
+}
+
+body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard time {
+    color: #4a4b4d;
+    text-align: right;
+}
+
+@media (max-width: 1080px) {
+    body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+        top: auto;
+        right: 16px;
+        bottom: 16px;
+        width: 220px;
+    }
+}
+
+@media (max-width: 900px) {
+    body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
+        top: 10px;
+        right: 10px;
+        bottom: auto;
+        width: auto;
+        min-width: 96px;
+        min-height: 0;
+        padding: 0 !important;
+        border-radius: 999px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-banner,
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary,
+    body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard ol {
+        display: none;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        min-width: 96px;
+        min-height: 38px;
+        margin: 0;
+        padding: 0 15px;
+        border-radius: 999px;
+        color: #fff;
+        background: #836225;
+        font-size: 14px;
+        font-weight: 800;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link::before {
+        content: '★';
+        margin-right: 5px;
+        color: #f7d134;
+    }
+
+    body:has(#intro-card:not(.hidden)) > #app .lobby-rank-link::after {
+        content: '';
+        margin: 0;
+    }
+}
+
+
+/* Opening story GALGAME layout: 16:9 background, standing characters, bottom translucent dialogue. */
+body:has(#story-card:not(.hidden)) #story-card.story-card {
+    background: #f5d8a5 !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-scene {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    background: #f5d8a5 !important;
+    overflow: hidden !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card #story-canvas {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.story-character-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    pointer-events: none;
+}
+
+.story-standing {
+    position: absolute;
+    bottom: clamp(108px, 21vh, 208px);
+    max-height: min(72vh, 760px);
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 28px rgba(58, 39, 22, .28));
+    opacity: .62;
+    transform-origin: bottom center;
+    transition: opacity .24s ease, transform .24s ease, filter .24s ease;
+}
+
+.story-standing.is-active {
+    opacity: 1;
+    filter: drop-shadow(0 24px 32px rgba(58, 39, 22, .34));
+    transform: translateY(0) scale(1.02);
+}
+
+.story-standing.is-dimmed {
+    opacity: .38;
+    transform: translateY(10px) scale(.96);
+}
+
+.story-standing-kuro {
+    left: clamp(-42px, 3vw, 78px);
+    max-height: min(76vh, 790px);
+}
+
+.story-standing-guide {
+    right: clamp(10px, 5vw, 110px);
+    max-height: min(76vh, 790px);
+}
+
+.story-standing-bokong {
+    right: clamp(0px, 5vw, 116px);
+    bottom: clamp(138px, 24vh, 236px);
+    max-height: min(62vh, 690px);
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-dialogue {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 30 !important;
+    min-height: clamp(142px, 22vh, 230px) !important;
+    padding: clamp(18px, 2.4vh, 32px) clamp(24px, 5vw, 96px) clamp(18px, 2.4vh, 30px) !important;
+    border: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    background: rgba(255, 255, 255, .72) !important;
+    box-shadow: 0 -18px 42px rgba(73, 51, 25, .13) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-speaker,
+body:has(#story-card:not(.hidden)) #story-card .story-speaker-name {
+    color: #c46b13 !important;
+    font-size: clamp(.95rem, 1.35vw, 1.2rem) !important;
+    font-weight: 900 !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-copy,
+body:has(#story-card:not(.hidden)) #story-card .story-dialogue p {
+    max-width: min(960px, 66vw) !important;
+    color: #2c251c !important;
+    font-size: clamp(1rem, 1.55vw, 1.38rem) !important;
+    line-height: 1.65 !important;
+    font-weight: 800 !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card .story-actions {
+    right: clamp(24px, 5vw, 88px) !important;
+    bottom: clamp(18px, 2.8vh, 34px) !important;
+}
+
+@media (max-width: 760px), (max-height: 520px) {
+    .story-standing {
+        bottom: clamp(92px, 24vh, 148px);
+        max-height: 66vh;
+    }
+
+    .story-standing-kuro {
+        left: -30px;
+    }
+
+    .story-standing-guide,
+    .story-standing-bokong {
+        right: -24px;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-dialogue {
+        min-height: 148px !important;
+        padding: 14px 18px 14px !important;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-copy,
+    body:has(#story-card:not(.hidden)) #story-card .story-dialogue p {
+        max-width: calc(100vw - 36px) !important;
+        font-size: .92rem !important;
+        line-height: 1.45 !important;
+    }
+
+    body:has(#story-card:not(.hidden)) #story-card .story-actions {
+        position: static !important;
+        margin-top: 10px !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+}
+
+/* Story dialogue buttons match the flat GALGAME sample: no shadow. */
+body:has(#story-card:not(.hidden)) #story-card .story-dialogue .btn,
+body:has(#story-card:not(.hidden)) #story-card .story-actions .btn {
+    box-shadow: none !important;
+    filter: none !important;
+    border: 0 !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card #story-next-btn {
+    background: #efb62f !important;
+    color: #fff !important;
+    border-radius: 14px !important;
+}
+
+body:has(#story-card:not(.hidden)) #story-card #story-skip-btn {
+    background: transparent !important;
+    color: #4d9a55 !important;
+    border-radius: 0 !important;
+}
+
+/* Story characters: show only the current speaker. */
+.story-standing {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.story-standing.is-active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) scale(1.02) !important;
+}
+
+.story-standing.is-dimmed {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+
+/* Five-question result page with fixed parallax-style background and fukuchange-inspired ranking layout. */
+body:has(#results-card:not(.hidden)) {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: #2b2119;
+    background-image:
+        linear-gradient(rgba(22, 14, 8, .48), rgba(22, 14, 8, .48)),
+        radial-gradient(circle at 50% 12%, rgba(255, 232, 169, .26), transparent 30%),
+        url('data/image/S2_m3_village.png'),
+        linear-gradient(180deg, #6fb6d6 0%, #ead39a 55%, #7b5230 100%);
+    background-size: cover, cover, max(1440px, 130vw) auto, cover;
+    background-position: center, center, center top, center;
+    background-repeat: no-repeat, no-repeat, repeat-y, no-repeat;
+    background-attachment: fixed, fixed, fixed, fixed;
+}
+
+body:has(#results-card:not(.hidden)) > #app.app-container {
+    width: 100vw;
+    max-width: none;
+    min-height: 100dvh;
+    padding: 72px 0 64px;
+    align-items: center;
+    gap: 40px;
+    background: transparent;
+}
+
+body:has(#results-card:not(.hidden)) #results-card.results-card {
+    width: min(876px, calc(100vw - 48px));
+    max-height: none;
+    margin: 0 auto;
+    padding: 28px 44px 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    border: 0;
+    border-radius: 8px;
+    color: #4a4b4d;
+    background: rgba(255, 255, 255, .88);
+    box-shadow: none;
+    overflow: visible;
+}
+
+body:has(#results-card:not(.hidden)) #results-card .trophy-icon {
+    color: #0ca257;
+    font-size: 42px;
+    margin: 0;
+}
+
+body:has(#results-card:not(.hidden)) #results-card h2 {
+    margin: 0;
+    color: #0ca257;
+    font-size: clamp(2rem, 4.2vw, 3.2rem);
+    line-height: 1;
+    font-weight: 900;
+}
+
+body:has(#results-card:not(.hidden)) #result-summary {
+    margin: 0;
+    color: #4a4b4d;
+    text-align: center;
+    font-size: clamp(1rem, 1.7vw, 1.35rem);
+    line-height: 1.45;
+    font-weight: 700;
+}
+
+body:has(#results-card:not(.hidden)) .stats-grid {
+    width: min(842px, 100%);
+    min-height: 92px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    padding: 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .42);
+}
+
+body:has(#results-card:not(.hidden)) .stat-box {
+    min-height: 60px;
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    padding: 4px 16px;
+    border: 0;
+    border-right: 1px solid rgba(131, 98, 37, .3);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body:has(#results-card:not(.hidden)) .stat-box:last-child {
+    border-right: 0;
+}
+
+body:has(#results-card:not(.hidden)) .stat-val {
+    color: #836225;
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    font-weight: 800;
+}
+
+body:has(#results-card:not(.hidden)) .stat-label {
+    color: #4a4b4d;
+    font-size: clamp(.92rem, 1.4vw, 1.12rem);
+    font-weight: 700;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-section {
+    width: min(780px, calc(100vw - 48px));
+    margin: 96px auto 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    border-radius: 8px;
+    background: rgba(255, 248, 232, .9);
+    box-shadow: 0 10px 7.5px rgba(0, 0, 0, .1), 0 4px 3px rgba(0, 0, 0, .1);
+}
+
+body:has(#results-card:not(.hidden)) .star-result {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(255,255,255,.58);
+}
+
+body:has(#results-card:not(.hidden)) .star-mark {
+    color: #d89416;
+    font-size: 2rem;
+    white-space: nowrap;
+}
+
+body:has(#results-card:not(.hidden)) .star-result h3 {
+    margin: 0 0 6px;
+    color: #5f3c2d;
+    font-size: 1.35rem;
+}
+
+body:has(#results-card:not(.hidden)) .star-result p,
+body:has(#results-card:not(.hidden)) .star-result small {
+    margin: 0;
+    color: #5f3c2d;
+    line-height: 1.45;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-table {
+    width: min(740px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-head,
+body:has(#results-card:not(.hidden)) .ranking-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 57px minmax(160px, 1fr) 114px 114px;
+    align-items: center;
+    text-align: center;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-head {
+    padding: 12px;
+    color: #5f3c2d;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-row {
+    min-height: 48px;
+    gap: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #000;
+    background: rgba(255,255,255,.86);
+    box-shadow: 0 1px 1.5px rgba(0,0,0,.1), 0 1px 1px rgba(0,0,0,.1);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-row:nth-of-type(2) {
+    border: 1.5px solid #facc15;
+    background: #fef08a;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-row:nth-of-type(3) {
+    background: #c0c0c0;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-row:nth-of-type(4) {
+    background: #cd7f32;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-row.current {
+    order: 99;
+    margin-top: 14px;
+    outline: 3px solid #f7d134;
+    color: #000;
+    background: #fff8c5;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-row em,
+body:has(#results-card:not(.hidden)) .ranking-row time {
+    color: inherit;
+    font-style: normal;
+    text-align: center;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-table .rank-foot {
+    order: 100;
+    margin: 16px 0 0;
+    color: #5f3c2d;
+    text-align: center;
+    font-size: 16px;
+}
+
+body:has(#results-card:not(.hidden)) .ranking-table .rank-foot b {
+    font-size: 24px;
+}
+
+body:has(#results-card:not(.hidden)) .review-section {
+    width: min(876px, 100%);
+    margin: 0;
+    padding: 18px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.78);
+}
+
+body:has(#results-card:not(.hidden)) #restart-btn {
+    width: 267px;
+    height: 61px;
+    border-radius: 16px;
+    background: #836225;
+    color: #fff;
+    box-shadow: none;
+    font-size: 1.3rem;
+}
+
+@media (max-width: 760px) {
+    body:has(#results-card:not(.hidden)) > #app.app-container {
+        padding: 56px 12px 36px;
+        gap: 28px;
+    }
+
+    body:has(#results-card:not(.hidden)) #results-card.results-card,
+    body:has(#results-card:not(.hidden)) .ranking-section {
+        width: min(430px, calc(100vw - 24px));
+        padding: 20px 14px;
+    }
+
+    body:has(#results-card:not(.hidden)) .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    body:has(#results-card:not(.hidden)) .stat-box {
+        border-right: 0;
+        border-bottom: 1px solid rgba(131, 98, 37, .22);
+    }
+
+    body:has(#results-card:not(.hidden)) .stat-box:last-child {
+        border-bottom: 0;
+    }
+
+    body:has(#results-card:not(.hidden)) .star-result {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-rank-head,
+    body:has(#results-card:not(.hidden)) .ranking-row {
+        grid-template-columns: 44px minmax(90px, 1fr) 70px 70px;
+        font-size: .86rem;
+        padding: 9px 6px;
+    }
+}
+
+
+/* Lobby ranking summary always stacks into two rows. */
+.lobby-rank-summary,
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.lobby-rank-summary p,
+body:has(#intro-card:not(.hidden)) > #app .lobby-rank-summary p {
+    width: 100% !important;
+}
+
+/* Result page: three fukuchange-style panels, all text uses the Hakka font stack. */
+body:has(#results-card:not(.hidden)) #results-card,
+body:has(#results-card:not(.hidden)) #results-card *,
+body:has(#results-card:not(.hidden)) .result-summary-card,
+body:has(#results-card:not(.hidden)) .result-ranking-card,
+body:has(#results-card:not(.hidden)) .sentence-review-card {
+    font-family: var(--font-hakka) !important;
+}
+
+body:has(#results-card:not(.hidden)) #results-card.results-card {
+    width: min(940px, calc(100vw - 48px)) !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 104px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #4b382a !important;
+    overflow: visible !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card,
+body:has(#results-card:not(.hidden)) .result-ranking-card,
+body:has(#results-card:not(.hidden)) .sentence-review-card {
+    width: min(820px, 100%) !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, .9) !important;
+    box-shadow: none !important;
+    color: #4b382a !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card {
+    min-height: 360px !important;
+    padding: 28px 72px 30px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    text-align: center !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card .trophy-icon {
+    display: none !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card h2 {
+    margin: 0 !important;
+    color: #00a36c !important;
+    font-size: clamp(2rem, 3.2vw, 3.1rem) !important;
+    line-height: 1.05 !important;
+    letter-spacing: .08em !important;
+    font-weight: 900 !important;
+}
+
+body:has(#results-card:not(.hidden)) #result-summary {
+    margin: 0 !important;
+    color: #46515a !important;
+    font-size: clamp(.95rem, 1.1vw, 1.12rem) !important;
+    line-height: 1.6 !important;
+    font-weight: 700 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card .stats-grid {
+    width: 100% !important;
+    max-width: 560px !important;
+    min-height: 74px !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    padding: 10px 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card .stat-box {
+    min-height: 58px !important;
+    padding: 4px 16px !important;
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(131, 98, 37, .38) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card .stat-box:last-child {
+    border-right: 0 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card .stat-label {
+    color: #836225 !important;
+    font-size: clamp(.86rem, 1vw, 1rem) !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-card .stat-val {
+    color: #202733 !important;
+    font-size: clamp(.9rem, 1.05vw, 1.08rem) !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-accuracy-line {
+    display: none !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-actions {
+    width: min(394px, 100%) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 18px !important;
+    margin-top: 8px !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-summary-actions .btn {
+    height: 46px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 1rem !important;
+    font-weight: 900 !important;
+}
+
+body:has(#results-card:not(.hidden)) #result-back-btn {
+    background: #fff8c5 !important;
+    color: #836225 !important;
+}
+
+body:has(#results-card:not(.hidden)) #restart-btn {
+    width: auto !important;
+    height: 46px !important;
+    margin: 0 !important;
+    background: #836225 !important;
+    color: #fff !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-ranking-card {
+    padding: 30px 36px 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-ranking-card h2,
+body:has(#results-card:not(.hidden)) .sentence-review-card h3 {
+    min-width: 134px !important;
+    margin: 0 auto 8px !important;
+    padding: 10px 28px !important;
+    border-radius: 10px !important;
+    background: #fff176 !important;
+    color: #7a5518 !important;
+    text-align: center !important;
+    font-size: clamp(1.15rem, 1.5vw, 1.45rem) !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-head,
+body:has(#results-card:not(.hidden)) .result-rank-list li {
+    width: min(540px, 100%) !important;
+    display: grid !important;
+    grid-template-columns: 64px minmax(100px, 1fr) 92px 112px !important;
+    align-items: center !important;
+    gap: 0 !important;
+    text-align: center !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-head {
+    color: #7a6049 !important;
+    font-size: .96rem !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+    list-style: none !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list li {
+    min-height: 39px !important;
+    padding: 4px 12px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .92) !important;
+    color: #111 !important;
+    font-size: .98rem !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list li.rank-first {
+    border: 2px solid #f3ce25 !important;
+    background: #fff176 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list li.rank-second {
+    background: #c9c9c9 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list li.rank-third {
+    background: #d98a32 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list li.mine {
+    margin-top: 16px !important;
+    border: 3px solid #f7d134 !important;
+    background: #fff8c5 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-place {
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0 auto !important;
+    display: grid !important;
+    place-items: center !important;
+    color: #2f3b46 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-place img {
+    width: 28px !important;
+    height: 28px !important;
+    object-fit: contain !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-list time,
+body:has(#results-card:not(.hidden)) .result-rank-list b {
+    color: inherit !important;
+    font-style: normal !important;
+    font-weight: 900 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-rank-ellipsis {
+    min-height: 34px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    background: transparent !important;
+    line-height: .5 !important;
+    color: #9a6f2a !important;
+}
+
+body:has(#results-card:not(.hidden)) .rank-foot {
+    margin: 2px 0 0 !important;
+    color: #7a3f1c !important;
+    text-align: center !important;
+    font-size: clamp(1rem, 1.4vw, 1.22rem) !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .rank-foot b {
+    color: #7a3f1c !important;
+    font-size: 1.35em !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-ranking-note {
+    width: min(520px, 100%) !important;
+    padding: 16px 20px !important;
+    border-radius: 8px !important;
+    background: #fff8b8 !important;
+    color: #8a4b18 !important;
+    font-size: .88rem !important;
+    line-height: 1.55 !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .result-ranking-note ol {
+    margin: 6px 0 0 1.2em !important;
+}
+
+body:has(#results-card:not(.hidden)) .sentence-review-card {
+    padding: 30px 34px 34px !important;
+}
+
+body:has(#results-card:not(.hidden)) .sentence-review-list,
+body:has(#results-card:not(.hidden)) .review-list {
+    max-height: none !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+}
+
+body:has(#results-card:not(.hidden)) .sentence-review-item {
+    padding: 20px !important;
+    border: 1px solid rgba(229, 165, 0, .28) !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, .9) !important;
+    box-shadow: none !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-card-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    margin-bottom: 14px !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-card-head h4 {
+    margin: 0 !important;
+    color: #52647a !important;
+    font-size: 1.05rem !important;
+    font-weight: 900 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-badges {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-badges span,
+body:has(#results-card:not(.hidden)) .review-badges em {
+    padding: 5px 12px !important;
+    border-radius: 999px !important;
+    background: #eef7ff !important;
+    color: #24618f !important;
+    font-style: normal !important;
+    font-size: .9rem !important;
+    font-weight: 900 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-badges em {
+    background: #fff1f1 !important;
+    color: #c43d46 !important;
+}
+
+body:has(#results-card:not(.hidden)) .sentence-review-item.passed .review-badges em {
+    background: #e8f7ef !important;
+    color: #087b4a !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-detail-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-detail-grid p {
+    margin: 0 !important;
+    padding: 12px 14px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: #fffaf0 !important;
+    color: #4b382a !important;
+    line-height: 1.5 !important;
+    font-size: .98rem !important;
+    font-weight: 700 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-detail-grid b {
+    display: block !important;
+    margin-bottom: 5px !important;
+    color: #a45b20 !important;
+    font-size: .88rem !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-play-btn {
+    margin-top: 14px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #0f7d5c !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    font-weight: 900 !important;
+}
+
+@media (max-width: 760px) {
+    body:has(#results-card:not(.hidden)) #results-card.results-card {
+        width: min(430px, calc(100vw - 24px)) !important;
+        gap: 42px !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-summary-card,
+    body:has(#results-card:not(.hidden)) .result-ranking-card,
+    body:has(#results-card:not(.hidden)) .sentence-review-card {
+        width: 100% !important;
+        padding: 22px 14px !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-summary-card .stats-grid,
+    body:has(#results-card:not(.hidden)) .review-detail-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-summary-card .stat-box {
+        border-right: 0 !important;
+        border-bottom: 1px solid rgba(131, 98, 37, .25) !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-summary-card .stat-box:last-child {
+        border-bottom: 0 !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-rank-head,
+    body:has(#results-card:not(.hidden)) .result-rank-list li {
+        grid-template-columns: 44px minmax(76px, 1fr) 48px 92px !important;
+        font-size: .82rem !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .result-summary-actions {
+        grid-template-columns: 1fr !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .review-card-head {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+}
+
+
+/* Use the Hakka font consistently across visible UI text. */
+body,
+button,
+input,
+select,
+textarea,
+.game-card,
+.results-card,
+.app-header,
+.lobby-back-button,
+.lobby-leaderboard,
+.story-dialogue,
+.story-dialogue *,
+body:has(#game-card:not(.hidden)) #game-card,
+body:has(#game-card:not(.hidden)) #game-card *,
+body:has(#intro-card:not(.hidden)) #intro-card,
+body:has(#intro-card:not(.hidden)) #intro-card * {
+    font-family: var(--font-hakka) !important;
+}
+
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .mission-panel {
+    pointer-events: none;
+}
+
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .audio-section,
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .workbench-actions,
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .workspace-section,
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .candidates-section {
+    filter: saturate(.72);
+    opacity: .72;
+}
+
+
+/* Result review cards: simplified fields requested by the user. */
+body:has(#results-card:not(.hidden)) .simple-review-item {
+    position: relative !important;
+    min-height: 172px !important;
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) 92px !important;
+    grid-template-areas: 'meta sentence audio' !important;
+    align-items: center !important;
+    gap: 22px !important;
+    padding: 28px 30px !important;
+    border: 2px solid rgba(247, 204, 88, .62) !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 255, .94) !important;
+    box-shadow: none !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-card-head {
+    grid-area: meta !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 16px !important;
+    margin: 0 !important;
+    padding-right: 22px !important;
+    border-right: 1px solid rgba(154, 105, 52, .24) !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-card-head h4 {
+    margin: 0 !important;
+    color: #4b382a !important;
+    font-size: clamp(1.35rem, 2vw, 1.85rem) !important;
+    font-weight: 900 !important;
+    letter-spacing: .08em !important;
+    writing-mode: horizontal-tb !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges span,
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges em {
+    min-width: 104px !important;
+    padding: 8px 16px !important;
+    border-radius: 999px !important;
+    text-align: center !important;
+    font-size: 1rem !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges span {
+    background: #e9f5ff !important;
+    color: #11558a !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges em {
+    background: #e5f7ec !important;
+    color: #087b4a !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item.failed .review-badges em {
+    background: #fff1f1 !important;
+    color: #bd3a42 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-sentence-body {
+    grid-area: sentence !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-hakka-line,
+body:has(#results-card:not(.hidden)) .review-translation-line {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #3f2b1f !important;
+    font-family: var(--font-hakka) !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-hakka-line {
+    font-size: clamp(1.75rem, 2.6vw, 2.45rem) !important;
+    line-height: 1.25 !important;
+    font-weight: 900 !important;
+    letter-spacing: .04em !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-translation-line {
+    color: #8a5d2a !important;
+    font-size: clamp(1rem, 1.35vw, 1.22rem) !important;
+    line-height: 1.55 !important;
+    font-weight: 800 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-audio-icon-btn {
+    grid-area: audio !important;
+    width: 72px !important;
+    height: 72px !important;
+    margin: 0 auto !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #0f7d5c !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    font-size: 1.75rem !important;
+    line-height: 1 !important;
+}
+
+body:has(#results-card:not(.hidden)) .review-audio-icon-btn i {
+    transform: translateX(2px);
+}
+
+body:has(#results-card:not(.hidden)) .review-audio-icon-btn.is-playing i {
+    transform: none;
+}
+
+@media (max-width: 760px) {
+    body:has(#results-card:not(.hidden)) .simple-review-item {
+        grid-template-columns: 1fr auto !important;
+        grid-template-areas:
+            'meta audio'
+            'sentence sentence' !important;
+        gap: 16px !important;
+        padding: 20px 16px !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .simple-review-item .review-card-head {
+        align-items: flex-start !important;
+        padding-right: 0 !important;
+        border-right: 0 !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .simple-review-item .review-badges {
+        align-items: flex-start !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+
+    body:has(#results-card:not(.hidden)) .review-audio-icon-btn {
+        width: 58px !important;
+        height: 58px !important;
+        font-size: 1.4rem !important;
+    }
+}
+
+
+/* Final global Hakka font lock. */
+:where(html, body, #app, #app *, button, input, select, textarea, canvas) {
+    font-family: var(--font-hakka) !important;
+}
+
+body:has(#game-card:not(.hidden)) .word-block,
+body:has(#game-card:not(.hidden)) .word-block *,
+.word-block,
+.word-block * {
+    font-family: var(--font-hakka) !important;
+    font-synthesis-weight: auto;
+}
+
+
+/* Review status chip variants. */
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges .status-pass {
+    background: #e5f7ec !important;
+    color: #087b4a !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges .status-help {
+    background: #fff4cf !important;
+    color: #9a5a10 !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges .status-wrong {
+    background: #fff0e4 !important;
+    color: #b35422 !important;
+}
+
+body:has(#results-card:not(.hidden)) .simple-review-item .review-badges .status-fail {
+    background: #fff1f1 !important;
+    color: #bd3a42 !important;
+}
+
+
+/* Helped review item uses the single yellow status chip, never the passed green chip. */
+body:has(#results-card:not(.hidden)) .simple-review-item.helped .review-badges em {
+    background: #fff4cf !important;
+    color: #9a5a10 !important;
+}
+
+
+
+/* Keep candidate cards fully visible during the opening countdown; only interaction is locked. */
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .audio-section,
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .workbench-actions,
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .workspace-section,
+body:has(#game-card:not(.hidden)) #game-card.opening-countdown .candidates-section {
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+/* Restore action button icons with local CSS shapes instead of text/emoji fallbacks. */
+body:has(#game-card:not(.hidden)) .workbench-actions .fa-bridge::before,
+body:has(#game-card:not(.hidden)) .workbench-actions .fa-shuffle::before {
+    content: "";
+    display: inline-block;
+    width: 1.15em;
+    height: 1.15em;
+    background: currentColor;
+    vertical-align: -.15em;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+}
+
+body:has(#game-card:not(.hidden)) .workbench-actions .fa-bridge::before {
+    mask-image: url("data/image/bridge.svg");
+    -webkit-mask-image: url("data/image/bridge.svg");
+}
+
+body:has(#game-card:not(.hidden)) .workbench-actions .fa-shuffle::before {
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M46 10l12 12-12 12v-8h-8c-5 0-8 2-11 7l-4 6c-5 8-10 12-19 12H2v-8h2c6 0 8-2 12-8l4-6c5-8 10-11 18-11h8zm0 29l12 12-12 12v-8h-8c-8 0-13-3-18-11l-2-3 5-8 4 6c3 6 6 8 11 8h8zM4 18c8 0 13 4 18 11l-5 8c-4-7-7-11-13-11H2v-8z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M46 10l12 12-12 12v-8h-8c-5 0-8 2-11 7l-4 6c-5 8-10 12-19 12H2v-8h2c6 0 8-2 12-8l4-6c5-8 10-11 18-11h8zm0 29l12 12-12 12v-8h-8c-8 0-13-3-18-11l-2-3 5-8 4 6c3 6 6 8 11 8h8zM4 18c8 0 13 4 18 11l-5 8c-4-7-7-11-13-11H2v-8z'/%3E%3C/svg%3E");
+}
+
+/* Render these Font Awesome class icons without depending on the webfont. */
+body:has(#game-card:not(.hidden)) .workbench-actions .fa-hands-praying::before,
+body:has(#game-card:not(.hidden)) #hint-btn .fa-lightbulb::before {
+    content: "";
+    display: inline-block;
+    width: 1.12em;
+    height: 1.12em;
+    background: currentColor;
+    vertical-align: -.14em;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+}
+
+body:has(#game-card:not(.hidden)) .workbench-actions .fa-hands-praying::before {
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M23 4c3.4 0 5.8 2.1 6.8 5.8L32 18l2.2-8.2C35.2 6.1 37.6 4 41 4c4.7 0 7.8 4 6.8 8.8L45 28l9 12.4c3.4 4.7 2.4 11.1-2.2 14.5-4.4 3.2-10.7 2.3-14.1-2.1L32 45.3l-5.7 7.5c-3.4 4.4-9.7 5.3-14.1 2.1-4.6-3.4-5.6-9.8-2.2-14.5L19 28l-2.8-15.2C15.2 8 18.3 4 23 4zm-.4 8.4L25.3 30 16.6 42c-1.2 1.7-.9 4.1.8 5.3 1.6 1.2 4 .9 5.2-.7l7-9.3-7-24.9zm18.8 0-7 24.9 7 9.3c1.2 1.6 3.6 1.9 5.2.7 1.7-1.2 2-3.6.8-5.3L38.7 30l2.7-17.6z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M23 4c3.4 0 5.8 2.1 6.8 5.8L32 18l2.2-8.2C35.2 6.1 37.6 4 41 4c4.7 0 7.8 4 6.8 8.8L45 28l9 12.4c3.4 4.7 2.4 11.1-2.2 14.5-4.4 3.2-10.7 2.3-14.1-2.1L32 45.3l-5.7 7.5c-3.4 4.4-9.7 5.3-14.1 2.1-4.6-3.4-5.6-9.8-2.2-14.5L19 28l-2.8-15.2C15.2 8 18.3 4 23 4zm-.4 8.4L25.3 30 16.6 42c-1.2 1.7-.9 4.1.8 5.3 1.6 1.2 4 .9 5.2-.7l7-9.3-7-24.9zm18.8 0-7 24.9 7 9.3c1.2 1.6 3.6 1.9 5.2.7 1.7-1.2 2-3.6.8-5.3L38.7 30l2.7-17.6z'/%3E%3C/svg%3E");
+}
+
+body:has(#game-card:not(.hidden)) #hint-btn .fa-lightbulb::before {
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M32 5c-11 0-20 8.6-20 19.3 0 6.7 3.4 11.3 7.1 15.1 2.1 2.2 3.2 4.5 3.6 7.6h18.6c.4-3.1 1.5-5.4 3.6-7.6C48.6 35.6 52 31 52 24.3 52 13.6 43 5 32 5zm0 8c6.6 0 12 5.1 12 11.3 0 3.5-1.7 6-4.8 9.2-2.2 2.3-4 5.1-5 8.5h-4.4c-1-3.4-2.8-6.2-5-8.5-3.1-3.2-4.8-5.7-4.8-9.2C20 18.1 25.4 13 32 13zm-9 39h18v5H23zm3 7h12v4H26z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M32 5c-11 0-20 8.6-20 19.3 0 6.7 3.4 11.3 7.1 15.1 2.1 2.2 3.2 4.5 3.6 7.6h18.6c.4-3.1 1.5-5.4 3.6-7.6C48.6 35.6 52 31 52 24.3 52 13.6 43 5 32 5zm0 8c6.6 0 12 5.1 12 11.3 0 3.5-1.7 6-4.8 9.2-2.2 2.3-4 5.1-5 8.5h-4.4c-1-3.4-2.8-6.2-5-8.5-3.1-3.2-4.8-5.7-4.8-9.2C20 18.1 25.4 13 32 13zm-9 39h18v5H23zm3 7h12v4H26z'/%3E%3C/svg%3E");
 }
