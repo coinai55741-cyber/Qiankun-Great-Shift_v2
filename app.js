@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let wrongBreakX = null;
     let questionBaseSpeed = 2.0;
     let shouldAutoTransition = false;
-    let isTransitioning = false;
     let flashTimer = 0;
     let openingCountdownActive = false;
     let openingCountdownStartedAt = 0;
@@ -185,12 +184,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Splash & sparkles particles
     let splashParticles = [];
     let sparkles = [];
+    let speedLines = [];
     let bridgeAlpha = 0.0;
-    let isBridgeTransparent = false;
-    let isBridgeBroken = false;
+
+    // Bridge build sequence: 'wood' (correct), 'broken' (wrong), 'golden' (Bo-Gong help), null (no bridge)
+    let bridgeKind = null;
+    let bridgeChars = [];
+    let bridgeBuildProgress = 1;
+    let buildFrame = 0;
+    let buildDuration = 18;
+    let buildHold = 4;
+    let pendingWrongCharCount = 0;
+    let helpAfterRecovery = false;
+    let isWetRecovery = false;
+    let shakeFrames = 0;
+    let splashFrames = 0;
+    let nextCliffStartX = 0;
+    let fastForward = false;
+    const fastForwardSteps = 4;
+    const skippableStates = ['building', 'crossing', 'falling', 'splashing', 'advancing', 'shaking'];
+    const getCliffRushSpeed = () => rs(16) * speedMultiplier;
+    const getDashSpeed = () => rs(9) * speedMultiplier;
+    const getAdvanceSpeed = () => rs(16) * speedMultiplier;
 
     const runnerAssetPath = 'data/image/';
-    const runnerAssetVersion = '20260924-kuro-image-assets1';
+    const runnerAssetVersion = '20261019-fast-flow1';
     const useRunnerImageLayers = true;
     const runnerAssets = {
         mountains: loadRunnerImage('S2_m3_yamaloop.png'),
@@ -211,6 +229,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loadRunnerImage('kuro_high_frames_keyed/kuro_high_05.png'),
             loadRunnerImage('kuro_high_frames_keyed/kuro_high_06.png'),
             loadRunnerImage('kuro_high_frames_keyed/kuro_high_07.png')
+        ],
+        kuroFalling: loadRunnerImage('S2_m3_kuro_falling.png'),
+        kuroWet: loadRunnerImage('S2_m3_kuro_wet_shaking.png'),
+        kuroWetShakeFrames: [
+            loadRunnerImage('S2_m3_kuro_wet_shake_frame01.png'),
+            loadRunnerImage('S2_m3_kuro_wet_shake_frame02.png')
         ],
         bokong: loadRunnerImage('S2_m3_bokon1.png')
     };
@@ -981,6 +1005,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Tap the runner scene to fast-forward bridge / dash / splash animations
+        canvas.addEventListener('pointerdown', () => {
+            if (skippableStates.includes(dogState)) {
+                fastForward = true;
+            }
+        });
+
         // Keyboard support (Space to play audio, Enter to submit/next)
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && !e.target.matches('button, input, textarea')) {
@@ -1016,7 +1047,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gameCard.classList.remove('fade-out');
         
         shouldAutoTransition = false;
-        isTransitioning = false;
         flashTimer = 0;
         openingCountdownActive = false;
         openingCountdownStartedAt = 0;
@@ -1157,7 +1187,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Auto play audio when ready. The first question waits for the opening countdown.
         gameAudio._playListener = function() {
-            if (openingCountdownActive) return;
+            // While advancing, audio starts once Ah-Hei is back at the starting spot.
+            if (openingCountdownActive || dogState === 'advancing') return;
             playQuestionAudioOnceReady();
         };
         gameAudio.addEventListener('canplay', gameAudio._playListener);
@@ -1319,6 +1350,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clearBtn.disabled = selectedBlocks.length === 0;
             submitBtn.disabled = selectedBlocks.length === 0;
         }
+
     }
 
     // 6. Block Movements
@@ -1418,7 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 8. Submit & Evaluate Answer
     function submitAnswer() {
-        if (isAnswerSubmitted || selectedBlocks.length === 0) return;
+        if (isAnswerSubmitted || selectedBlocks.length === 0 || dogState === 'advancing') return;
         
         isAnswerSubmitted = true;
         gameAudio.pause();
@@ -1436,7 +1468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lastUserSequence = [...userSequenceText];
         
         // Evaluate against Hakka characters
-        const currentCorrectHakkaSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
+        const currentCorrectHakkaSequence = getCorrectSequence(q);
         const isCorrect = checkSequenceMatch(userSequenceText, currentCorrectHakkaSequence);
 
         // Disable standard game controls
@@ -1450,39 +1482,51 @@ document.addEventListener('DOMContentLoaded', () => {
             recordQuestionOutcome('correct', questionScore);
             scoreDisplay.textContent = `得分: ${totalScore}`;
             
-            // Bridge cross animation
-            isBridgeTransparent = false;
-            isBridgeBroken = false;
-            dogState = 'crossing';
             shouldAutoTransition = true;
+            startBridgeBuild('wood');
         } else {
             playSfx('wrong');
             // Deduct score for wrong attempt
             questionAttempts++;
             questionScore = Math.max(0, questionScore - 4);
             
-            // Calculate where the wrong bridge breaks
-            const charCount = selectedBlocks.length;
-            const correctHakkaSequence = currentCorrectHakkaSequence;
-            const totalChars = correctHakkaSequence.length || 1;
-            const currentCliffWidth = getCliffWidth();
-            const userBridgeWidth = (charCount / totalChars) * currentCliffWidth;
-            
-            if (charCount < totalChars) {
-                // If they didn't place all blocks, they fall off the end of their blocks
-                wrongBreakX = cliffX + userBridgeWidth;
-            } else {
-                // If they placed all blocks but wrong order, fall from the broken bridge edge.
-                const bridgeSourceWidth = isImageReady(runnerAssets.bridge) ? runnerAssets.bridge.naturalWidth : 805;
-                const brokenBridgeSourceWidth = isImageReady(runnerAssets.brokenBridge) ? runnerAssets.brokenBridge.naturalWidth : bridgeSourceWidth / 2;
-                const brokenBridgeWidth = getBridgeDrawWidth() * (brokenBridgeSourceWidth / bridgeSourceWidth);
-                wrongBreakX = getBridgeDrawX() + brokenBridgeWidth;
-            }
-            
-            // Dog starts running towards the break point
-            isBridgeBroken = true;
-            dogState = 'crossing';
+            // The break point depends on where the cliff ends up, so it is computed once the cliff has arrived.
+            pendingWrongCharCount = selectedBlocks.length;
+            startBridgeBuild('broken');
         }
+    }
+
+    function getCorrectSequence(q) {
+        return q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
+    }
+
+    function computeWrongBreakX() {
+        const q = questions[currentQuestionIndex];
+        const totalChars = (q ? getCorrectSequence(q).length : 0) || 1;
+
+        if (pendingWrongCharCount < totalChars) {
+            // If they didn't place all blocks, they fall off the end of their blocks
+            return cliffX + (pendingWrongCharCount / totalChars) * getCliffWidth();
+        }
+        // If they placed all blocks but wrong order, fall from the broken bridge edge.
+        const bridgeSourceWidth = isImageReady(runnerAssets.bridge) ? runnerAssets.bridge.naturalWidth : 805;
+        const brokenBridgeSourceWidth = isImageReady(runnerAssets.brokenBridge) ? runnerAssets.brokenBridge.naturalWidth : bridgeSourceWidth / 2;
+        return getBridgeDrawX() + getBridgeDrawWidth() * (brokenBridgeSourceWidth / bridgeSourceWidth);
+    }
+
+    // Rush the cliff into place (if answered early), reveal the bridge, then dash across.
+    function startBridgeBuild(kind) {
+        const q = questions[currentQuestionIndex];
+        bridgeKind = kind;
+        bridgeChars = kind === 'golden' && q ? [...getCorrectSequence(q)] : [];
+        bridgeBuildProgress = 0;
+        bridgeAlpha = 0.8;
+        buildFrame = 0;
+        buildDuration = kind === 'golden' ? Math.max(18, bridgeChars.length * 6) : 18;
+        buildHold = kind === 'golden' ? 40 : 4;
+        wrongBreakX = null;
+        flashTimer = 0;
+        dogState = 'building';
     }
 
     let inlineFeedbackTimeout = null;
@@ -1510,7 +1554,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Skip Mechanism (求助伯公)
     function askPoKongForHelp() {
-        if (isAnswerSubmitted) return;
+        if (isAnswerSubmitted || dogState === 'advancing') return;
         
         isAnswerSubmitted = true;
         gameAudio.pause();
@@ -1524,43 +1568,32 @@ document.addEventListener('DOMContentLoaded', () => {
         recordQuestionOutcome('manual-help', 0);
         if (bokongAssist) bokongAssist.classList.remove('hidden');
         
-        // Transparent bridge appears
-        isBridgeTransparent = true;
-        isBridgeBroken = false;
-        bridgeAlpha = 0.8;
-        dogState = 'crossing';
+        // Bo-Gong lays the correct answer as a golden bridge
         shouldAutoTransition = true;
+        startBridgeBuild('golden');
         
         // Hide buttons
         submitBtn.classList.add('hidden');
         clearBtn.disabled = true;
     }
 
-    // Dynamic Fade Out Transition & Question Load
-    function startFadeOutAndTransition() {
-        if (isTransitioning) return;
-        isTransitioning = true;
-        
-        const fadeDuration = 500 / speedMultiplier;
-        
-        // Set CSS variable
-        gameCard.style.setProperty('--fade-duration', `${fadeDuration}ms`);
-        gameCard.classList.add('fade-out');
-        
-        setTimeout(() => {
-            currentQuestionIndex++;
-            loadQuestion(currentQuestionIndex);
-            
-            if (currentQuestionIndex < questions.length) {
-                dogX = getDogEntryX();
-                dogState = 'transition_in';
-            }
-            
-            setTimeout(() => {
-                gameCard.classList.remove('fade-out');
-                isTransitioning = false;
-            }, 50 / speedMultiplier);
-        }, fadeDuration);
+    // Correct / help: keep running forward while the old cliff scrolls away and the next question loads.
+    function startAdvance() {
+        const keptCliffX = cliffX;
+        const keptKind = bridgeKind;
+        const keptChars = bridgeChars;
+
+        currentQuestionIndex++;
+        loadQuestion(currentQuestionIndex);
+        if (currentQuestionIndex >= questions.length) return;
+
+        nextCliffStartX = cliffX;
+        cliffX = keptCliffX;
+        hasCliffAppeared = true;
+        bridgeKind = keptKind;
+        bridgeChars = keptChars;
+        bridgeBuildProgress = 1;
+        dogState = 'advancing';
     }
 
     function recordQuestionOutcome(status, earnedScore) {
@@ -1627,7 +1660,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dogState = 'idle';
         shouldAutoTransition = false;
-        isTransitioning = false;
         if (appHeader) appHeader.classList.add('hidden');
         gameCard.classList.add('hidden');
         resultsCard.classList.remove('hidden');
@@ -1803,7 +1835,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         function loop() {
             resizeRunnerCanvasForDisplay();
-            updateGamePhysics();
+            const steps = fastForward ? fastForwardSteps : 1;
+            for (let i = 0; i < steps; i++) {
+                updateGamePhysics();
+            }
             drawGameGraphics();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -1827,12 +1862,15 @@ document.addEventListener('DOMContentLoaded', () => {
         hasCliffAppeared = false;
         cliffX = getQuestionCliffStartX(0);
         wrongBreakX = null;
-        isBridgeTransparent = false;
-        isBridgeBroken = false;
+        bridgeKind = null;
         bridgeAlpha = 0.0;
         splashParticles = [];
         sparkles = [];
+        speedLines = [];
         flashTimer = 0;
+        fastForward = false;
+        isWetRecovery = false;
+        helpAfterRecovery = false;
     }
 
     function resetCanvasForQuestion(q) {
@@ -1841,12 +1879,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dogState !== 'transition_in') {
             dogState = 'running';
         }
-        isBridgeTransparent = false;
-        isBridgeBroken = false;
+        bridgeKind = null;
         bridgeAlpha = 0.0;
         splashParticles = [];
         sparkles = [];
         wrongBreakX = null;
+        isWetRecovery = false;
+        helpAfterRecovery = false;
         
         // Keep runner speed steady; each question can have a different road length.
         questionBaseSpeed = rs(2.2);
@@ -1864,7 +1903,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Update transparent bridge alpha pulsations
-        if (isBridgeTransparent) {
+        if (bridgeKind === 'golden') {
             bridgeAlpha = 0.6 + Math.sin(dogFrame * 0.15) * 0.2;
         }
         
@@ -1934,127 +1973,230 @@ document.addEventListener('DOMContentLoaded', () => {
                 dogState = 'running';
             }
         } 
-        else if (dogState === 'crossing') {
-            // Dog runs across the bridge
-            dogX += activeSpeed * 1.5;
-            
-            // Sparkle effects on the bridge
-            if (dogFrame % 6 === 0) {
-                sparkles.push({
-                    x: dogX - rs(10),
-                    y: groundY - rs(5) + Math.random() * rs(10),
-                    size: rs(2) + Math.random() * rs(3),
-                    alpha: 1.0,
-                    color: isBridgeTransparent ? 'var(--accent)' : 'var(--primary-light)'
-                });
+        else if (dogState === 'building') {
+            // Answered before the cliff arrived: rush the cliff into place first.
+            if (!hasCliffAppeared) {
+                const cliffTargetX = getCliffTargetX();
+                const step = Math.min(getCliffRushSpeed(), Math.max(0, cliffX - cliffTargetX));
+                scrollRunnerLayers(step);
+                cliffX -= step;
+                if (cliffX - cliffTargetX <= rs(0.5)) {
+                    cliffX = cliffTargetX;
+                    hasCliffAppeared = true;
+                }
             }
-            
+            dogX += (getDogStartX() - dogX) * 0.1;
+            dogY = groundY;
+
+            if (hasCliffAppeared) {
+                buildFrame++;
+                bridgeBuildProgress = Math.min(1, buildFrame / buildDuration);
+
+                // Sparkles at the growing edge of the bridge
+                if (bridgeBuildProgress < 1 && buildFrame % 2 === 0) {
+                    sparkles.push({
+                        x: getBridgeDrawX() + getBridgeDrawWidth() * bridgeBuildProgress,
+                        y: groundY - rs(4) + Math.random() * rs(12),
+                        size: rs(2) + Math.random() * rs(3),
+                        alpha: 1.0,
+                        color: bridgeKind === 'golden' ? '#ffd166' : '#fff3c4'
+                    });
+                }
+
+                if (buildFrame >= buildDuration + buildHold) {
+                    if (bridgeKind === 'broken') wrongBreakX = computeWrongBreakX();
+                    dogState = 'crossing';
+                }
+            }
+        }
+        else if (dogState === 'advancing') {
+            // Camera keeps moving forward: old cliff scrolls away, Ah-Hei eases back to his start spot.
+            const step = getAdvanceSpeed();
+            scrollRunnerLayers(step);
+            cliffX -= step;
+            dogX += (getDogStartX() - dogX) * 0.12;
+            dogY = groundY;
+            spawnSpeedLines();
+
+            if (cliffX + getCliffWidth() + rs(300) < 0) {
+                cliffX = nextCliffStartX;
+                hasCliffAppeared = false;
+                bridgeKind = null;
+                dogX = getDogStartX();
+                dogState = 'running';
+                playQuestionAudioOnceReady();
+            }
+        }
+        else if (dogState === 'crossing') {
+            // Dash across the bridge
+            dogX += getDashSpeed();
+            spawnSpeedLines();
+
             // Check if dog reached the wrong break point
             if (wrongBreakX !== null && dogX >= wrongBreakX) {
                 dogState = 'falling';
                 wrongBreakX = null; // Clear to prevent double trigger
-                
-                // Trigger the falling and splash timeout to show feedback
-                setTimeout(() => {
-                    const q = questions[currentQuestionIndex];
-                    if (questionScore <= 0) {
-                        // Auto-pass: failed 5 times (or score reaches 0)
-                        questionUsedHelp = true;
-                        questionHelpType = 'auto';
-                        recordQuestionOutcome('auto-help', 0);
-                        if (bokongAssist) bokongAssist.classList.remove('hidden');
-                        showInlineFeedback("伯公協助，本題 0 分。", 'var(--accent)');
-                        
-                        // 1. Fade out the card
-                        const fadeOutDuration = 250 / speedMultiplier;
-                        gameCard.style.setProperty('--fade-duration', `${fadeOutDuration}ms`);
-                        gameCard.classList.add('fade-out');
-                        
-                        setTimeout(() => {
-                            // 2. Put the dog back in the sky above starting point (to drop and flash)
-                            dogX = getDogStartX();
-                            dogY = rs(-100);
-                            dogState = 'recovering';
-                            flashTimer = 25;
-                            
-                            // 3. Make transparent bridge appear
-                            isBridgeTransparent = true;
-                            isBridgeBroken = false;
-                            bridgeAlpha = 0.8;
-                            
-                            // 4. Fade back in
-                            gameCard.classList.remove('fade-out');
-                            
-                            // 5. Let the dog cross the bridge after a longer delay (2 seconds waiting time)
-                            setTimeout(() => {
-                                dogState = 'crossing';
-                                shouldAutoTransition = true;
-                            }, 2400 / speedMultiplier);
-                        }, fadeOutDuration);
-                    } else {
-                        // Normal incorrect retry
-                        showInlineFeedback("答錯了！字卡已還原請重新排列！", 'var(--danger)');
-                        
-                        dogState = 'recovering';
-                        dogX = getDogStartX();
-                        dogY = rs(-100);
-                        flashTimer = 25; // Flash 2 times (25 frames)
-                        isAnswerSubmitted = false;
-                        isBridgeBroken = false;
-                        
-                        clearSelection();
-                        submitBtn.classList.remove('hidden');
-                        submitBtn.disabled = true;
-                        clearBtn.disabled = true;
-                        helpBgBtn.disabled = false;
-                    }
-                }, 1200);
             }
             // Otherwise, check if dog reached the other side (only if not falling)
             else if (wrongBreakX === null && dogX >= cliffX + getCliffWidth() + getBridgeLandingOverlap() + rs(12)) {
-                // Successfully crossed! Transition to running on the other side or start fade out
                 if (shouldAutoTransition) {
-                    startFadeOutAndTransition();
+                    startAdvance();
                 } else {
                     dogState = 'running';
-                    
-                    // Reset cliff position and scroll background out to load the next question
                     hasCliffAppeared = false;
-                    
-                    // Triggers next question automatically if skipped via help
-                    if (isBridgeTransparent) {
-                        isBridgeTransparent = false;
-                    }
-                    isBridgeBroken = false;
+                    bridgeKind = null;
                 }
             }
-        } 
+        }
         else if (dogState === 'falling') {
             // Dog falls off the cliff into the river
             dogX += activeSpeed * 0.5;
             dogY += rs(6.5); // gravity pull
-            
+
             if (dogY >= riverY) {
                 dogY = riverY;
                 dogState = 'splashing';
+                splashFrames = 0;
                 playSfx('splash');
                 createSplash(dogX, riverY);
             }
-        } 
+        }
         else if (dogState === 'splashing') {
             // Splash particles updating
             updateSplash();
-        } 
+            splashFrames++;
+            if (splashFrames >= 42) {
+                handleAfterSplash();
+            }
+        }
         else if (dogState === 'recovering') {
             // Dog falls down from the sky vertically to groundY
             dogX = getDogStartX();
             dogY += (groundY - dogY) * 0.15;
-            
+
             if (Math.abs(dogY - groundY) < 1) {
                 dogY = groundY;
-                dogState = 'running';
+                if (isWetRecovery) {
+                    dogState = 'shaking';
+                    shakeFrames = 0;
+                } else {
+                    dogState = 'running';
+                }
             }
         }
+        else if (dogState === 'shaking') {
+            // Ah-Hei shakes the river water off before running again
+            dogX = getDogStartX();
+            dogY = groundY;
+            shakeFrames++;
+            if (shakeFrames >= 36) {
+                isWetRecovery = false;
+                if (helpAfterRecovery) {
+                    helpAfterRecovery = false;
+                    startBridgeBuild('golden');
+                } else {
+                    dogState = 'running';
+                }
+            }
+        }
+
+        updateSpeedLines();
+        if (!skippableStates.includes(dogState)) {
+            fastForward = false;
+        }
+    }
+
+    function scrollRunnerLayers(step) {
+        scrollX += step;
+        skyScrollX += step * 0.05;
+        mountainScrollX += step * 0.15;
+        forestScrollX += step * 0.4;
+    }
+
+    function handleAfterSplash() {
+        splashParticles = [];
+        dogState = 'recovering';
+        dogX = getDogStartX();
+        dogY = rs(-100);
+        flashTimer = 0;
+        isWetRecovery = true;
+        bridgeKind = null;
+
+        if (questionScore <= 0) {
+            // Auto-pass: score reached 0, Bo-Gong builds the bridge after Ah-Hei shakes off.
+            questionUsedHelp = true;
+            questionHelpType = 'auto';
+            recordQuestionOutcome('auto-help', 0);
+            if (bokongAssist) bokongAssist.classList.remove('hidden');
+            showInlineFeedback("伯公協助，本題 0 分。", 'var(--accent)');
+            helpAfterRecovery = true;
+            shouldAutoTransition = true;
+            return;
+        }
+
+        // Normal incorrect retry
+        showInlineFeedback("答錯了！字卡已還原請重新排列！", 'var(--danger)');
+        isAnswerSubmitted = false;
+        clearSelection();
+        submitBtn.classList.remove('hidden');
+        submitBtn.disabled = true;
+        clearBtn.disabled = true;
+        helpBgBtn.disabled = false;
+    }
+
+    function spawnSpeedLines() {
+        if (dogFrame % 2 !== 0) return;
+        speedLines.push({
+            x: dogX - rs(30) - Math.random() * rs(20),
+            y: dogY - rs(8) - Math.random() * rs(48),
+            length: rs(30) + Math.random() * rs(50),
+            alpha: 0.85
+        });
+    }
+
+    function updateSpeedLines() {
+        for (let i = speedLines.length - 1; i >= 0; i--) {
+            const line = speedLines[i];
+            line.x -= rs(7);
+            line.alpha -= 0.06;
+            if (line.alpha <= 0) speedLines.splice(i, 1);
+        }
+    }
+
+    function drawSpeedLines() {
+        if (speedLines.length === 0) return;
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineWidth = rs(2.5);
+        ctx.strokeStyle = '#ffffff';
+        speedLines.forEach(line => {
+            ctx.globalAlpha = line.alpha;
+            ctx.beginPath();
+            ctx.moveTo(line.x, line.y);
+            ctx.lineTo(line.x - line.length, line.y);
+            ctx.stroke();
+        });
+        ctx.restore();
+    }
+
+    function drawSkipHint() {
+        if (!skippableStates.includes(dogState)) return;
+        const label = fastForward ? '▸▸ 快轉中' : '點擊畫面快轉 ▸▸';
+        ctx.save();
+        ctx.font = `800 ${rs(13)}px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+        // Bottom-center: the canvas is cropped left/right (object-fit: cover) on narrow screens.
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const x = canvasWidth / 2;
+        const y = canvasHeight - rs(16);
+        const width = ctx.measureText(label).width;
+        ctx.fillStyle = 'rgba(31, 26, 18, .5)';
+        ctx.beginPath();
+        ctx.roundRect(x - width / 2 - rs(10), y - rs(12), width + rs(20), rs(24), rs(12));
+        ctx.fill();
+        ctx.fillStyle = '#fffaf0';
+        ctx.fillText(label, x, y + rs(1));
+        ctx.restore();
     }
 
     function drawGameGraphics() {
@@ -2200,7 +2342,9 @@ document.addEventListener('DOMContentLoaded', () => {
         drawSplashParticles();
         
         // 8. Draw Dog (阿黑)
+        drawSpeedLines();
         drawDog(dogX, dogY, dogState, dogFrame);
+        drawSkipHint();
         drawOpeningCountdown();
     }
 
@@ -2233,6 +2377,22 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.restore();
     }
 
+    function getKuroPoseSprite(state, frame) {
+        if (state === 'falling' && isImageReady(runnerAssets.kuroFalling)) {
+            return { image: runnerAssets.kuroFalling, widthFraction: 0.73, bottomFraction: 0.815 };
+        }
+        if (state === 'shaking') {
+            const shakeFrames = runnerAssets.kuroWetShakeFrames.filter(isImageReady);
+            if (shakeFrames.length > 0) {
+                return { image: shakeFrames[Math.floor(frame / 5) % shakeFrames.length], widthFraction: 0.72, bottomFraction: 0.82 };
+            }
+        }
+        if (state === 'recovering' && isWetRecovery && isImageReady(runnerAssets.kuroWet)) {
+            return { image: runnerAssets.kuroWet, widthFraction: 0.75, bottomFraction: 0.837 };
+        }
+        return null;
+    }
+
     // Animated Dog Drawing Function
     function drawDog(x, y, state, frame) {
         if (state === 'splashing') return;
@@ -2246,10 +2406,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Pose sprites (1024px canvases) are drawn so Ah-Hei matches the run-frame size.
+        const poseSprite = getKuroPoseSprite(state, frame);
+        if (poseSprite) {
+            const drawSize = rs(96) * (0.49 / poseSprite.widthFraction);
+            ctx.translate(x, y);
+            if (state === 'falling') ctx.rotate(0.25);
+            ctx.drawImage(poseSprite.image, -drawSize * 0.5, -drawSize * poseSprite.bottomFraction + rs(2), drawSize, drawSize);
+            ctx.restore();
+            return;
+        }
+
         const kuroFrames = runnerAssets.kuroRunFrames || [];
         const readyKuroFrames = kuroFrames.filter(isImageReady);
+        const isDashing = state === 'crossing' || state === 'advancing';
         const kuroImage = readyKuroFrames.length > 0
-            ? readyKuroFrames[Math.floor(frame / 6) % readyKuroFrames.length]
+            ? readyKuroFrames[Math.floor(frame / (isDashing ? 3 : 6)) % readyKuroFrames.length]
             : runnerAssets.kuroRun;
 
         if (isImageReady(kuroImage) && state !== 'splashing') {
@@ -2257,7 +2429,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sourceHeight = kuroImage.naturalHeight || 512;
             const runnerHeight = rs(96);
             const runnerWidth = runnerHeight * (sourceWidth / sourceHeight);
-            const runBob = (state === 'running' || state === 'crossing' || state === 'transition_out' || state === 'transition_in')
+            const runBob = (state === 'running' || state === 'crossing' || state === 'advancing' || state === 'building' || state === 'transition_out' || state === 'transition_in')
                 ? Math.sin(frame * 0.22) * rs(2)
                 : 0;
 
@@ -2439,79 +2611,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawBridge() {
-        if (isAnswerSubmitted && dogState !== 'recovering') {
-            ctx.save();
-            
-            if (isBridgeTransparent) {
-                // Glow Transparent bridge (Ask Po Kong for help)
-                ctx.lineWidth = rs(6);
-                ctx.strokeStyle = `rgba(255, 183, 3, ${bridgeAlpha})`;
-                ctx.shadowColor = 'var(--accent)';
-                ctx.shadowBlur = rs(15);
-                ctx.beginPath();
-                const currentCliffWidth = getCliffWidth();
-                const bridgeDrawX = getBridgeDrawX();
-                const bridgeDrawWidth = getBridgeDrawWidth();
-                ctx.moveTo(bridgeDrawX, groundY + rs(4));
-                ctx.lineTo(bridgeDrawX + bridgeDrawWidth, groundY + rs(4));
-                ctx.stroke();
-                
-                // Draw glass transparent deck
-                ctx.fillStyle = `rgba(255, 255, 255, ${bridgeAlpha * 0.15})`;
-                ctx.fillRect(bridgeDrawX, groundY + rs(4), bridgeDrawWidth, rs(10));
-            } else {
-                // Solid wood plank bridge (No text)
-                const charCount = selectedBlocks.length;
-                if (charCount > 0) {
-                    const q = questions[currentQuestionIndex];
-                    if (!q) return;
-                    const correctHakkaSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
-                    const totalChars = correctHakkaSequence.length || 1;
-                    const currentCliffWidth = getCliffWidth();
-                    const bridgeDrawX = getBridgeDrawX();
-                    const bridgeDrawWidth = getBridgeDrawWidth();
-                    const blockWidth = bridgeDrawWidth / totalChars;
+        if (!bridgeKind || dogState === 'recovering' || dogState === 'shaking') return;
 
-                    if (isBridgeBroken && isImageReady(runnerAssets.brokenBridge) && isImageReady(runnerAssets.bridge)) {
-                        const bridgeHeight = getBridgeHeight();
-                        const bridgeWidth = bridgeDrawWidth;
-                        const bridgeScale = bridgeWidth / runnerAssets.bridge.naturalWidth;
-                        const brokenBridgeWidth = runnerAssets.brokenBridge.naturalWidth * bridgeScale;
-                        ctx.drawImage(runnerAssets.brokenBridge, bridgeDrawX, groundY - rs(2), brokenBridgeWidth, bridgeHeight);
-                    } else if (isImageReady(runnerAssets.bridge)) {
-                        const bridgeHeight = getBridgeHeight();
-                        const bridgeWidth = bridgeDrawWidth;
-                        ctx.drawImage(runnerAssets.bridge, bridgeDrawX, groundY - rs(2), bridgeWidth, bridgeHeight);
-                    } else {
-                        selectedBlocks.forEach((block, idx) => {
-                            let bx = bridgeDrawX + idx * blockWidth;
-                            let by = groundY + rs(2);
-                            
-                            // Solid wooden plank styling
-                            ctx.fillStyle = '#8B5A2B'; // Solid wood brown
-                            ctx.strokeStyle = '#5c3a1a'; // Darker brown border
-                            ctx.lineWidth = rs(2);
-                            
-                            ctx.beginPath();
-                            ctx.roundRect(bx + rs(1), by, blockWidth - rs(2), rs(12), rs(3));
-                            ctx.fill();
-                            ctx.stroke();
-                            
-                            // Subtle wooden grain lines
-                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-                            ctx.lineWidth = rs(1);
-                            ctx.beginPath();
-                            ctx.moveTo(bx + rs(3), by + rs(4));
-                            ctx.lineTo(bx + blockWidth - rs(5), by + rs(4));
-                            ctx.moveTo(bx + rs(5), by + rs(8));
-                            ctx.lineTo(bx + blockWidth - rs(7), by + rs(8));
-                            ctx.stroke();
-                        });
-                    }
-                }
-            }
-            
+        const bridgeDrawX = getBridgeDrawX();
+        const bridgeDrawWidth = getBridgeDrawWidth();
+        const bridgeHeight = getBridgeHeight();
+
+        ctx.save();
+
+        if (bridgeKind === 'golden') {
+            drawGoldenAnswerBridge(bridgeDrawX, bridgeDrawWidth);
             ctx.restore();
+            return;
+        }
+
+        // Reveal the wooden bridge left to right while it is being built
+        if (bridgeBuildProgress < 1) {
+            ctx.beginPath();
+            ctx.rect(bridgeDrawX - rs(2), 0, bridgeDrawWidth * bridgeBuildProgress + rs(2), canvasHeight);
+            ctx.clip();
+        }
+
+        if (bridgeKind === 'broken' && isImageReady(runnerAssets.brokenBridge) && isImageReady(runnerAssets.bridge)) {
+            const bridgeScale = bridgeDrawWidth / runnerAssets.bridge.naturalWidth;
+            const brokenBridgeWidth = runnerAssets.brokenBridge.naturalWidth * bridgeScale;
+            ctx.drawImage(runnerAssets.brokenBridge, bridgeDrawX, groundY - rs(2), brokenBridgeWidth, bridgeHeight);
+        } else if (bridgeKind === 'wood' && isImageReady(runnerAssets.bridge)) {
+            ctx.drawImage(runnerAssets.bridge, bridgeDrawX, groundY - rs(2), bridgeDrawWidth, bridgeHeight);
+        } else {
+            // Fallback plank bridge if images are not ready
+            const plankCount = 8;
+            const plankWidth = (bridgeKind === 'broken' ? bridgeDrawWidth / 2 : bridgeDrawWidth) / plankCount;
+            ctx.fillStyle = '#8B5A2B';
+            ctx.strokeStyle = '#5c3a1a';
+            ctx.lineWidth = rs(2);
+            for (let i = 0; i < plankCount; i++) {
+                ctx.beginPath();
+                ctx.roundRect(bridgeDrawX + i * plankWidth + rs(1), groundY + rs(2), plankWidth - rs(2), rs(12), rs(3));
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        ctx.restore();
+    }
+
+    // Bo-Gong's bridge: golden planks showing the correct answer, laid one character at a time
+    function drawGoldenAnswerBridge(bridgeDrawX, bridgeDrawWidth) {
+        const chars = bridgeChars.length > 0 ? bridgeChars : [''];
+        const plankWidth = bridgeDrawWidth / chars.length;
+        const plankHeight = rs(24);
+        const plankY = groundY - rs(6);
+        const visibleCount = Math.ceil(bridgeBuildProgress * chars.length);
+        const fontSize = Math.min(rs(17), plankWidth * 0.62);
+
+        ctx.shadowColor = 'rgba(255, 200, 60, .9)';
+        ctx.shadowBlur = rs(12);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${fontSize}px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+
+        for (let i = 0; i < visibleCount; i++) {
+            const x = bridgeDrawX + i * plankWidth;
+            ctx.globalAlpha = bridgeAlpha + 0.2;
+            ctx.fillStyle = 'rgba(255, 236, 160, .92)';
+            ctx.strokeStyle = 'rgba(214, 155, 53, 1)';
+            ctx.lineWidth = rs(2);
+            ctx.beginPath();
+            ctx.roundRect(x + rs(1), plankY, plankWidth - rs(2), plankHeight, rs(5));
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#6b3d0a';
+            ctx.fillText(chars[i], x + plankWidth / 2, plankY + plankHeight / 2 + rs(1));
         }
     }
 
