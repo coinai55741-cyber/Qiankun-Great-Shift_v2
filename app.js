@@ -62,10 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const appHeader = document.querySelector('.app-header');
     const storyCard = document.getElementById('story-card');
     const storyCanvas = document.getElementById('story-canvas');
+    const storyBackgroundImage = new Image();
+    storyBackgroundImage.src = 'data/image/S2_m3_story_bg.png?v=20261029-2';
+    storyBackgroundImage.addEventListener('load', () => {
+        if (storyCard && !storyCard.classList.contains('hidden')) drawStoryScene();
+    });
     const storySpeaker = document.getElementById('story-speaker');
     const storyLine = document.getElementById('story-line');
     const storyAvatarImg = document.getElementById('story-avatar-img');
+    const storyCharacterLayer = document.querySelector('.story-character-layer');
     const storyStandingCharacters = document.querySelectorAll('[data-story-character]');
+    const storyAudioVisualizer = document.getElementById('story-audio-visualizer');
+    const storyBridgeAnimation = document.getElementById('story-bridge-animation');
     const storyNextBtn = document.getElementById('story-next-btn');
     const storySkipBtn = document.getElementById('story-skip-btn');
     const bokongAssist = document.getElementById('bokong-assist');
@@ -252,6 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
         { speaker: '阿黑', text: '呼！過來了！伯公，小明抱怨數學的紀錄已經好好的印在繪卷上囉，其他的內容，我等一下帶回去給你讀！' },
         { speaker: '伯公', text: '好好好，這孩子總是怕數學。繼續吧，看看下一條路上還能幫伯公收集到什麼有趣的對話！' }
     ];
+    const storyVoiceAudio = new Audio('https://dn9mvjhbyvvpc.cloudfront.net/files/71858_2bdea5329f2fdaec3dc9b152a18e8a14.wav');
+    storyVoiceAudio.preload = 'auto';
+    storyVoiceAudio.addEventListener('ended', () => {
+        if (storyAudioVisualizer) storyAudioVisualizer.classList.remove('is-playing');
+    });
 
     const starResults = [
         { stars: 5, title: '傳音神犬', note: '最高星級，授予滿分且表現最出色的玩家。', comment: '你的耳朵比雷達還靈敏！繪卷紀錄得一字不漏，伯公讀完開心地哈哈大笑！' },
@@ -530,8 +543,61 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
 
+    // Questions bundled by data/quiz/build_offline_bundle.py (<= 8 characters only).
+    function loadOfflineQuestions(dialectId) {
+        const pick = () => (window.QUIZ_OFFLINE && window.QUIZ_OFFLINE[dialectId]) || [];
+        if (window.QUIZ_OFFLINE) return Promise.resolve(pick());
+        return new Promise(resolve => {
+            const script = document.createElement('script');
+            script.src = 'data/quiz/questions_offline.js?v=20261029-offline1';
+            script.onload = () => resolve(pick());
+            script.onerror = () => {
+                console.warn('無法載入離線題庫', script.src);
+                resolve([]);
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    // Single-layer parallax: the whole page scroll range maps onto the spare height of the background layer.
+    function setupParallax() {
+        const bg = document.getElementById('parallax-bg');
+        const layer = bg && bg.firstElementChild;
+        if (!layer) return;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let queued = false;
+
+        function update() {
+            queued = false;
+            if (reduceMotion.matches || getComputedStyle(bg).display === 'none') return;
+            const root = document.documentElement;
+            const range = Math.max(root.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+            const scrolled = window.scrollY || root.scrollTop || document.body.scrollTop || 0;
+            const progress = range > 1 ? Math.min(1, Math.max(0, scrolled / range)) : 0.5; // page doesn't scroll: keep centred
+            const spare = layer.offsetHeight - window.innerHeight;
+            layer.style.setProperty('--parallax-y', `${(0.5 - progress) * spare}px`);
+        }
+        function queue() {
+            if (queued) return;
+            queued = true;
+            requestAnimationFrame(update);
+        }
+
+        document.addEventListener('scroll', queue, { passive: true, capture: true });
+        window.addEventListener('resize', queue);
+        reduceMotion.addEventListener('change', queue);
+        // Pages are switched by toggling .hidden: start each page at its own scroll position.
+        const watcher = new MutationObserver(queue);
+        ['intro-card', 'results-card'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) watcher.observe(el, { attributes: true, attributeFilter: ['class'] });
+        });
+        queue();
+    }
+
     // 1. Initial Load
     function init() {
+        setupParallax();
         if (typeof questionsData !== 'undefined') {
             questions = questionsData;
             setupEventListeners();
@@ -569,11 +635,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             results.forEach(resList => {
                                 allQuestions = allQuestions.concat(resList);
                             });
-                            
+                            // Opened from disk (file://) the browser blocks fetch(): use the bundled copy instead.
+                            if (allQuestions.length === 0) {
+                                return loadOfflineQuestions(dialectId);
+                            }
+                            return allQuestions;
+                        })
+                        .then(allQuestions => {
                             // Filter questions by length <= 8
                             let filtered = allQuestions.filter(q => q.hakka_char_count <= charLimit);
                             if (filtered.length === 0) {
-                                alert("在此腔調下，無符合 8 字元以下的題目！將載入該腔調之全數題目。");
+                                console.warn(`腔調 ${dialectId} 沒有 ${charLimit} 字元以下的題目，改用全部題目`);
                                 filtered = allQuestions;
                             }
                             
@@ -646,33 +718,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderStoryStep() {
         const step = openingStory[storyStepIndex] || openingStory[0];
+        const isStoryAudioStep = step.speaker === '背景音效';
+        const isBridgeStoryStep = step.speaker === '場景變化';
+        stopStoryVoice();
+        stopStoryBridgeAnimation();
         if (storySpeaker) storySpeaker.textContent = step.speaker;
         if (storyLine) storyLine.textContent = step.text;
-        const activeStoryCharacter = step.speaker === '伯公'
+        const activeStoryCharacter = (isStoryAudioStep || isBridgeStoryStep)
+            ? null
+            : (step.speaker === '伯公'
             ? '伯公'
-            : (step.speaker === '阿黑' ? '阿黑' : '指導員');
+            : (step.speaker === '阿黑' ? '阿黑' : '指導員'));
+        if (storyCharacterLayer) storyCharacterLayer.classList.toggle('is-empty', !activeStoryCharacter);
         if (storyAvatarImg) {
-            storyAvatarImg.src = activeStoryCharacter === '伯公'
-                ? 'data/image/S2_m3_bokon1.png'
-                : (activeStoryCharacter === '阿黑' ? 'data/image/kuro_high_frames_keyed/kuro_high_02.png' : 'data/image/S2_m1_ame1.png');
-            storyAvatarImg.alt = `${activeStoryCharacter}頭像`;
-            storyAvatarImg.className = activeStoryCharacter === '伯公' ? 'avatar-bokong' : (activeStoryCharacter === '阿黑' ? 'avatar-kuro' : 'avatar-guide');
+            storyAvatarImg.hidden = !activeStoryCharacter;
+            if (activeStoryCharacter) {
+                storyAvatarImg.src = activeStoryCharacter === '伯公'
+                    ? 'data/image/S2_m3_bokon1.png'
+                    : (activeStoryCharacter === '阿黑' ? 'data/image/S2_m3_kuro_sit.png' : 'data/image/S2_m3_p1.png');
+                storyAvatarImg.alt = `${activeStoryCharacter}頭像`;
+                storyAvatarImg.className = activeStoryCharacter === '伯公' ? 'avatar-bokong' : (activeStoryCharacter === '阿黑' ? 'avatar-kuro' : 'avatar-guide');
+            }
         }
         storyStandingCharacters.forEach((character) => {
-            character.classList.toggle('is-active', character.dataset.storyCharacter === activeStoryCharacter);
+            character.classList.toggle('is-active', Boolean(activeStoryCharacter) && character.dataset.storyCharacter === activeStoryCharacter);
             character.classList.toggle('is-dimmed', character.dataset.storyCharacter !== activeStoryCharacter);
         });
+        if (storyAudioVisualizer) {
+            storyAudioVisualizer.classList.toggle('hidden', !isStoryAudioStep);
+            storyAudioVisualizer.classList.toggle('is-playing', isStoryAudioStep);
+        }
+        if (isStoryAudioStep) {
+            storyVoiceAudio.play().catch(() => {
+                if (storyAudioVisualizer) storyAudioVisualizer.classList.remove('is-playing');
+            });
+        }
+        if (isBridgeStoryStep && storyBridgeAnimation) {
+            storyBridgeAnimation.classList.remove('hidden');
+            void storyBridgeAnimation.offsetWidth;
+            storyBridgeAnimation.classList.add('is-playing');
+        }
         if (storyNextBtn) {
             storyNextBtn.innerHTML = storyStepIndex >= openingStory.length - 1
-                ? '<i class="fa-solid fa-scroll"></i> 進入任務說明'
+                ? '進入任務說明'
                 : '繼續 <i class="fa-solid fa-arrow-right"></i>';
         }
     }
 
     function showIntroCard() {
+        stopStoryVoice();
+        stopStoryBridgeAnimation();
         if (storyCard) storyCard.classList.add('hidden');
         if (appHeader) appHeader.classList.add('hidden');
         if (introCard) introCard.classList.remove('hidden');
+    }
+
+    function stopStoryVoice() {
+        storyVoiceAudio.pause();
+        storyVoiceAudio.currentTime = 0;
+        if (storyAudioVisualizer) {
+            storyAudioVisualizer.classList.remove('is-playing');
+            storyAudioVisualizer.classList.add('hidden');
+        }
+    }
+
+    function stopStoryBridgeAnimation() {
+        if (!storyBridgeAnimation) return;
+        storyBridgeAnimation.classList.remove('is-playing');
+        storyBridgeAnimation.classList.add('hidden');
     }
 
     function drawStoryScene() {
@@ -681,6 +794,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const width = storyCanvas.width;
         const height = storyCanvas.height;
         storyCtx.clearRect(0, 0, width, height);
+
+        if (storyBackgroundImage.complete && storyBackgroundImage.naturalWidth > 0) {
+            const scale = Math.max(
+                width / storyBackgroundImage.naturalWidth,
+                height / storyBackgroundImage.naturalHeight
+            );
+            const drawWidth = storyBackgroundImage.naturalWidth * scale;
+            const drawHeight = storyBackgroundImage.naturalHeight * scale;
+            storyCtx.drawImage(
+                storyBackgroundImage,
+                (width - drawWidth) / 2,
+                (height - drawHeight) / 2,
+                drawWidth,
+                drawHeight
+            );
+            return;
+        }
 
         const wall = storyCtx.createLinearGradient(0, 0, 0, height);
         wall.addColorStop(0, '#fff0c8');
@@ -1011,6 +1141,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 fastForward = true;
             }
         });
+
+        // Mobile lobby leaderboard popup (top-right "★ 排行榜"); content mirrors the lobby leaderboard.
+        const rankToggle = document.getElementById('lobby-rank-toggle');
+        const rankModal = document.getElementById('lobby-rank-modal');
+        const rankDialog = document.getElementById('lobby-rank-dialog');
+        let rankReturnFocus = null;
+        function closeLobbyRank() {
+            if (!rankModal || rankModal.classList.contains('hidden')) return;
+            rankModal.classList.add('hidden');
+            if (rankReturnFocus) rankReturnFocus.focus({ preventScroll: true });
+        }
+        function openLobbyRank() {
+            if (!rankModal) return;
+            const board = document.querySelector('.lobby-leaderboard');
+            const summary = document.getElementById('lobby-rank-modal-summary');
+            const list = document.getElementById('lobby-rank-modal-list');
+            if (board && summary && list) {
+                summary.innerHTML = board.querySelector('.lobby-rank-summary').innerHTML;
+                list.innerHTML = '';
+                board.querySelectorAll('ol li').forEach((li) => {
+                    const row = li.cloneNode(true);
+                    row.querySelector('.lobby-rank-place').classList.replace('lobby-rank-place', 'lobby-rank-modal-place');
+                    row.querySelector('.lobby-rank-name').classList.replace('lobby-rank-name', 'lobby-rank-modal-name');
+                    list.appendChild(row);
+                });
+            }
+            rankReturnFocus = document.activeElement;
+            rankModal.classList.remove('hidden');
+            if (rankDialog) rankDialog.focus({ preventScroll: true });
+        }
+        if (rankToggle) rankToggle.addEventListener('click', () => { playSfx('click'); openLobbyRank(); });
+        ['lobby-rank-close', 'lobby-rank-close-bottom'].forEach((id) => {
+            const btn = document.getElementById(id);
+            if (btn) btn.addEventListener('click', () => { playSfx('click'); closeLobbyRank(); });
+        });
+        if (rankModal) rankModal.addEventListener('click', (e) => { if (e.target === rankModal) closeLobbyRank(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLobbyRank(); });
 
         // Keyboard support (Space to play audio, Enter to submit/next)
         document.addEventListener('keydown', (e) => {
@@ -2183,7 +2350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!skippableStates.includes(dogState)) return;
         const label = fastForward ? '▸▸ 快轉中' : '點擊畫面快轉 ▸▸';
         ctx.save();
-        ctx.font = `800 ${rs(13)}px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+        ctx.font = `800 ${rs(6.5)}px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
         // Bottom-center: the canvas is cropped left/right (object-fit: cover) on narrow screens.
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -2192,10 +2359,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const width = ctx.measureText(label).width;
         ctx.fillStyle = 'rgba(31, 26, 18, .5)';
         ctx.beginPath();
-        ctx.roundRect(x - width / 2 - rs(10), y - rs(12), width + rs(20), rs(24), rs(12));
+        ctx.roundRect(x - width / 2 - rs(5), y - rs(6), width + rs(10), rs(12), rs(6));
         ctx.fill();
         ctx.fillStyle = '#fffaf0';
-        ctx.fillText(label, x, y + rs(1));
+        ctx.fillText(label, x, y + rs(.5));
         ctx.restore();
     }
 

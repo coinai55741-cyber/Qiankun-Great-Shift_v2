@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <!-- Font Awesome Icons -->
     <!-- Custom Style -->
-    <link rel="stylesheet" href="style.css?v=20260924-local-icons1">
+    <link rel="stylesheet" href="style.css?v=20261029-no-blur">
 </head>
 <body>
     <!-- Background Elements -->
@@ -16,6 +16,7 @@
 
     <div id="app" class="app-container" v-cloak>
         <button class="lobby-back-button" type="button" aria-label="返回列表"><img src="data/ui/back.png" alt="" aria-hidden="true">返回列表</button>
+        <button class="lobby-rank-toggle-btn" id="lobby-rank-toggle" type="button" aria-haspopup="dialog" aria-controls="lobby-rank-modal"><span class="star-icon" aria-hidden="true">★</span> 排行榜</button>
         <!-- Header -->
         <header class="app-header hidden">
 <div class="header-logo">
@@ -39,6 +40,7 @@
                 <img class="lobby-rank-banner" src="data/ui/rank_banner.png" alt="即時排行榜">
                 <div class="lobby-rank-summary">
                     <p>您目前的排名：<b>16</b></p>
+                    <p>最佳成績：<b>25</b></p>
                     <p>最佳紀錄：<b>00:00:32.31</b></p>
                 </div>
                 <button class="lobby-rank-link" type="button">排行榜</button>
@@ -56,9 +58,31 @@
             <div class="story-scene">
                 <canvas id="story-canvas" width="1920" height="1080"></canvas>
                 <div class="story-character-layer" aria-hidden="true">
-                    <img class="story-standing story-standing-kuro" data-story-character="阿黑" src="data/image/kuro_high_frames_keyed/kuro_high_02.png" alt="">
-                    <img class="story-standing story-standing-guide" data-story-character="指導員" src="data/image/S2_m1_ame1.png" alt="">
+                    <img class="story-standing story-standing-kuro" data-story-character="阿黑" src="data/image/S2_m3_kuro_sit.png" alt="">
+                    <img class="story-standing story-standing-guide" data-story-character="指導員" src="data/image/S2_m3_p1.png" alt="">
                     <img class="story-standing story-standing-bokong" data-story-character="伯公" src="data/image/S2_m3_bokon1.png" alt="">
+                </div>
+                <div class="story-audio-visualizer hidden" id="story-audio-visualizer" aria-hidden="true">
+                    <div class="story-audio-rings"></div>
+                    <div class="story-audio-bars">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+                <div class="story-bridge-animation hidden" id="story-bridge-animation" aria-hidden="true">
+                    <div class="story-bridge-light"></div>
+                    <div class="story-bridge-tiles">
+                        <span style="--i:0;--x:-110px;--y:-92px;--r:-18deg">𠊎</span>
+                        <span style="--i:1;--x:64px;--y:-118px;--r:13deg">試</span>
+                        <span style="--i:2;--x:-54px;--y:96px;--r:16deg">著</span>
+                        <span style="--i:3;--x:92px;--y:72px;--r:-12deg">這</span>
+                        <span style="--i:4;--x:-30px;--y:-122px;--r:9deg">題</span>
+                        <span style="--i:5;--x:48px;--y:112px;--r:-17deg">數</span>
+                        <span style="--i:6;--x:-82px;--y:62px;--r:14deg">學</span>
+                        <span style="--i:7;--x:108px;--y:-72px;--r:-10deg">還</span>
+                        <span style="--i:8;--x:-65px;--y:-105px;--r:17deg">難</span>
+                        <span style="--i:9;--x:72px;--y:94px;--r:-15deg">哦</span>
+                    </div>
+                    <img class="story-bridge-image" src="data/image/S2_m3_bridgeA.png" alt="">
                 </div>
                 <div class="story-dialogue gal-dialogue">
                     <div class="story-speaker gal-speaker">
@@ -269,6 +293,31 @@
 
     </div>
 
+    <!-- 單層視差背景：說明首頁與結果頁/排行榜共用，圖片由 style.css 的 --parallax-image 指定 -->
+    <div class="parallax-bg" id="parallax-bg" aria-hidden="true"><div class="parallax-layer"></div></div>
+
+    <!-- 手機版排行榜彈窗：由右上角「★ 排行榜」開啟，內容取自大廳排行榜 -->
+    <div class="lobby-rank-modal-overlay hidden" id="lobby-rank-modal" role="dialog" aria-modal="true" aria-label="即時排行榜">
+        <article class="lobby-rank-modal" id="lobby-rank-dialog" tabindex="-1">
+            <header>
+                <h2>排行榜</h2>
+                <button class="lobby-rank-modal-close" id="lobby-rank-close" type="button" aria-label="關閉排行榜">×</button>
+            </header>
+            <div class="lobby-rank-modal-content">
+                <div class="lobby-rank-modal-summary" id="lobby-rank-modal-summary"></div>
+                <ol class="lobby-rank-modal-list" id="lobby-rank-modal-list"></ol>
+                <p class="rank-foot">目前共 <b>54</b> 人參加，共玩 <b>121</b> 次</p>
+                <aside class="lobby-rank-modal-note">
+                    <b>注意事項</b>
+                    <p>同分且作答時間相同時，依活動參加先後進行排序。</p>
+                </aside>
+            </div>
+            <footer>
+                <button class="btn btn-secondary" id="lobby-rank-close-bottom" type="button">關閉</button>
+            </footer>
+        </article>
+    </div>
+
     <!-- Audio Element -->
     <audio id="game-audio" preload="auto"></audio>
 
@@ -276,7 +325,7 @@
     <script src="vue-app.js?v=20260924-kuro-image-assets1"></script>
     <!-- Game data and existing interaction engine -->
     <script src="questions_data.js"></script>
-    <script src="app.js?v=20261019-fast-flow4"></script>
+    <script src="app.js?v=20261029-no-blur"></script>
 </body>
 </html>
 
