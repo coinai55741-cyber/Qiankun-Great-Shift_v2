@@ -1988,7 +1988,7 @@ body:has(#story-card:not(.hidden)) #story-card .story-dialogue .btn {
     font-weight: 900;
 }
 
-/* ========================================================================== 
+/* ===========================================================================
    Clean landscape phone layout
    One source of truth for story/game fullscreen UI. Keep this as the final
    responsive block instead of stacking temporary overrides.
@@ -4911,7 +4911,8 @@ body:has(#game-card:not(.hidden)) #hint-btn .fa-lightbulb::before {
     display: none;
 }
 
-@media (max-width: 900px) {
+/* The 980px parchment leaves no room for the floating board below ~1330px wide: use the popup there. */
+@media (max-width: 1329px) {
     body:has(#intro-card:not(.hidden)) > #app .lobby-rank-toggle-btn {
         position: fixed;
         top: 7px;
@@ -5172,4 +5173,314 @@ body:has(#results-card:not(.hidden)) #results-card,
         top: 0;
         height: 100%;
     }
+}
+/* Brush stage: the runner scene keeps going behind a blurred veil; the writing module floats on top as a panel. */
+.brush-stage-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: grid;
+    place-items: center;
+    padding: clamp(10px, 3vh, 28px) clamp(8px, 3vw, 36px);
+    background: rgba(24, 40, 34, .22);
+    -webkit-backdrop-filter: blur(9px);
+    backdrop-filter: blur(9px);
+}
+
+.brush-stage-panel {
+    width: min(820px, 100%);
+    height: 100%;
+    max-height: 960px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    border-radius: 18px;
+    background: #f6efd9;
+    box-shadow: 0 22px 60px rgba(18, 30, 24, .38);
+}
+
+.brush-stage-overlay.hidden { display: none; }
+
+.brush-stage-bar {
+    min-height: 58px;
+    padding: 10px clamp(16px, 4vw, 48px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: #fffdf4;
+    background: #315b48;
+    box-shadow: 0 2px 10px rgba(28, 43, 32, .2);
+}
+
+.brush-stage-bar > div { display: grid; gap: 2px; }
+.brush-stage-bar strong { font-size: clamp(18px, 2.2vw, 25px); }
+.brush-stage-bar span { font-size: 13px; opacity: .86; }
+.brush-stage-close {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255,255,255,.65);
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(255,255,255,.1);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+.brush-stage-close.hidden { display: none; }
+#brush-stage-frame { width: 100%; height: 100%; border: 0; background: #f6efd9; }
+.result-scroll-share-btn { display: block; margin: 24px auto 0; min-width: min(100%, 280px); }
+
+@media (max-width: 600px) {
+    .brush-stage-bar { min-height: 52px; padding: 8px 12px; }
+    .brush-stage-bar span { font-size: 11px; }
+    /* Phones: leave a strip at the top so the running dog stays visible behind the blur. */
+    .brush-stage-overlay { align-items: end; padding: 0; }
+    .brush-stage-panel { height: max(60dvh, calc(100dvh - 240px)); max-height: none; border-radius: 18px 18px 0 0; }
+}
+
+/* Tablet / desktop: the panel is centered over the blurred running scene. */
+@media (min-width: 601px) {
+    .brush-stage-panel { width: min(680px, 92vw); }
+}
+
+/* Fade the brush panel in/out; the results card's own fadeIn crossfades with it. */
+.brush-stage-overlay { animation: brushStageFadeIn .4s ease both; }
+.brush-stage-overlay.is-leaving { animation: brushStageFadeOut .5s ease both; pointer-events: none; }
+@keyframes brushStageFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes brushStageFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .brush-stage-overlay, .brush-stage-overlay.is-leaving { animation-duration: .01s; animation-delay: 0s; }
+}
+
+/* While writing, only the runner canvas of the game card stays; the quiz controls are hidden. */
+body.brush-stage-active #game-card .mission-panel,
+body.brush-stage-active #game-card .progress-section,
+body.brush-stage-active #game-card .canvas-caption {
+    visibility: hidden;
+}
+
+/* The host's back button stays reachable above the blur, like on every other screen. */
+body.brush-stage-active #app > .lobby-back-button {
+    z-index: 5100 !important;
+}
+
+/* ===========================================================================
+   Illustrated mission-intro skin. Text remains live HTML for accessibility.
+   The existing village artwork remains visible behind the parchment.
+   ========================================================================== */
+body:has(#intro-card:not(.hidden)) {
+    align-items: flex-start;
+    padding: 64px 16px 48px;
+    background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,.72), transparent 27%),
+        linear-gradient(180deg, #c9eef2 0 36%, #dcebb8 36% 100%);
+}
+
+body:has(#intro-card:not(.hidden)) > #app.app-container {
+    width: min(1180px, 100%);
+    min-height: 0;
+    overflow: visible;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card.game-card {
+    position: relative;
+    isolation: isolate;
+    width: min(980px, calc(100vw - 72px));
+    max-width: none;
+    margin: 18px auto 64px;
+    padding: clamp(150px, calc(.19 * min(980px, 100vw - 72px) + 16px), 205px) clamp(72px, 8vw, 112px) clamp(104px, 10vw, 136px);
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: url('data/image/intro-parchment-landscape.webp') center / 100% 100% no-repeat;
+    box-shadow: none;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card.game-card::before {
+    display: none;
+}
+
+.intro-side-decoration {
+    position: absolute;
+    z-index: 3;
+    left: clamp(-205px, -15vw, -152px);
+    bottom: -42px;
+    width: clamp(245px, 25vw, 330px);
+    aspect-ratio: 5 / 7;
+    pointer-events: none;
+}
+
+.intro-foliage-scroll { width: 100%; height: 100%; object-fit: contain; }
+body:has(#intro-card:not(.hidden)) #intro-card .intro-header {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    left: 50%;
+    width: min(660px, 70%);
+    aspect-ratio: 3 / 1;
+    margin: 0;
+    padding: 0 12% 2%;
+    border: 0;
+    transform: translate(-50%, -22%);
+    background: url('data/image/intro-title-scroll.webp') center / contain no-repeat;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-header h2 {
+    color: #2f2a20;
+    font-size: clamp(1.65rem, 3.2vw, 2.65rem);
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-shadow: 0 1px rgba(255,255,255,.65);
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-story {
+    margin: 0 auto 20px;
+    color: #4d382a;
+    font-size: clamp(.98rem, 1.45vw, 1.08rem);
+    line-height: 1.8;
+    text-align: center;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-rules h3,
+body:has(#intro-card:not(.hidden)) #intro-card .selection-title {
+    position: relative;
+    width: min(520px, 86%);
+    min-height: 72px;
+    margin: 2px auto 8px;
+    padding: 17px 68px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fffbed;
+    background: url('data/image/intro-section-brush.webp') center / 100% 100% no-repeat;
+    font-size: clamp(1.15rem, 2.3vw, 1.55rem);
+    font-weight: 900;
+    letter-spacing: .1em;
+    text-align: center;
+    text-shadow: 0 2px 2px rgba(19, 49, 37, .32);
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-rules {
+    gap: 4px;
+    margin: 0;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-rules ol {
+    counter-reset: mission;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li {
+    counter-increment: mission;
+    position: relative;
+    min-height: 34px;
+    padding: 3px 0 3px 48px;
+    color: #49382c;
+    font-size: clamp(.9rem, 1.35vw, 1rem);
+    line-height: 1.45;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li::before {
+    content: counter(mission);
+    position: absolute;
+    left: 2px;
+    top: 3px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 48% 52% 46% 54%;
+    color: #fffbed;
+    background: #356d50;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.13);
+    font-weight: 900;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .selection-section {
+    max-width: 720px;
+    margin: -2px auto 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-grid { gap: 8px; margin-top: 4px; }
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn {
+    min-height: 46px;
+    border: 1px solid #a98558;
+    border-radius: 12px;
+    color: #49372a;
+    background: rgba(255, 250, 232, .72);
+    box-shadow: 0 3px 0 rgba(132, 91, 48, .18);
+}
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn.active {
+    color: #fffbed;
+    border-color: #285a42;
+    background: #377558;
+    box-shadow: 0 4px 0 #234d39;
+}
+
+body:has(#intro-card:not(.hidden)) #intro-card .warning-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 12px;
+    color: #496348;
+    background: rgba(239, 228, 182, .58);
+    font-size: .88rem;
+    text-align: center;
+}
+
+body:has(#intro-card:not(.hidden)) #start-adventure-btn {
+    width: min(520px, 82%);
+    min-height: 62px;
+    margin: 5px auto 0;
+    border: 2px solid #84291e;
+    border-radius: 15px;
+    color: #fff9e9;
+    background: linear-gradient(#c74e38, #a93629);
+    box-shadow: 0 6px 0 #77231b, 0 12px 20px rgba(91, 42, 24, .18);
+    font-size: clamp(1.2rem, 2.3vw, 1.55rem);
+    letter-spacing: .1em;
+}
+
+@media (max-width: 1180px) {
+    .intro-side-decoration { display: none; }
+}
+
+@media (max-width: 767px) {
+    body:has(#intro-card:not(.hidden)) { padding: 54px 8px 28px; }
+    body:has(#intro-card:not(.hidden)) #intro-card.game-card {
+        width: min(560px, calc(100vw - 32px));
+        margin: 42px auto 24px;
+        padding: 116px 56px 112px;
+        background-image: url('data/image/intro-parchment-portrait.webp');
+    }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-header {
+        width: min(430px, 92%);
+        transform: translate(-50%, -33%);
+    }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-header h2 { font-size: clamp(1.35rem, 6vw, 2rem); }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-story { text-align: left; }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-rules h3,
+    body:has(#intro-card:not(.hidden)) #intro-card .selection-title {
+        width: 100%;
+        min-height: 58px;
+        padding: 12px 48px;
+        font-size: 1.08rem;
+    }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li { padding-left: 42px; font-size: .94rem; }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li::before { width: 29px; height: 29px; }
+    body:has(#intro-card:not(.hidden)) #intro-card .selection-section { margin-top: -4px; }
+    body:has(#intro-card:not(.hidden)) #start-adventure-btn { width: 100%; }
+}
+
+@media (max-width: 430px) {
+    body:has(#intro-card:not(.hidden)) #intro-card.game-card { padding: 104px 40px 98px; }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-story { font-size: .92rem; line-height: 1.62; }
+    body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li { font-size: .88rem; }
 }

@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let correctCount = 0;
     let totalScore = 0;
-    let questionScore = 20; // Starts at 20 points per question in the 5-question mode
+    let questionScore = 18; // Five listening questions contribute up to 90 points
     let questionAttempts = 0;
     let questionUsedHelp = false;
     let questionHelpType = '';
@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let openingCountdownStartedAt = 0;
     const openingCountdownDuration = 3600;
     let selectedDialectId = "1"; // Default 四縣腔
+    let writingScore = 0;
+    let writingResult = null;
+    let brushStageStarted = false;
+    let brushCompleted = false;
 
     // Audio Element & Controls
     const gameAudio = document.getElementById('game-audio');
@@ -115,6 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart-btn');
     const resultSummary = document.getElementById('result-summary');
     const rankingSection = document.getElementById('ranking-section');
+    const brushStageOverlay = document.getElementById('brush-stage-overlay');
+    const brushStageFrame = document.getElementById('brush-stage-frame');
+    const brushStageClose = document.getElementById('brush-stage-close');
+    const brushStageTitle = document.getElementById('brush-stage-title');
+    const brushStageSubtitle = document.getElementById('brush-stage-subtitle');
 
     // Speed buttons
     const speedButtons = document.querySelectorAll('.speed-btn');
@@ -1064,11 +1073,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resultBackBtn) {
             resultBackBtn.addEventListener('click', () => {
                 playSfx('click');
+                if (brushStageOverlay) brushStageOverlay.classList.add('hidden');
                 resultsCard.classList.add('hidden');
                 introCard.classList.remove('hidden');
                 if (appHeader) appHeader.classList.add('hidden');
             });
         }
+        if (brushStageClose) {
+            brushStageClose.addEventListener('click', () => {
+                if (!brushCompleted) return;
+                hideBrushOverlay();
+                document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
+            });
+        }
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape' || !brushCompleted || brushStageOverlay?.classList.contains('hidden')) return;
+            hideBrushOverlay();
+            document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
+        });
+        window.addEventListener('message', handleBrushMessage);
 
         // Speed Controls
         speedButtons.forEach(btn => {
@@ -1172,6 +1195,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (rankDialog) rankDialog.focus({ preventScroll: true });
         }
         if (rankToggle) rankToggle.addEventListener('click', () => { playSfx('click'); openLobbyRank(); });
+        // Wide-desktop side card: its "排行榜" button opens the same popup.
+        const rankLink = document.querySelector('.lobby-rank-link');
+        if (rankLink) rankLink.addEventListener('click', () => { playSfx('click'); openLobbyRank(); });
         ['lobby-rank-close', 'lobby-rank-close-bottom'].forEach((id) => {
             const btn = document.getElementById(id);
             if (btn) btn.addEventListener('click', () => { playSfx('click'); closeLobbyRank(); });
@@ -1200,11 +1226,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appHeader) appHeader.classList.remove('hidden');
         correctCount = 0;
         totalScore = 0;
+        writingScore = 0;
+        writingResult = null;
+        brushStageStarted = false;
+        brushCompleted = false;
+        document.body.classList.remove('brush-stage-active');
         questionRecords = [];
         currentQuestionIndex = 0;
         totalElapsedSeconds = 0;
         resultLocked = false;
         resultElapsedMs = 0;
+        if (brushStageOverlay) brushStageOverlay.classList.add('hidden');
+        if (brushStageClose) brushStageClose.classList.add('hidden');
+        if (brushStageFrame) brushStageFrame.removeAttribute('src');
         gameStartTime = new Date();
         
         resultsCard.classList.add('hidden');
@@ -1265,13 +1299,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadQuestion(index) {
         if (index >= questions.length) {
-            showResults();
+            beginBrushStage();
             return;
         }
 
         const q = questions[index];
         isAnswerSubmitted = false;
-        questionScore = 20; // Start with 20 points
+        questionScore = 18; // Five questions total 90 points
         questionAttempts = 0;
         questionUsedHelp = false;
         questionHelpType = '';
@@ -1811,6 +1845,108 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackPanel.classList.add('hidden');
     }
 
+    function formatScore(value) {
+        return Number(value || 0).toFixed(2);
+    }
+
+    // Mock leaderboard for the results page.
+    // Replace with the real ranking service later; scores are display strings.
+    const leaderboardTop = [
+        { rank: 1, name: '林O恩', score: '100.00', time: '00:00:05.00' },
+        { rank: 2, name: '張O彤', score: '100.00', time: '00:00:09.00' },
+        { rank: 3, name: '陳O宇', score: '100.00', time: '00:00:10.00' },
+        { rank: 4, name: '李O澄', score: '100.00', time: '00:00:11.00' },
+        { rank: 5, name: '黃O妍', score: '100.00', time: '00:00:12.00' },
+        { rank: 6, name: '劉O安', score: '90', time: '00:00:08.00' },
+        { rank: 7, name: '曾O晴', score: '90', time: '00:00:11.00' },
+        { rank: 8, name: '羅O庭', score: '80', time: '00:00:07.00' },
+        { rank: 9, name: '鍾O睿', score: '80', time: '00:00:10.00' },
+        { rank: 10, name: '彭O萱', score: '70', time: '00:00:09.00' }
+    ];
+    const leaderboardStats = { myRank: 16, participants: 54, plays: 121 };
+
+    function beginBrushStage() {
+        if (brushStageStarted || !brushStageOverlay || !brushStageFrame) return;
+        brushStageStarted = true;
+        // Keep the runner scene alive (blurred by the overlay); only the question UI is hidden by CSS.
+        dogState = 'brush_run';
+        hasCliffAppeared = false;
+        cliffX = canvasWidth * 20;
+        bridgeKind = null;
+        fastForward = false;
+        dogX = getDogEntryX();
+        dogY = groundY;
+        shouldAutoTransition = false;
+        document.body.classList.add('brush-stage-active');
+        if (appHeader) appHeader.classList.add('hidden');
+        if (bokongAssist) bokongAssist.classList.add('hidden');
+        if (brushStageClose) brushStageClose.classList.add('hidden');
+        if (brushStageTitle) brushStageTitle.textContent = '毛筆書寫';
+        if (brushStageSubtitle) brushStageSubtitle.textContent = '完成五字書寫後才會結算總成績';
+        brushStageFrame.src = `brush-prototype/index.html?embedded=1&dialect=${encodeURIComponent(selectedDialectId)}&session=${Date.now()}`;
+        brushStageFrame.addEventListener('load', () => brushStageFrame.focus({ preventScroll: true }), { once: true });
+        brushStageOverlay.classList.remove('hidden');
+    }
+
+    let brushFadeTimer = null;
+    // Fade the brush overlay out (and in again when reopened) instead of cutting.
+    function hideBrushOverlay() {
+        if (!brushStageOverlay || brushStageOverlay.classList.contains('hidden')) return;
+        brushStageOverlay.classList.add('is-leaving');
+        clearTimeout(brushFadeTimer);
+        brushFadeTimer = setTimeout(() => {
+            brushStageOverlay.classList.add('hidden');
+            brushStageOverlay.classList.remove('is-leaving');
+        }, 520);
+    }
+    function showBrushOverlay() {
+        clearTimeout(brushFadeTimer);
+        brushStageOverlay.classList.remove('is-leaving', 'hidden');
+    }
+
+    function sendBrushSessionSummary(show = false) {
+        if (!brushStageFrame?.contentWindow || !writingResult) return;
+        brushStageFrame.contentWindow.postMessage({
+            type: 'brush-session-summary',
+            show,
+            quizScore: Number((totalScore - writingScore).toFixed(2)),
+            writingScore,
+            totalScore: Number(totalScore.toFixed(2)),
+            totalElapsedMs: resultElapsedMs,
+            totalElapsedText: formatResultTime(resultElapsedMs)
+        }, window.location.origin === 'null' ? '*' : window.location.origin); // file:// has an opaque origin
+    }
+
+    function openBrushResult() {
+        if (!brushCompleted || !brushStageOverlay) return;
+        showBrushOverlay();
+        brushStageFrame.focus({ preventScroll: true });
+        sendBrushSessionSummary(true);
+    }
+
+    function handleBrushMessage(event) {
+        if (event.origin !== window.location.origin || !brushStageFrame || event.source !== brushStageFrame.contentWindow) return;
+        if (event.data?.type === 'brush-close-request') {
+            if (!brushCompleted) return;
+            hideBrushOverlay();
+            document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
+            return;
+        }
+        if (event.data?.type !== 'brush-complete') return;
+        if (brushCompleted) return;
+        brushCompleted = true;
+        writingScore = Math.max(0, Math.min(10, Number(Number(event.data.score || 0).toFixed(2))));
+        writingResult = event.data;
+        totalScore = Number((totalScore + writingScore).toFixed(2));
+        hideBrushOverlay();
+        if (brushStageClose) brushStageClose.classList.remove('hidden');
+        if (brushStageTitle) brushStageTitle.textContent = '我的客字繪卷';
+        if (brushStageSubtitle) brushStageSubtitle.textContent = '可下載或分享這次的毛筆作品';
+        showResults();
+        // Crossfade: the results card's own fadeIn runs while the brush panel fades out.
+        sendBrushSessionSummary();
+    }
+
     function formatResultTime(totalMs) {
         const safeMs = Math.max(0, Math.floor(totalMs || 0));
         const minutes = Math.floor(safeMs / 60000).toString().padStart(2, '0');
@@ -1827,6 +1963,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dogState = 'idle';
         shouldAutoTransition = false;
+        document.body.classList.remove('brush-stage-active');
         if (appHeader) appHeader.classList.add('hidden');
         gameCard.classList.add('hidden');
         resultsCard.classList.remove('hidden');
@@ -1836,16 +1973,17 @@ document.addEventListener('DOMContentLoaded', () => {
         totalElapsedSeconds = Math.round(elapsedMs / 1000);
         const elapsedText = formatResultTime(elapsedMs);
         const maxScore = 100;
-        const completedText = `${questions.length} / ${questions.length} 題`;
+        const completedText = `排字 ${questions.length} / ${questions.length} 題．毛筆已完成`;
         const star = getStarResult(totalScore, maxScore);
 
-        resultScore.textContent = `${totalScore} / ${maxScore}`;
+        resultScore.textContent = `${formatScore(totalScore)} / ${formatScore(maxScore)}`;
         resultAccuracy.textContent = completedText;
         resultTime.textContent = elapsedText;
-        if (resultRank) resultRank.textContent = '第16名';
+        if (resultRank) resultRank.textContent = `第${leaderboardStats.myRank}名`;
 
         if (resultSummary) {
-            resultSummary.innerHTML = `多聽幾次再挑戰，阿黑一定會更會聽！<br><strong>${star.title}</strong>`;
+            const quizScore = Number((totalScore - writingScore).toFixed(2));
+            resultSummary.innerHTML = `排字 ${formatScore(quizScore)} / 90．毛筆 ${formatScore(writingScore)} / 10<br><strong>${star.title}</strong>`;
         }
 
         if (rankingSection) {
@@ -1853,27 +1991,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2 id="result-ranking-title" tabindex="-1">排行榜</h2>
                 <div class="result-rank-head"><span>排名</span><span>學員</span><span>分數</span><span>計時</span></div>
                 <ol class="result-rank-list">
-                    <li class="rank-first"><span class="result-rank-place"><img src="data/ui/icon_rank1.png" alt="第 1 名金牌"><span class="sr-only">第 1 名</span></span><span>林O恩</span><b>${maxScore}</b><time>00:00:05.00</time></li>
-                    <li class="rank-second"><span class="result-rank-place"><img src="data/ui/icon_rank2.png" alt="第 2 名銀牌"><span class="sr-only">第 2 名</span></span><span>張O彤</span><b>${maxScore}</b><time>00:00:09.00</time></li>
-                    <li class="rank-third"><span class="result-rank-place"><img src="data/ui/icon_rank3.png" alt="第 3 名銅牌"><span class="sr-only">第 3 名</span></span><span>陳O宇</span><b>${maxScore}</b><time>00:00:10.00</time></li>
-                    <li><span class="result-rank-place"><b>4</b></span><span>李O澄</span><b>${maxScore}</b><time>00:00:11.00</time></li>
-                    <li><span class="result-rank-place"><b>5</b></span><span>黃O妍</span><b>${maxScore}</b><time>00:00:12.00</time></li>
-                    <li><span class="result-rank-place"><b>6</b></span><span>劉O安</span><b>90</b><time>00:00:08.00</time></li>
-                    <li><span class="result-rank-place"><b>7</b></span><span>曾O晴</span><b>90</b><time>00:00:11.00</time></li>
-                    <li><span class="result-rank-place"><b>8</b></span><span>羅O庭</span><b>80</b><time>00:00:07.00</time></li>
-                    <li><span class="result-rank-place"><b>9</b></span><span>鍾O睿</span><b>80</b><time>00:00:10.00</time></li>
-                    <li><span class="result-rank-place"><b>10</b></span><span>彭O萱</span><b>70</b><time>00:00:09.00</time></li>
+                    ${leaderboardTop.map(row => {
+                        const medal = ['rank-first', 'rank-second', 'rank-third'][row.rank - 1] || '';
+                        const place = row.rank <= 3
+                            ? `<span class="result-rank-place"><img src="data/ui/icon_rank${row.rank}.png" alt="第 ${row.rank} 名${['金', '銀', '銅'][row.rank - 1]}牌"><span class="sr-only">第 ${row.rank} 名</span></span>`
+                            : `<span class="result-rank-place"><b>${row.rank}</b></span>`;
+                        return `<li${medal ? ` class="${medal}"` : ''}>${place}<span>${row.name}</span><b>${row.score}</b><time>${row.time}</time></li>`;
+                    }).join('')}
                     <li class="result-rank-ellipsis" aria-hidden="true"><span>·</span><span>·</span><span>·</span></li>
-                    <li class="mine"><span class="result-rank-place"><b>16</b></span><span>你</span><b>${totalScore}</b><time>${elapsedText}</time></li>
+                    <li class="mine"><span class="result-rank-place"><b>${leaderboardStats.myRank}</b></span><span>你</span><b>${formatScore(totalScore)}</b><time>${elapsedText}</time></li>
                 </ol>
-                <p class="rank-foot">目前共 <b>54</b> 人參加，共玩 <b>121</b> 次</p>
+                <p class="rank-foot">目前共 <b>${leaderboardStats.participants}</b> 人參加，共玩 <b>${leaderboardStats.plays}</b> 次</p>
                 <aside class="result-ranking-note">
                     <b>注意事項</b>
                     <ol>
                         <li>同分且作答時間相同時，依活動參加先後進行排序。</li>
-                        <li>本關總分 100 分；共 5 題，每題 20 分，錯一次扣 4 分。</li>
+                        <li>本關總分 100 分；排字 5 題共 90 分，每題 18 分，錯一次扣 4 分；毛筆書寫最高 10 分。</li>
                     </ol>
-                </aside>`;
+                </aside>
+                <button class="btn btn-primary result-scroll-share-btn" id="open-scroll-share-btn" type="button">查看／分享我的繪卷</button>`;
+            document.getElementById('open-scroll-share-btn')?.addEventListener('click', openBrushResult);
         }
 
         const reviewList = document.getElementById('review-list');
@@ -1958,6 +2095,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(playBtn);
             reviewList.appendChild(item);
         });
+        document.querySelector('.result-summary-card')?.focus({ preventScroll: true });
     }
 
     // Audio Event Handlers
@@ -2105,6 +2243,12 @@ document.addEventListener('DOMContentLoaded', () => {
             dogX += (getDogStartX() - dogX) * 0.1;
             dogY = groundY;
         } 
+        else if (dogState === 'brush_run') {
+            // Brush stage: the dog keeps trotting along an endless road behind the (blurred) writing panel.
+            scrollRunnerLayers(rs(2.2) * speedMultiplier);
+            dogX += (getDogStartX() - dogX) * 0.1;
+            dogY = groundY;
+        }
         else if (dogState === 'transition_out') {
             // Scroll background and ground very fast (camera pan effect)
             const transitionSpeed = 10 * speedMultiplier;

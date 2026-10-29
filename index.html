@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <!-- Font Awesome Icons -->
     <!-- Custom Style -->
-    <link rel="stylesheet" href="style.css?v=20261029-no-blur">
+    <link rel="stylesheet" href="style.css?v=20261029-no-board">
 </head>
 <body>
     <!-- Background Elements -->
@@ -102,8 +102,10 @@
 
         <!-- Intro Card -->
         <div class="game-card hidden" id="intro-card">
+            <div class="intro-side-decoration" aria-hidden="true">
+                <img class="intro-foliage-scroll" src="data/image/intro-scroll-foliage.webp" alt="">
+            </div>
             <div class="intro-header">
-                <i class="fa-solid fa-scroll intro-icon"></i>
                 <h2>阿黑的客字繪卷</h2>
             </div>
             
@@ -119,8 +121,9 @@
                 <ol>
                     <li><strong>仔細聆聽：</strong>仔細聆聽風中傳來的社區客語語音。</li>
                     <li><strong>搭建橋墩：</strong>在阿黑抵達斷崖前，將下方的客語字磚依正確語音順序排列好。</li>
-                    <li><strong>架橋通關：</strong>每題最高 10 分，答錯一次扣 2 分並回到起點重試；第 5 次仍錯時，伯公會自動協助過橋，本題 0 分。</li>
+                    <li><strong>架橋通關：</strong>每題最高 18 分，答錯一次扣 4 分並回到起點重試；第 5 次仍錯時，伯公會自動協助過橋，本題 0 分。</li>
                     <li><strong>求助伯公：</strong>遇到難題可點擊【求助伯公】召喚透明仙橋安全過河，本題以 0 分結算。</li>
+                    <li><strong>揮毫成卷：</strong>完成 5 題排字後，依所選腔調另抽一題五字題書寫。排字共 90 分、毛筆最高 10 分，合計 100 分；排行榜計時包含書寫時間。</li>
                 </ol>
             </div>
             
@@ -291,6 +294,20 @@
             </section>
         </div>
 
+        <!-- 毛筆書寫與繪卷分享：同一個 iframe 保留作品狀態，完成後可由排行榜再次開啟。 -->
+        <section class="brush-stage-overlay hidden" id="brush-stage-overlay" role="dialog" aria-modal="true" aria-labelledby="brush-stage-title" aria-describedby="brush-stage-subtitle">
+            <div class="brush-stage-panel">
+                <header class="brush-stage-bar">
+                    <div>
+                        <strong id="brush-stage-title">毛筆書寫</strong>
+                        <span id="brush-stage-subtitle">完成五字書寫後才會結算總成績</span>
+                    </div>
+                    <button class="brush-stage-close hidden" id="brush-stage-close" type="button" aria-label="關閉繪卷成果">×</button>
+                </header>
+                <iframe id="brush-stage-frame" title="毛筆書寫與繪卷成果" loading="eager"></iframe>
+            </div>
+        </section>
+
     </div>
 
     <!-- 單層視差背景：說明首頁與結果頁/排行榜共用，圖片由 style.css 的 --parallax-image 指定 -->
@@ -325,7 +342,7 @@
     <script src="vue-app.js?v=20260924-kuro-image-assets1"></script>
     <!-- Game data and existing interaction engine -->
     <script src="questions_data.js"></script>
-    <script src="app.js?v=20261029-no-blur"></script>
+    <script src="app.js?v=20261029-no-board"></script>
 </body>
 </html>
 
