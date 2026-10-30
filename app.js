@@ -67,8 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const storyCard = document.getElementById('story-card');
     const storyCanvas = document.getElementById('story-canvas');
     const storyBackgroundImage = new Image();
+    let storyBackgroundFailed = false;
     storyBackgroundImage.src = 'data/image/S2_m3_story_bg.png?v=20261029-2';
     storyBackgroundImage.addEventListener('load', () => {
+        if (storyCard && !storyCard.classList.contains('hidden')) drawStoryScene();
+    });
+    storyBackgroundImage.addEventListener('error', () => {
+        storyBackgroundFailed = true;
         if (storyCard && !storyCard.classList.contains('hidden')) drawStoryScene();
     });
     const storySpeaker = document.getElementById('story-speaker');
@@ -820,6 +825,9 @@ document.addEventListener('DOMContentLoaded', () => {
             );
             return;
         }
+
+        // 背景圖還在載入時不畫備用場景，避免重新整理時閃一下舊的 canvas 畫面。
+        if (!storyBackgroundFailed) return;
 
         const wall = storyCtx.createLinearGradient(0, 0, 0, height);
         wall.addColorStop(0, '#fff0c8');
