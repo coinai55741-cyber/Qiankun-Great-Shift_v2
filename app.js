@@ -221,9 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Feedback Panel
     const feedbackPanel = document.getElementById('feedback-panel');
-    const feedbackStatus = document.getElementById('feedback-status');
-    const feedbackHakkaHanji = document.getElementById('feedback-hakka-hanji');
-    const feedbackTranslation = document.getElementById('feedback-translation');
     const nextBtn = document.getElementById('next-btn');
     
     // Results Panel
@@ -510,86 +507,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    function drawStretchImage(image, x, y, width, height) {
-        if (!isImageReady(image)) return false;
-        ctx.drawImage(image, x, y, width, height);
-        return true;
-    }
-
-
-    function drawCroppedImageByHeight(image, x, y, height, cropLeft = 0, cropRight = 0) {
-        if (!isImageReady(image)) return 0;
-        const sourceWidth = image.naturalWidth;
-        const sourceHeight = image.naturalHeight;
-        const sx = Math.max(0, Math.min(sourceWidth - 1, cropLeft));
-        const sw = Math.max(1, sourceWidth - sx - Math.max(0, cropRight));
-        const scale = height / sourceHeight;
-        const width = sw * scale;
-        ctx.drawImage(image, sx, 0, sw, sourceHeight, x, y, width, height);
-        return width;
-    }
-
     function drawImageByHeight(image, x, y, height) {
         if (!isImageReady(image)) return 0;
         const width = image.naturalWidth * (height / image.naturalHeight);
         ctx.drawImage(image, x, y, width, height);
-        return width;
-    }
-
-    function getImageAlphaBounds(image) {
-        if (!isImageReady(image)) return null;
-        if (image._alphaBounds) return image._alphaBounds;
-
-        const probe = document.createElement('canvas');
-        probe.width = image.naturalWidth;
-        probe.height = image.naturalHeight;
-        const probeCtx = probe.getContext('2d', { willReadFrequently: true });
-        probeCtx.drawImage(image, 0, 0);
-        const pixels = probeCtx.getImageData(0, 0, probe.width, probe.height).data;
-        let left = probe.width;
-        let right = -1;
-        let top = probe.height;
-        let bottom = -1;
-
-        for (let py = 0; py < probe.height; py++) {
-            for (let px = 0; px < probe.width; px++) {
-                const alpha = pixels[(py * probe.width + px) * 4 + 3];
-                if (alpha > 8) {
-                    if (px < left) left = px;
-                    if (px > right) right = px;
-                    if (py < top) top = py;
-                    if (py > bottom) bottom = py;
-                }
-            }
-        }
-
-        image._alphaBounds = right >= left
-            ? { left, right, top, bottom, width: right - left + 1, height: bottom - top + 1 }
-            : { left: 0, right: image.naturalWidth - 1, top: 0, bottom: image.naturalHeight - 1, width: image.naturalWidth, height: image.naturalHeight };
-        return image._alphaBounds;
-    }
-
-    function getAlphaContentWidthByHeight(image, height) {
-        if (!isImageReady(image)) return 0;
-        const bounds = getImageAlphaBounds(image);
-        return bounds.width * (height / image.naturalHeight);
-    }
-
-    function drawAlphaContentByHeight(image, x, y, height) {
-        if (!isImageReady(image)) return 0;
-        const bounds = getImageAlphaBounds(image);
-        const width = bounds.width * (height / image.naturalHeight);
-        ctx.drawImage(
-            image,
-            bounds.left,
-            0,
-            bounds.width,
-            image.naturalHeight,
-            x,
-            y,
-            width,
-            height
-        );
         return width;
     }
 
@@ -731,103 +652,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 1. Initial Load
+    const DIALECT_NAMES = { 1: '四縣腔', 2: '海陸腔', 3: '大埔腔', 4: '饒平腔', 5: '詔安腔', 6: '南四縣腔' };
+    const LEVEL_COUNT = 5;          // 每個腔調有 5 個級別的題庫
+    const MAX_HAKKA_CHARS = 8;      // 只出 8 個字以內的題目
+    const QUESTIONS_PER_GAME = 5;
+
+    // 載入該腔調 5 個級別的題庫，篩選字數、洗牌後取一場遊戲要用的題目
+    async function loadSessionQuestions(dialectId) {
+        const levels = await Promise.all(Array.from({ length: LEVEL_COUNT }, (_, i) =>
+            fetch(`data/quiz/questions_dialect_${dialectId}_level_${i + 1}.json?v=${QUIZ_DATA_VERSION}`)
+                .then(res => res.json())
+                .catch(err => {
+                    console.warn(`無法載入腔調 ${dialectId} 級別 ${i + 1}`, err);
+                    return [];
+                })
+        ));
+        let all = levels.flat();
+        // Opened from disk (file://) the browser blocks fetch(): use the bundled copy instead.
+        if (all.length === 0) all = await loadOfflineQuestions(dialectId);
+
+        let pool = all.filter(q => q.hakka_char_count <= MAX_HAKKA_CHARS);
+        if (pool.length === 0) {
+            console.warn(`腔調 ${dialectId} 沒有 ${MAX_HAKKA_CHARS} 字元以下的題目，改用全部題目`);
+            pool = all;
+        }
+        return shuffleArray(pool).slice(0, QUESTIONS_PER_GAME);
+    }
+
     function init() {
         setupParallax();
-        if (typeof questionsData !== 'undefined') {
-            questions = questionsData;
-            setupEventListeners();
-            setupCanvasEngine();
-            setupStoryScene();
-            
-            // Wait for user to click Start Adventure button to start the game
-            if (startAdventureBtn && introCard) {
-                startAdventureBtn.addEventListener('click', () => {
-                    playSfx('click');
-                    
-                    const dialectId = selectedDialectId;
-                    const charLimit = 8; // Force max 8 characters as per instruction
-                    
-                    startAdventureBtn.disabled = true;
-                    const originalBtnText = startAdventureBtn.innerHTML;
-                    startAdventureBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 載入題庫中...';
-                    
-                    // Fetch all 5 levels for the selected dialect concurrently
-                    const fetchPromises = [];
-                    for (let l = 1; l <= 5; l++) {
-                        fetchPromises.push(
-                            fetch(`data/quiz/questions_dialect_${dialectId}_level_${l}.json?v=${QUIZ_DATA_VERSION}`)
-                                .then(res => res.json())
-                                .catch(err => {
-                                    console.warn(`無法載入腔調 ${dialectId} 級別 ${l}`, err);
-                                    return [];
-                                })
-                        );
-                    }
-                    
-                    Promise.all(fetchPromises)
-                        .then(results => {
-                            let allQuestions = [];
-                            results.forEach(resList => {
-                                allQuestions = allQuestions.concat(resList);
-                            });
-                            // Opened from disk (file://) the browser blocks fetch(): use the bundled copy instead.
-                            if (allQuestions.length === 0) {
-                                return loadOfflineQuestions(dialectId);
-                            }
-                            return allQuestions;
-                        })
-                        .then(allQuestions => {
-                            // Filter questions by length <= 8
-                            let filtered = allQuestions.filter(q => q.hakka_char_count <= charLimit);
-                            if (filtered.length === 0) {
-                                console.warn(`腔調 ${dialectId} 沒有 ${charLimit} 字元以下的題目，改用全部題目`);
-                                filtered = allQuestions;
-                            }
-                            
-                            // Shuffle and slice to 5 questions max for a game session
-                            questions = shuffleArray(filtered).slice(0, 5);
-                            
-                            const dialectNames = {
-                                "1": "四縣腔",
-                                "2": "海陸腔",
-                                "3": "大埔腔",
-                                "4": "饒平腔",
-                                "5": "詔安腔",
-                                "6": "南四縣腔"
-                            };
-                            const displayDialect = document.querySelector('.badge-dialect');
-                            if (displayDialect) {
-                                displayDialect.textContent = dialectNames[dialectId];
-                            }
-                            
-                            if (displayLevel) {
-                                displayLevel.classList.remove('hidden');
-                                if (questions.length > 0) {
-                                    displayLevel.textContent = questions[0].level + '級';
-                                }
-                            }
-                            
-                            startAdventureBtn.disabled = false;
-                            startAdventureBtn.innerHTML = originalBtnText;
-                            introCard.classList.add('hidden');
-                            startGame();
-                        })
-                        .catch(err => {
-                            console.error("動態載入客語題庫失敗，將載入預設第一課", err);
-                            questions = questionsData;
-                            startAdventureBtn.disabled = false;
-                            startAdventureBtn.innerHTML = originalBtnText;
-                            introCard.classList.add('hidden');
-                            startGame();
-                        });
-                });
-            } else {
-                startGame();
-            }
-        } else {
+        if (typeof questionsData === 'undefined') {
             console.error('無法載入題庫資料 questionsData');
             alert('遊戲內容加載失敗，請確認 questions_data.js 是否被正確載入。');
+            return;
         }
+        questions = questionsData;
+        setupEventListeners();
+        setupCanvasEngine();
+        setupStoryScene();
+
+        if (!startAdventureBtn || !introCard) {
+            startGame();
+            return;
+        }
+
+        // Wait for user to click Start Adventure button to start the game
+        startAdventureBtn.addEventListener('click', async () => {
+            playSfx('click');
+            const dialectId = selectedDialectId;
+            const originalBtnText = startAdventureBtn.innerHTML;
+            startAdventureBtn.disabled = true;
+            startAdventureBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 載入題庫中...';
+
+            try {
+                questions = await loadSessionQuestions(dialectId);
+                const dialectBadge = document.querySelector('.badge-dialect');
+                if (dialectBadge) dialectBadge.textContent = DIALECT_NAMES[dialectId];
+                if (displayLevel) {
+                    displayLevel.classList.remove('hidden');
+                    if (questions.length > 0) displayLevel.textContent = questions[0].level + '級';
+                }
+            } catch (err) {
+                console.error('動態載入客語題庫失敗，將載入預設第一課', err);
+                questions = questionsData;
+            }
+
+            startAdventureBtn.disabled = false;
+            startAdventureBtn.innerHTML = originalBtnText;
+            introCard.classList.add('hidden');
+            startGame();
+        });
     }
 
     function setupStoryScene() {
@@ -851,6 +745,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const STORY_AVATARS = {
+        '伯公': { src: 'data/image/S2_m3_bokon1.png', className: 'avatar-bokong' },
+        '阿黑': { src: 'data/image/S2_m3_kuro_sit.png', className: 'avatar-kuro' },
+        '指導員': { src: 'data/image/S2_m3_p1.png', className: 'avatar-guide' }
+    };
+
     function renderStoryStep() {
         const step = openingStory[storyStepIndex] || openingStory[0];
         const isStoryAudioStep = step.speaker === '某聲音';
@@ -861,18 +761,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storyLine) storyLine.textContent = step.text;
         const activeStoryCharacter = (isStoryAudioStep || isBridgeStoryStep)
             ? null
-            : (step.speaker === '伯公'
-            ? '伯公'
-            : (step.speaker === '阿黑' ? '阿黑' : '指導員'));
+            : (STORY_AVATARS[step.speaker] ? step.speaker : '指導員');
         if (storyCharacterLayer) storyCharacterLayer.classList.toggle('is-empty', !activeStoryCharacter);
         if (storyAvatarImg) {
             storyAvatarImg.hidden = !activeStoryCharacter;
             if (activeStoryCharacter) {
-                storyAvatarImg.src = activeStoryCharacter === '伯公'
-                    ? 'data/image/S2_m3_bokon1.png'
-                    : (activeStoryCharacter === '阿黑' ? 'data/image/S2_m3_kuro_sit.png' : 'data/image/S2_m3_p1.png');
+                storyAvatarImg.src = STORY_AVATARS[activeStoryCharacter].src;
                 storyAvatarImg.alt = `${activeStoryCharacter}頭像`;
-                storyAvatarImg.className = activeStoryCharacter === '伯公' ? 'avatar-bokong' : (activeStoryCharacter === '阿黑' ? 'avatar-kuro' : 'avatar-guide');
+                storyAvatarImg.className = STORY_AVATARS[activeStoryCharacter].className;
             }
         }
         storyStandingCharacters.forEach((character) => {
@@ -1066,108 +962,14 @@ document.addEventListener('DOMContentLoaded', () => {
         storyCtx.strokeRect(width * .78, height * .61, width * .18, height * .12);
     }
 
-    function drawStoryHills(storyCtx, width, height) {
-        storyCtx.fillStyle = 'rgba(98, 178, 186, .42)';
-        storyCtx.beginPath();
-        storyCtx.moveTo(0, 176);
-        for (let x = 0; x <= width; x += 80) storyCtx.quadraticCurveTo(x + 40, 120, x + 80, 176);
-        storyCtx.lineTo(width, height);
-        storyCtx.lineTo(0, height);
-        storyCtx.fill();
-        storyCtx.fillStyle = 'rgba(127, 185, 121, .6)';
-        storyCtx.beginPath();
-        storyCtx.moveTo(0, 238);
-        for (let x = 0; x <= width; x += 100) storyCtx.quadraticCurveTo(x + 50, 194, x + 100, 238);
-        storyCtx.lineTo(width, height);
-        storyCtx.lineTo(0, height);
-        storyCtx.fill();
-    }
-
-    function drawStoryField(storyCtx, width, height) {
-        storyCtx.fillStyle = '#83ba49';
-        storyCtx.fillRect(0, 292, width, height - 292);
-        storyCtx.fillStyle = '#c7862a';
-        storyCtx.fillRect(0, 330, width, 90);
-        storyCtx.strokeStyle = 'rgba(98, 64, 22, .32)';
-        storyCtx.lineWidth = 2;
-        for (let x = -20; x < width; x += 58) {
-            storyCtx.beginPath();
-            storyCtx.moveTo(x, 338);
-            storyCtx.quadraticCurveTo(x + 26, 370, x + 72, 416);
-            storyCtx.stroke();
-        }
-    }
-
-    function drawStoryGuide(storyCtx, x, y) {
-        storyCtx.save();
-        storyCtx.translate(x, y);
-        storyCtx.fillStyle = '#f0c38f';
-        storyCtx.beginPath();
-        storyCtx.arc(0, -42, 22, 0, Math.PI * 2);
-        storyCtx.fill();
-        storyCtx.fillStyle = '#2e6f5b';
-        storyCtx.fillRect(-26, -20, 52, 58);
-        storyCtx.fillStyle = '#f7e4bd';
-        storyCtx.fillRect(-18, -78, 36, 18);
-        storyCtx.fillStyle = '#4c3528';
-        storyCtx.fillRect(-8, -80, 16, 6);
-        storyCtx.strokeStyle = '#4c3528';
-        storyCtx.lineWidth = 4;
-        storyCtx.beginPath();
-        storyCtx.moveTo(18, -10);
-        storyCtx.lineTo(52, 20);
-        storyCtx.stroke();
-        storyCtx.restore();
-    }
-
-    function drawStoryDog(storyCtx, x, y) {
-        storyCtx.save();
-        storyCtx.translate(x, y);
-        storyCtx.fillStyle = '#182027';
-        storyCtx.beginPath();
-        storyCtx.ellipse(0, 0, 54, 28, 0, 0, Math.PI * 2);
-        storyCtx.fill();
-        storyCtx.beginPath();
-        storyCtx.arc(48, -22, 26, 0, Math.PI * 2);
-        storyCtx.fill();
-        storyCtx.fillStyle = '#f6c04f';
-        storyCtx.fillRect(16, -28, 32, 10);
-        storyCtx.fillStyle = '#fff';
-        storyCtx.beginPath();
-        storyCtx.arc(54, -28, 5, 0, Math.PI * 2);
-        storyCtx.fill();
-        storyCtx.fillStyle = '#101010';
-        storyCtx.beginPath();
-        storyCtx.arc(56, -27, 2, 0, Math.PI * 2);
-        storyCtx.fill();
-        storyCtx.strokeStyle = '#182027';
-        storyCtx.lineWidth = 10;
-        storyCtx.beginPath();
-        storyCtx.moveTo(-48, -12);
-        storyCtx.quadraticCurveTo(-86, -48, -58, -76);
-        storyCtx.stroke();
-        storyCtx.restore();
-    }
-
-    function drawStoryScroll(storyCtx, x, y) {
-        storyCtx.save();
-        storyCtx.translate(x, y);
-        storyCtx.fillStyle = '#fff5cf';
-        storyCtx.strokeStyle = '#9a6934';
-        storyCtx.lineWidth = 4;
-        storyCtx.beginPath();
-        storyCtx.roundRect(0, -36, 210, 72, 12);
-        storyCtx.fill();
-        storyCtx.stroke();
-        storyCtx.fillStyle = '#4f3b2c';
-        storyCtx.font = '700 22px "GenSekiGothic2TW", "GenSekiGothic TW", "GenSekiGothic", "GenSeki Gothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif';
-        storyCtx.fillText('𠊎 試 著 這 題', 24, -4);
-        storyCtx.fillText('數 學 還 難 哦', 24, 25);
-        storyCtx.restore();
-    }
-
     // 2. Event Listeners Setup
     function setupEventListeners() {
+        // 按鈕：先播音效再執行動作
+        const onButtonClick = (button, action, sfxName = 'click') => button.addEventListener('click', () => {
+            playSfx(sfxName);
+            action();
+        });
+
         // Dialect Buttons Selection
         const dialectButtons = document.querySelectorAll('.dialect-btn');
         dialectButtons.forEach(btn => {
@@ -1178,130 +980,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 playSfx('click');
             });
         });
-// Audio Controls
-        playAudioBtn.addEventListener('click', () => {
-            playSfx('click');
-            toggleAudio();
-        });
+
+        // Audio Controls
+        onButtonClick(playAudioBtn, toggleAudio);
         gameAudio.addEventListener('play', onAudioPlay);
         gameAudio.addEventListener('pause', onAudioPause);
         gameAudio.addEventListener('ended', onAudioEnded);
 
-        // Hint Toggle
-        hintBtn.addEventListener('click', () => {
-            playSfx('click');
-            toggleHint();
-        });
-        
-        // Help Po Kong Skip Button
-        helpBgBtn.addEventListener('click', () => {
-            playSfx('click');
-            askPoKongForHelp();
-        });
-
-        // Action Buttons
-        clearBtn.addEventListener('click', () => {
-            playSfx('click');
-            clearSelection();
-        });
+        // Hint / 求助伯公 / 動作按鈕
+        onButtonClick(hintBtn, toggleHint);
+        onButtonClick(helpBgBtn, askPoKongForHelp);
+        onButtonClick(clearBtn, clearSelection);
+        onButtonClick(nextBtn, nextQuestion, 'next');
+        onButtonClick(restartBtn, startGame);
         submitBtn.addEventListener('click', submitAnswer);
-        nextBtn.addEventListener('click', () => {
-            playSfx('next');
-            nextQuestion();
-        });
-        restartBtn.addEventListener('click', () => {
-            playSfx('click');
-            startGame();
-        });
+
         if (resultBackBtn) {
-            resultBackBtn.addEventListener('click', () => {
-                playSfx('click');
+            onButtonClick(resultBackBtn, () => {
                 if (brushStageOverlay) brushStageOverlay.classList.add('hidden');
                 resultsCard.classList.add('hidden');
                 introCard.classList.remove('hidden');
                 if (appHeader) appHeader.classList.add('hidden');
             });
         }
-        if (brushStageClose) {
-            brushStageClose.addEventListener('click', () => {
-                if (!brushCompleted) return;
-                hideBrushOverlay();
-                document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
-            });
-        }
+
+        if (brushStageClose) brushStageClose.addEventListener('click', closeFinishedBrushOverlay);
         document.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape' || !brushCompleted || brushStageOverlay?.classList.contains('hidden')) return;
-            hideBrushOverlay();
-            document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
+            if (event.key === 'Escape' && !brushStageOverlay?.classList.contains('hidden')) closeFinishedBrushOverlay();
         });
         window.addEventListener('message', handleBrushMessage);
 
         // Speed Controls
         speedButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                playSfx('click');
+            onButtonClick(btn, () => {
                 speedButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 speedMultiplier = parseFloat(btn.dataset.speed);
-                
-                // Keep audio speed at 1x
-                gameAudio.playbackRate = 1.0;
+                gameAudio.playbackRate = 1.0;   // 題目語音永遠維持 1 倍速
                 activeSpeed = questionBaseSpeed * speedMultiplier;
             });
         });
 
-        // Container Drag and Drop Drop-zones
-        answerContainer.addEventListener('dragover', (e) => {
-            if (isAnswerSubmitted) return;
-            e.preventDefault();
+        // 拖到空白處：作答區（接在最後面）與待選區（放回去）。字卡本身的拖放見 createBlockButton。
+        [
+            { container: answerContainer, toAnswer: true, accepts: (t) => t === answerContainer || t.classList.contains('empty-state') },
+            { container: candidatesContainer, toAnswer: false, accepts: (t) => t === candidatesContainer }
+        ].forEach(({ container, toAnswer, accepts }) => {
+            container.addEventListener('dragover', (e) => {
+                if (!isAnswerSubmitted) e.preventDefault();
+            });
+            container.addEventListener('drop', (e) => {
+                if (isAnswerSubmitted) return;
+                e.preventDefault();
+                const draggedId = getDraggedId(e);
+                if (draggedId !== null && accepts(e.target)) moveBlockToEnd(draggedId, toAnswer);
+            });
         });
-        
-        answerContainer.addEventListener('drop', (e) => {
-            if (isAnswerSubmitted) return;
-            e.preventDefault();
-            
-            const dataIdStr = e.dataTransfer.getData('text/plain');
-            const draggedId = dataIdStr ? parseInt(dataIdStr, 10) : draggedBlockId;
-            
-            if (draggedId === null || isNaN(draggedId)) return;
-            
-            if (e.target === answerContainer || e.target.classList.contains('empty-state')) {
-                const dragInRemainingIdx = remainingBlocks.findIndex(b => b.id === draggedId);
-                if (dragInRemainingIdx > -1) {
-                    const block = remainingBlocks[dragInRemainingIdx];
-                    remainingBlocks.splice(dragInRemainingIdx, 1);
-                    selectedBlocks.push(block);
-                    renderBlocks();
-                }
-            }
-        });
-        
-        setupTouchBlockDrag();
 
-        candidatesContainer.addEventListener('dragover', (e) => {
-            if (isAnswerSubmitted) return;
-            e.preventDefault();
-        });
-        
-        candidatesContainer.addEventListener('drop', (e) => {
-            if (isAnswerSubmitted) return;
-            e.preventDefault();
-            
-            const dataIdStr = e.dataTransfer.getData('text/plain');
-            const draggedId = dataIdStr ? parseInt(dataIdStr, 10) : draggedBlockId;
-            
-            if (draggedId === null || isNaN(draggedId)) return;
-            
-            if (e.target === candidatesContainer) {
-                const dragInSelectedIdx = selectedBlocks.findIndex(b => b.id === draggedId);
-                if (dragInSelectedIdx > -1) {
-                    const block = selectedBlocks[dragInSelectedIdx];
-                    selectedBlocks.splice(dragInSelectedIdx, 1);
-                    remainingBlocks.push(block);
-                    renderBlocks();
-                }
-            }
-        });
+        setupTouchBlockDrag();
 
         // Tap the runner scene to fast-forward bridge / dash / splash animations
         canvas.addEventListener('pointerdown', () => {
@@ -1549,158 +1285,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5. Render Blocks to UI
+    // 一張字卡：placed = 已放在作答區。點一下移動；滑鼠可拖放（HTML5 DnD），觸控拖曳由 setupTouchBlockDrag 處理。
+    function createBlockButton(block, placed) {
+        const btn = document.createElement('button');
+        btn.className = placed ? 'word-block placed' : 'word-block';
+        btn.textContent = block.text;
+        btn.dataset.id = block.id;
+
+        if (isAnswerSubmitted) {
+            btn.style.cursor = 'default';
+            if (!placed) btn.style.opacity = '0.5';
+            return btn;
+        }
+
+        btn.addEventListener('click', () => (placed ? deselectBlock : selectBlock)(block.id));
+
+        const clearMarks = () => btn.classList.remove('drag-over', 'insert-before', 'insert-after');
+        const isOtherBlockDragged = () => draggedBlockId !== null && draggedBlockId !== block.id;
+        const dropsAfter = (e) => {
+            const rect = btn.getBoundingClientRect();
+            return e.clientX - rect.left >= rect.width / 2;
+        };
+
+        btn.draggable = true;
+        btn.addEventListener('dragstart', (e) => {
+            draggedBlockId = block.id;
+            btn.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', String(block.id));
+        });
+        btn.addEventListener('dragend', () => {
+            btn.classList.remove('dragging');
+            draggedBlockId = null;
+            document.querySelectorAll('.word-block').forEach(el => el.classList.remove('drag-over', 'insert-before', 'insert-after'));
+        });
+        btn.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            if (isOtherBlockDragged()) btn.classList.add('drag-over');
+        });
+        btn.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!isOtherBlockDragged()) return;
+            const after = dropsAfter(e);
+            btn.classList.toggle('insert-after', after);
+            btn.classList.toggle('insert-before', !after);
+        });
+        btn.addEventListener('dragleave', clearMarks);
+        btn.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const after = dropsAfter(e);
+            clearMarks();
+            const draggedId = getDraggedId(e);
+            if (draggedId !== null && draggedId !== block.id) handleBlockDrop(draggedId, block.id, after);
+        });
+        return btn;
+    }
+
     function renderBlocks() {
         answerContainer.innerHTML = '';
         candidatesContainer.innerHTML = '';
 
-        // Render Answer Container (Placed Blocks)
         if (selectedBlocks.length === 0) {
             const emptyEl = document.createElement('div');
             emptyEl.className = 'empty-state';
             emptyEl.textContent = '從右側挑選字卡，依聽到的順序搭橋';
             answerContainer.appendChild(emptyEl);
         } else {
-            selectedBlocks.forEach(block => {
-                const btn = document.createElement('button');
-                btn.className = 'word-block placed';
-                btn.textContent = block.text;
-                btn.dataset.id = block.id;
-                
-                if (!isAnswerSubmitted) {
-                    btn.addEventListener('click', () => deselectBlock(block.id));
-                    
-                    // HTML5 Drag and Drop Setup
-                    btn.setAttribute('draggable', 'true');
-                    btn.addEventListener('dragstart', (e) => {
-                        draggedBlockId = block.id;
-                        btn.classList.add('dragging');
-                        e.dataTransfer.setData('text/plain', String(block.id));
-                    });
-                    btn.addEventListener('dragend', () => {
-                        btn.classList.remove('dragging');
-                        draggedBlockId = null;
-                        document.querySelectorAll('.word-block').forEach(el => el.classList.remove('drag-over', 'insert-before', 'insert-after'));
-                    });
-                    btn.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                        if (draggedBlockId !== null && draggedBlockId !== block.id) {
-                            const rect = btn.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            if (x < rect.width / 2) {
-                                btn.classList.add('insert-before');
-                                btn.classList.remove('insert-after');
-                            } else {
-                                btn.classList.add('insert-after');
-                                btn.classList.remove('insert-before');
-                            }
-                        }
-                    });
-                    btn.addEventListener('dragenter', (e) => {
-                        e.preventDefault();
-                        if (draggedBlockId !== null && draggedBlockId !== block.id) {
-                            btn.classList.add('drag-over');
-                        }
-                    });
-                    btn.addEventListener('dragleave', () => {
-                        btn.classList.remove('drag-over', 'insert-before', 'insert-after');
-                    });
-                    btn.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        const rect = btn.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const dropAfter = x >= rect.width / 2;
-                        
-                        btn.classList.remove('drag-over', 'insert-before', 'insert-after');
-                        const dataIdStr = e.dataTransfer.getData('text/plain');
-                        const draggedId = dataIdStr ? parseInt(dataIdStr, 10) : draggedBlockId;
-                        if (draggedId !== null && !isNaN(draggedId) && draggedId !== block.id) {
-                            handleBlockDrop(draggedId, block.id, dropAfter);
-                        }
-                    });
-                } else {
-                    btn.style.cursor = 'default';
-                }
-                
-                answerContainer.appendChild(btn);
-            });
+            selectedBlocks.forEach(block => answerContainer.appendChild(createBlockButton(block, true)));
         }
-
-        // Render Candidate Container
-        remainingBlocks.forEach(block => {
-            const btn = document.createElement('button');
-            btn.className = 'word-block';
-            btn.textContent = block.text;
-            btn.dataset.id = block.id;
-
-            if (!isAnswerSubmitted) {
-                btn.addEventListener('click', () => selectBlock(block.id));
-                
-                // HTML5 Drag and Drop Setup
-                btn.setAttribute('draggable', 'true');
-                btn.addEventListener('dragstart', (e) => {
-                    draggedBlockId = block.id;
-                    btn.classList.add('dragging');
-                    e.dataTransfer.setData('text/plain', String(block.id));
-                });
-                btn.addEventListener('dragend', () => {
-                    btn.classList.remove('dragging');
-                    draggedBlockId = null;
-                    document.querySelectorAll('.word-block').forEach(el => el.classList.remove('drag-over', 'insert-before', 'insert-after'));
-                });
-                btn.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    if (draggedBlockId !== null && draggedBlockId !== block.id) {
-                        const rect = btn.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        if (x < rect.width / 2) {
-                            btn.classList.add('insert-before');
-                            btn.classList.remove('insert-after');
-                        } else {
-                            btn.classList.add('insert-after');
-                            btn.classList.remove('insert-before');
-                        }
-                    }
-                });
-                btn.addEventListener('dragenter', (e) => {
-                    e.preventDefault();
-                    if (draggedBlockId !== null && draggedBlockId !== block.id) {
-                        btn.classList.add('drag-over');
-                    }
-                });
-                btn.addEventListener('dragleave', () => {
-                    btn.classList.remove('drag-over', 'insert-before', 'insert-after');
-                });
-                btn.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const rect = btn.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const dropAfter = x >= rect.width / 2;
-                    
-                    btn.classList.remove('drag-over', 'insert-before', 'insert-after');
-                    const dataIdStr = e.dataTransfer.getData('text/plain');
-                    const draggedId = dataIdStr ? parseInt(dataIdStr, 10) : draggedBlockId;
-                    if (draggedId !== null && !isNaN(draggedId) && draggedId !== block.id) {
-                        handleBlockDrop(draggedId, block.id, dropAfter);
-                    }
-                });
-            } else {
-                btn.style.cursor = 'default';
-                btn.style.opacity = '0.5';
-            }
-
-            candidatesContainer.appendChild(btn);
-        });
+        remainingBlocks.forEach(block => candidatesContainer.appendChild(createBlockButton(block, false)));
 
         // Update Action Buttons States
         if (!isAnswerSubmitted) {
             clearBtn.disabled = selectedBlocks.length === 0;
             submitBtn.disabled = selectedBlocks.length === 0;
         }
-
     }
 
     // 6. Block Movements
@@ -1765,12 +1424,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!target || isAnswerSubmitted) return;
             if (target.type === 'block') {
                 handleBlockDrop(d.id, target.id, target.after);
-            } else if (target.type === 'answer') {
-                const i = remainingBlocks.findIndex(b => b.id === d.id);
-                if (i > -1) { selectedBlocks.push(remainingBlocks.splice(i, 1)[0]); renderBlocks(); }
-            } else if (target.type === 'candidates') {
-                const i = selectedBlocks.findIndex(b => b.id === d.id);
-                if (i > -1) { remainingBlocks.push(selectedBlocks.splice(i, 1)[0]); renderBlocks(); }
+            } else {
+                moveBlockToEnd(d.id, target.type === 'answer');
             }
         }
 
@@ -1827,58 +1482,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle block dropping for reordering and swapping with visual insert support
+    // 從拖放事件取得被拖的字卡 id（dataTransfer 取不到時退回 draggedBlockId）；沒有則回傳 null
+    function getDraggedId(e) {
+        const text = e.dataTransfer.getData('text/plain');
+        const id = text ? parseInt(text, 10) : draggedBlockId;
+        return id === null || isNaN(id) ? null : id;
+    }
+
+    // 把字卡搬到「作答區」或「待選區」的最後面
+    function moveBlockToEnd(id, toAnswer) {
+        const from = toAnswer ? remainingBlocks : selectedBlocks;
+        const to = toAnswer ? selectedBlocks : remainingBlocks;
+        const index = from.findIndex(b => b.id === id);
+        if (index === -1) return;
+        to.push(...from.splice(index, 1));
+        renderBlocks();
+    }
+
+    // 把字卡插到另一張字卡的前面或後面（兩個區域之間、區域內重排都可以）
     function handleBlockDrop(draggedId, targetId, dropAfter = false) {
         if (isAnswerSubmitted) return;
-        
-        // Find which array draggedId and targetId belong to
-        const dragInSelectedIdx = selectedBlocks.findIndex(b => b.id === draggedId);
-        const dragInRemainingIdx = remainingBlocks.findIndex(b => b.id === draggedId);
-        
-        const targetInSelectedIdx = selectedBlocks.findIndex(b => b.id === targetId);
-        const targetInRemainingIdx = remainingBlocks.findIndex(b => b.id === targetId);
-        
-        // Case 1: Reordering within selectedBlocks
-        if (dragInSelectedIdx > -1 && targetInSelectedIdx > -1) {
-            const block = selectedBlocks[dragInSelectedIdx];
-            selectedBlocks.splice(dragInSelectedIdx, 1);
-            let newTargetIdx = selectedBlocks.findIndex(b => b.id === targetId);
-            if (dropAfter) {
-                newTargetIdx += 1;
-            }
-            selectedBlocks.splice(newTargetIdx, 0, block);
-        }
-        // Case 2: Dragging from remaining to selected (insert at target index)
-        else if (dragInRemainingIdx > -1 && targetInSelectedIdx > -1) {
-            const block = remainingBlocks[dragInRemainingIdx];
-            remainingBlocks.splice(dragInRemainingIdx, 1);
-            let newTargetIdx = selectedBlocks.findIndex(b => b.id === targetId);
-            if (dropAfter) {
-                newTargetIdx += 1;
-            }
-            selectedBlocks.splice(newTargetIdx, 0, block);
-        }
-        // Case 3: Dragging from selected to remaining (insert at target index)
-        else if (dragInSelectedIdx > -1 && targetInRemainingIdx > -1) {
-            const block = selectedBlocks[dragInSelectedIdx];
-            selectedBlocks.splice(dragInSelectedIdx, 1);
-            let newTargetIdx = remainingBlocks.findIndex(b => b.id === targetId);
-            if (dropAfter) {
-                newTargetIdx += 1;
-            }
-            remainingBlocks.splice(newTargetIdx, 0, block);
-        }
-        // Case 4: Reordering within remainingBlocks
-        else if (dragInRemainingIdx > -1 && targetInRemainingIdx > -1) {
-            const block = remainingBlocks[dragInRemainingIdx];
-            remainingBlocks.splice(dragInRemainingIdx, 1);
-            let newTargetIdx = remainingBlocks.findIndex(b => b.id === targetId);
-            if (dropAfter) {
-                newTargetIdx += 1;
-            }
-            remainingBlocks.splice(newTargetIdx, 0, block);
-        }
-        
+        const listOf = (id) => [selectedBlocks, remainingBlocks].find(list => list.some(b => b.id === id));
+        const fromList = listOf(draggedId);
+        const toList = listOf(targetId);
+        if (!fromList || !toList) return;
+
+        const [block] = fromList.splice(fromList.findIndex(b => b.id === draggedId), 1);
+        toList.splice(toList.findIndex(b => b.id === targetId) + (dropAfter ? 1 : 0), 0, block);
         renderBlocks();
     }
 
@@ -1911,12 +1541,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 8. Submit & Evaluate Answer
-    function submitAnswer() {
-        if (isAnswerSubmitted || selectedBlocks.length === 0 || dogState === 'advancing') return;
-        
+    // 作答（或求助）後：停掉題目語音、鎖住求助／搭建／重排按鈕
+    function lockAnswerControls() {
         isAnswerSubmitted = true;
         gameAudio.pause();
         helpBgBtn.disabled = true;
+        submitBtn.classList.add('hidden');
+        clearBtn.disabled = true;
+    }
+
+    function submitAnswer() {
+        if (isAnswerSubmitted || selectedBlocks.length === 0 || dogState === 'advancing') return;
+        lockAnswerControls();
 
         const q = questions[currentQuestionIndex];
         
@@ -1932,10 +1568,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Evaluate against Hakka characters
         const currentCorrectHakkaSequence = getCorrectSequence(q);
         const isCorrect = checkSequenceMatch(userSequenceText, currentCorrectHakkaSequence);
-
-        // Disable standard game controls
-        submitBtn.classList.add('hidden');
-        clearBtn.disabled = true;
 
         if (isCorrect) {
             playSfx('pass');   // 答對：發光的便橋鋪出來
@@ -2018,11 +1650,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Skip Mechanism (求助伯公)
     function askPoKongForHelp() {
         if (isAnswerSubmitted || dogState === 'advancing') return;
-        
-        isAnswerSubmitted = true;
-        gameAudio.pause();
-        helpBgBtn.disabled = true;
-        
+        lockAnswerControls();
+
         // This question score is 0
         questionUsedHelp = true;
         questionHelpType = 'manual';
@@ -2034,10 +1663,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bo-Gong lays the correct answer as a golden bridge
         shouldAutoTransition = true;
         startBridgeBuild('golden');
-        
-        // Hide buttons
-        submitBtn.classList.add('hidden');
-        clearBtn.disabled = true;
     }
 
     // Correct / help: keep running forward while the old cliff scrolls away and the next question loads.
@@ -2062,7 +1687,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function recordQuestionOutcome(status, earnedScore) {
         const q = questions[currentQuestionIndex];
         if (!q || questionRecords[currentQuestionIndex]) return;
-        const correctSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
+        const correctSequence = getCorrectSequence(q);
         questionRecords[currentQuestionIndex] = {
             index: currentQuestionIndex + 1,
             hakka: q.hakka_hanji || correctSequence.join(''),
@@ -2087,17 +1712,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return starResults[4];
     }
 
-    function formatSequence(sequence) {
-        return sequence && sequence.length ? sequence.join(' → ') : '未放置字卡';
-    }
-
     // Check if arrays are equal
     function checkSequenceMatch(arr1, arr2) {
-        if (arr1.length !== arr2.length) return false;
-        for (let i = 0; i < arr1.length; i++) {
-            if (arr1[i] !== arr2[i]) return false;
-        }
-        return true;
+        return arr1.length === arr2.length && arr1.every((item, i) => item === arr2[i]);
     }
 
     // 9. Next Question
@@ -2186,12 +1803,17 @@ document.addEventListener('DOMContentLoaded', () => {
         sendBrushSessionSummary(true);
     }
 
+    // 關閉毛筆視窗（按鈕、Esc 或毛筆頁要求）：毛筆寫完後才能關，關掉後焦點回到「查看／分享我的繪卷」
+    function closeFinishedBrushOverlay() {
+        if (!brushCompleted) return;
+        hideBrushOverlay();
+        document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
+    }
+
     function handleBrushMessage(event) {
         if (!isSameOriginMessage(event.origin) || !brushStageFrame || event.source !== brushStageFrame.contentWindow) return;
         if (event.data?.type === 'brush-close-request') {
-            if (!brushCompleted) return;
-            hideBrushOverlay();
-            document.getElementById('open-scroll-share-btn')?.focus({ preventScroll: true });
+            closeFinishedBrushOverlay();
             return;
         }
         if (event.data?.type !== 'brush-complete') return;
@@ -2218,6 +1840,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 10. Show Results
+    // 結果頁「題目回顧」的播放／暫停鈕：點一下播放這題音檔，再點暫停
+    function createReviewAudioButton(audioUrl, idx) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'review-play-btn review-audio-icon-btn';
+        let audio = null;
+        const render = (playing) => {
+            btn.classList.toggle('is-playing', playing);
+            btn.innerHTML = playing
+                ? '<i class="fa-solid fa-pause" aria-hidden="true"></i><span class="sr-only">暫停音檔</span>'
+                : '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
+            btn.setAttribute('aria-label', `${playing ? '暫停' : '播放'}第 ${idx + 1} 題音檔`);
+        };
+        render(false);
+        btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (!audio) {
+                audio = new Audio(audioUrl);
+                audio.addEventListener('ended', () => render(false));
+                audio.addEventListener('pause', () => { if (!audio.ended) render(false); });
+            }
+            if (audio.paused) audio.play().then(() => render(true)).catch(err => console.error('播放音檔失敗:', err));
+            else audio.pause();
+        });
+        return btn;
+    }
+
+    // 結果頁「題目回顧」的一題：作答紀錄、得分、狀態標籤與音檔按鈕
+    function createReviewItem(q, idx) {
+        const correctSequence = getCorrectSequence(q);
+        const record = questionRecords[idx] || {
+            index: idx + 1,
+            hakka: q.hakka_hanji || correctSequence.join(''),
+            translation: getChineseSentenceWithPunctuation(q),
+            audioUrl: q.audio_url,
+            userSequence: [],
+            correctSequence,
+            score: 0,
+            wrongCount: 0,
+            helpUsed: false,
+            helpType: '',
+            status: 'unanswered'
+        };
+        // 錯滿次數由伯公自動協助過橋的題目（0 分）算「未通關」
+        const isFailedByAttempts = record.wrongCount >= MAX_WRONG_ATTEMPTS && record.score <= 0;
+        const isHelped = !isFailedByAttempts && record.helpUsed;
+        const isPassed = !isFailedByAttempts && record.status === 'correct';
+
+        let statusClass = 'status-pass';
+        let statusText = '✓ 已通關';
+        if (isFailedByAttempts || (!isPassed && record.status !== 'unanswered')) {
+            statusClass = 'status-fail';
+            statusText = '✘ 未通關';
+        } else if (isHelped) {
+            statusClass = 'status-help';
+            statusText = '求助伯公';
+        } else if (record.wrongCount > 0) {
+            statusClass = 'status-wrong';
+            statusText = `錯 ${record.wrongCount} 次`;
+        }
+        const resultClass = isHelped ? 'helped' : isPassed ? 'passed' : 'failed';
+
+        const item = document.createElement('article');
+        item.className = `review-item sentence-review-item simple-review-item ${resultClass}`;
+        item.innerHTML = `
+            <div class="review-card-head">
+                <h4>第 ${idx + 1} 題</h4>
+                <div class="review-badges">
+                    <span>得分：${record.score} 分</span>
+                    <em class="${statusClass}">${statusText}</em>
+                </div>
+            </div>
+            <div class="review-sentence-body">
+                <p class="review-hakka-line">${record.hakka}</p>
+                <p class="review-translation-line">${record.translation}</p>
+            </div>`;
+        item.appendChild(createReviewAudioButton(record.audioUrl, idx));
+        return item;
+    }
+
     function showResults() {
         if (!resultLocked) {
             playSfx('finish');
@@ -2246,7 +1948,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (resultSummary) {
             const quizScore = Number((totalScore - writingScore).toFixed(2));
-            resultSummary.innerHTML = `排字 ${formatScore(quizScore)} / ${QUESTION_SCORE * 5}．毛筆 ${formatScore(writingScore)} / ${BRUSH_MAX_SCORE}<br><strong>${star.title}</strong>`;
+            resultSummary.innerHTML = `排字 ${formatScore(quizScore)} / ${QUESTION_SCORE * QUESTIONS_PER_GAME}．毛筆 ${formatScore(writingScore)} / ${BRUSH_MAX_SCORE}<br><strong>${star.title}</strong>`;
         }
         if (resultStageImage) {
             resultStageImage.src = resultStageImages[star.stars];
@@ -2282,86 +1984,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const reviewList = document.getElementById('review-list');
         reviewList.innerHTML = '';
-        questions.forEach((q, idx) => {
-            const correctSequence = q.chinese_sentence ? (q.correct_sequence || getHakkaCharacters(q.hakka_hanji)) : getHakkaCharacters(q.hakka_hanji);
-            const record = questionRecords[idx] || {
-                index: idx + 1,
-                hakka: q.hakka_hanji || correctSequence.join(''),
-                translation: getChineseSentenceWithPunctuation(q),
-                audioUrl: q.audio_url,
-                userSequence: [],
-                correctSequence,
-                score: 0,
-                wrongCount: 0,
-                helpUsed: false,
-                helpType: '',
-                status: 'unanswered'
-            };
-            const isFailedByAttempts = record.wrongCount >= 5 && record.score <= 0;
-            const isHelped = !isFailedByAttempts && record.helpUsed;
-            const isPassed = !isFailedByAttempts && record.status === 'correct';
-            let statusClass = 'status-pass';
-            let statusText = '✓ 已通關';
-            if (isFailedByAttempts || (!isPassed && record.status !== 'unanswered')) {
-                statusClass = 'status-fail';
-                statusText = '✘ 未通關';
-            } else if (isHelped) {
-                statusClass = 'status-help';
-                statusText = '求助伯公';
-            } else if (record.wrongCount > 0) {
-                statusClass = 'status-wrong';
-                statusText = `錯 ${record.wrongCount} 次`;
-            }
-            const item = document.createElement('article');
-            item.className = `review-item sentence-review-item simple-review-item ${isFailedByAttempts ? 'failed' : isHelped ? 'helped' : isPassed ? 'passed' : 'failed'}`;
-            item.innerHTML = `
-                <div class="review-card-head">
-                    <h4>第 ${idx + 1} 題</h4>
-                    <div class="review-badges">
-                        <span>得分：${record.score} 分</span>
-                        <em class="${statusClass}">${statusText}</em>
-                    </div>
-                </div>
-                <div class="review-sentence-body">
-                    <p class="review-hakka-line">${record.hakka}</p>
-                    <p class="review-translation-line">${record.translation}</p>
-                </div>`;
-            const playBtn = document.createElement('button');
-            playBtn.className = 'review-play-btn review-audio-icon-btn';
-            playBtn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
-            playBtn.type = 'button';
-            playBtn.setAttribute('aria-label', `播放第 ${idx + 1} 題音檔`);
-            let reviewAudio = null;
-            playBtn.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (!reviewAudio) {
-                    reviewAudio = new Audio(record.audioUrl);
-                    reviewAudio.addEventListener('ended', () => {
-                        playBtn.classList.remove('is-playing');
-                        playBtn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
-                        playBtn.setAttribute('aria-label', `播放第 ${idx + 1} 題音檔`);
-                    });
-                    reviewAudio.addEventListener('pause', () => {
-                        if (!reviewAudio.ended) {
-                            playBtn.classList.remove('is-playing');
-                            playBtn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i><span class="sr-only">播放音檔</span>';
-                            playBtn.setAttribute('aria-label', `播放第 ${idx + 1} 題音檔`);
-                        }
-                    });
-                }
-                if (reviewAudio.paused) {
-                    reviewAudio.play().then(() => {
-                        playBtn.classList.add('is-playing');
-                        playBtn.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i><span class="sr-only">暫停音檔</span>';
-                        playBtn.setAttribute('aria-label', `暫停第 ${idx + 1} 題音檔`);
-                    }).catch(err => console.error('播放音檔失敗:', err));
-                } else {
-                    reviewAudio.pause();
-                }
-            });
-            item.appendChild(playBtn);
-            reviewList.appendChild(item);
-        });
+        questions.forEach((q, idx) => reviewList.appendChild(createReviewItem(q, idx)));
         document.querySelector('.result-summary-card')?.focus({ preventScroll: true });
     }
 
