@@ -197,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultBackBtn = document.getElementById('result-back-btn');
     const restartBtn = document.getElementById('restart-btn');
     const resultSummary = document.getElementById('result-summary');
+    const resultStageImage = document.getElementById('result-stage-image');
     const rankingSection = document.getElementById('ranking-section');
     const brushStageOverlay = document.getElementById('brush-stage-overlay');
     const brushStageFrame = document.getElementById('brush-stage-frame');
@@ -362,6 +363,14 @@ document.addEventListener('DOMContentLoaded', () => {
         { stars: 2, title: '客話蒐集犬', note: '前 51%～80% 玩家。', comment: '哎呀，看來今天剛上任真的很緊張！伯公看著繪卷對你點點頭，阿黑的超級聽力可能還需要多磨練磨練。' },
         { stars: 1, title: '迷糊的小神犬', note: '後 20% 玩家。', comment: '這次的繪卷好多地方都空白了呢！下次出發前，一起先到自學專區聽聽音檔預習一下吧！' }
     ];
+
+    const resultStageImages = {
+        1: 'data/image/kuro_five_stages_v2/stage1_instructor_blank_scroll_no_leash_yellow_scarf.png',
+        2: 'data/image/kuro_five_stages_v2/stage2_wet_embarrassed.png',
+        3: 'data/image/kuro_five_stages_v2/stage3_rice_ridge_scroll.png',
+        4: 'data/image/kuro_five_stages_v2/stage4_bogong_pat.png',
+        5: 'data/image/kuro_five_stages_v2/stage5_bogong_golden_scroll_mouth_handoff.png'
+    };
 
     function loadRunnerImage(fileName) {
         const image = new Image();
@@ -2069,6 +2078,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resultSummary) {
             const quizScore = Number((totalScore - writingScore).toFixed(2));
             resultSummary.innerHTML = `排字 ${formatScore(quizScore)} / ${QUESTION_SCORE * 5}．毛筆 ${formatScore(writingScore)} / ${BRUSH_MAX_SCORE}<br><strong>${star.title}</strong>`;
+        }
+        if (resultStageImage) {
+            resultStageImage.src = resultStageImages[star.stars];
+            resultStageImage.alt = `${star.stars} 星「${star.title}」通關圖片`;
         }
 
         if (rankingSection) {

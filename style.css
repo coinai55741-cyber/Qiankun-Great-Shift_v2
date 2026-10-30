@@ -4288,6 +4288,24 @@ body:has(#results-card:not(.hidden)) #result-summary {
     font-weight: 700;
 }
 
+body:has(#results-card:not(.hidden)) .result-stage-figure {
+    width: clamp(211px, 28.8vw, 282px);
+    aspect-ratio: 1;
+    margin: 0;
+    overflow: hidden;
+    border: 3px solid rgba(131, 98, 37, .28);
+    border-radius: 14px;
+    background: #fffaf0;
+    box-shadow: 0 8px 18px rgba(74, 54, 24, .14);
+}
+
+body:has(#results-card:not(.hidden)) #result-stage-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 body:has(#results-card:not(.hidden)) .result-summary-card .stats-grid {
     width: 100%;
     max-width: 560px;
@@ -4304,7 +4322,7 @@ body:has(#results-card:not(.hidden)) .result-summary-card .stat-box {
     min-height: 58px;
     padding: 4px 16px;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 8px;
@@ -5199,7 +5217,7 @@ body:has(#results-card:not(.hidden)) #results-card,
 }
 
 .brush-stage-panel {
-    width: min(820px, 100%);
+    width: min(1120px, 100%);
     height: 100%;
     max-height: 960px;
     display: grid;
@@ -5252,7 +5270,7 @@ body:has(#results-card:not(.hidden)) #results-card,
 
 /* Tablet / desktop: the panel is centered over the blurred running scene. */
 @media (min-width: 601px) {
-    .brush-stage-panel { width: min(680px, 92vw); }
+    .brush-stage-panel { width: min(1120px, 94vw); }
 }
 
 /* Fade the brush panel in/out; the results card's own fadeIn crossfades with it. */
@@ -5444,10 +5462,18 @@ body:has(#intro-card:not(.hidden)) #start-adventure-btn {
     border: 2px solid #84291e;
     border-radius: 15px;
     color: #fff9e9;
-    background: linear-gradient(#c74e38, #a93629);
-    box-shadow: 0 6px 0 #77231b, 0 12px 20px rgba(91, 42, 24, .18);
+    background: #b84030;
+    box-shadow: none;
     font-size: clamp(1.2rem, 2.3vw, 1.55rem);
     letter-spacing: .1em;
+}
+
+body:has(#intro-card:not(.hidden)) #start-adventure-btn:hover,
+body:has(#intro-card:not(.hidden)) #start-adventure-btn:focus-visible,
+body:has(#intro-card:not(.hidden)) #start-adventure-btn:active {
+    background: #a93629;
+    box-shadow: none;
+    transform: none;
 }
 
 @media (max-width: 1180px) {

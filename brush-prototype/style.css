@@ -27,6 +27,20 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
+html {
+  scrollbar-color: #315b48 #e7dfcf;
+  scrollbar-width: thin;
+}
+
+html::-webkit-scrollbar { width: 12px; }
+html::-webkit-scrollbar-track { background: #e7dfcf; }
+html::-webkit-scrollbar-thumb {
+  border: 3px solid #e7dfcf;
+  border-radius: 999px;
+  background: #315b48;
+}
+html::-webkit-scrollbar-thumb:hover { background: #274b3b; }
+
 body {
   margin: 0;
   color: var(--ink);
