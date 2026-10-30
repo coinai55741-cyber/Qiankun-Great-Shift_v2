@@ -17,8 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const BRUSH_MAX_SCORE = 20;       // 毛筆書寫最高 20 分
     let questionScore = QUESTION_SCORE;
     let questionAttempts = 0;
-    let questionUsedHelp = false;
-    let questionHelpType = '';
     let questionRecords = [];
     let lastUserSequence = [];
     let storyStepIndex = 0;
@@ -1192,8 +1190,6 @@ document.addEventListener('DOMContentLoaded', () => {
         isAnswerSubmitted = false;
         questionScore = QUESTION_SCORE;
         questionAttempts = 0;
-        questionUsedHelp = false;
-        questionHelpType = '';
         lastUserSequence = [];
         questionStartTime = new Date();
         shouldAutoTransition = false;
@@ -1653,8 +1649,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lockAnswerControls();
 
         // This question score is 0
-        questionUsedHelp = true;
-        questionHelpType = 'manual';
         questionScore = 0;
         lastUserSequence = selectedBlocks.map(b => b.text);
         recordQuestionOutcome('manual-help', 0);
@@ -1697,8 +1691,6 @@ document.addEventListener('DOMContentLoaded', () => {
             correctSequence: [...correctSequence],
             score: earnedScore,
             wrongCount: questionAttempts,
-            helpUsed: questionUsedHelp,
-            helpType: questionHelpType,
             status
         };
     }
@@ -1879,13 +1871,12 @@ document.addEventListener('DOMContentLoaded', () => {
             correctSequence,
             score: 0,
             wrongCount: 0,
-            helpUsed: false,
-            helpType: '',
             status: 'unanswered'
         };
-        // 錯滿次數由伯公自動協助過橋的題目（0 分）算「未通關」
+        // 沒答對的題目（含錯滿次數由伯公自動協助、手動求助伯公）一律顯示「未通關」，不另外標示求助；
+        // 手動求助的卡片只是標籤改用黃色（helped），錯滿次數的用紅色（failed）
         const isFailedByAttempts = record.wrongCount >= MAX_WRONG_ATTEMPTS && record.score <= 0;
-        const isHelped = !isFailedByAttempts && record.helpUsed;
+        const isHelped = record.status === 'manual-help';
         const isPassed = !isFailedByAttempts && record.status === 'correct';
 
         let statusClass = 'status-pass';
@@ -1893,9 +1884,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isFailedByAttempts || (!isPassed && record.status !== 'unanswered')) {
             statusClass = 'status-fail';
             statusText = '✘ 未通關';
-        } else if (isHelped) {
-            statusClass = 'status-help';
-            statusText = '求助伯公';
         } else if (record.wrongCount > 0) {
             statusClass = 'status-wrong';
             statusText = `錯 ${record.wrongCount} 次`;
@@ -2330,8 +2318,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (questionAttempts >= MAX_WRONG_ATTEMPTS) {
             // Auto-pass: fourth wrong attempt, Bo-Gong builds the bridge after Ah-Hei shakes off.
-            questionUsedHelp = true;
-            questionHelpType = 'auto';
             recordQuestionOutcome('auto-help', 0);
             if (bokongAssist) bokongAssist.classList.remove('hidden');
             showInlineFeedback("伯公協助，本題 0 分。", 'var(--accent)');
