@@ -5671,3 +5671,24 @@ body:has(#intro-card:not(.hidden)) #intro-card .warning-box {
         width: clamp(240px, 68vw, 320px);
     }
 }
+
+/* 全域鎖定雙擊放大（保留雙指縮放與捲動），避免連點字卡／按鈕時畫面被放大 */
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+
+/* 手機觸控拖曳字卡：字卡上的手勢交給程式處理（不讓頁面跟著捲動），拖曳時顯示跟著手指的字卡 */
+.word-block {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.word-block.touch-drag-ghost {
+    position: fixed;
+    z-index: 9999;
+    margin: 0;
+    pointer-events: none;
+    opacity: .94;
+    transform: scale(1.12) rotate(-3deg);
+    box-shadow: 0 14px 26px rgba(70, 45, 20, .32);
+}
+.touch-drop-target { outline: 3px dashed rgba(47, 108, 90, .7); outline-offset: 3px; border-radius: 16px; }

@@ -881,11 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
             storyAudioVisualizer.classList.toggle('hidden', !isStoryAudioStep);
             storyAudioVisualizer.classList.toggle('is-playing', isStoryAudioStep);
         }
-        if (isStoryAudioStep) {
-            storyVoiceAudio.play().catch(() => {
-                if (storyAudioVisualizer) storyAudioVisualizer.classList.remove('is-playing');
-            });
-        }
+        if (isStoryAudioStep) playStoryVoice();
         if (isBridgeStoryStep && storyBridgeAnimation) {
             storyBridgeAnimation.classList.remove('hidden');
             void storyBridgeAnimation.offsetWidth;
@@ -896,6 +892,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? '進入任務說明'
                 : '繼續 <i class="fa-solid fa-arrow-right"></i>';
         }
+    }
+
+    // 手機瀏覽器（尤其 iPhone）同一時間只讓一個聲音當主角：先暫停背景音樂再播示範音檔，
+    // 播放被擋時畫面上的聲波仍可點一下重播。
+    function playStoryVoice() {
+        if (!canSetVolume) bgm.pause();
+        if (storyAudioVisualizer) storyAudioVisualizer.classList.add('is-playing');
+        const p = storyVoiceAudio.play();
+        if (p && p.catch) p.catch((err) => {
+            console.log('Story voice blocked or failed:', err);
+            if (storyAudioVisualizer) storyAudioVisualizer.classList.remove('is-playing');
+            ensureBgm();
+        });
+    }
+    if (storyAudioVisualizer) {
+        storyAudioVisualizer.addEventListener('click', () => {
+            if (storyVoiceAudio.paused) { storyVoiceAudio.currentTime = 0; playStoryVoice(); }
+        });
     }
 
     function showIntroCard() {
@@ -1260,6 +1274,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
+        setupTouchBlockDrag();
+
         candidatesContainer.addEventListener('dragover', (e) => {
             if (isAnswerSubmitted) return;
             e.preventDefault();
@@ -1398,7 +1414,9 @@ document.addEventListener('DOMContentLoaded', () => {
             gameAudio._playListener = null;
         }
         if (gameAudio.paused) {
+            if (!canSetVolume) bgm.pause();   // iPhone：先讓背景音樂讓出聲音
             gameAudio.play().catch(e => {
+                ensureBgm();
                 console.log("Autoplay blocked: user interaction required.", e);
                 // 手機瀏覽器擋住自動播放時，讓播放鈕閃動提示「點這裡聽題目」
                 if (playAudioBtn && !openingCountdownActive) playAudioBtn.classList.add('needs-tap');
@@ -1693,6 +1711,118 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedBlocks.push(block);
             renderBlocks();
         }
+    }
+
+    // 手機／平板（觸控、手寫筆）沒有 HTML5 拖放，改用 Pointer Events 自己做：
+    // 手指在字卡上移動超過一小段距離才算拖曳（單純點一下仍是選取），拖曳時有一張跟著手指的字卡，
+    // 放開時依手指位置決定插入哪張字卡之前／之後，或放到作答區／待選區。滑鼠仍用原本的 HTML5 拖放。
+    function setupTouchBlockDrag() {
+        const DRAG_THRESHOLD = 8;
+        let drag = null;   // { id, btn, pointerId, startX, startY, ghost, moved }
+
+        function clearMarks() {
+            document.querySelectorAll('.word-block').forEach(el => el.classList.remove('drag-over', 'insert-before', 'insert-after'));
+            answerContainer.classList.remove('touch-drop-target');
+            candidatesContainer.classList.remove('touch-drop-target');
+        }
+
+        function targetAt(x, y) {
+            const el = document.elementFromPoint(x, y);
+            if (!el) return null;
+            const block = el.closest('.word-block');
+            if (block && block.dataset.id !== undefined && Number(block.dataset.id) !== drag.id) {
+                const rect = block.getBoundingClientRect();
+                return { type: 'block', el: block, id: Number(block.dataset.id), after: x >= rect.left + rect.width / 2 };
+            }
+            if (answerContainer.contains(el)) return { type: 'answer', el: answerContainer };
+            if (candidatesContainer.contains(el)) return { type: 'candidates', el: candidatesContainer };
+            return null;
+        }
+
+        function endDrag(commit, x, y) {
+            if (!drag) return;
+            const d = drag;
+            drag = null;
+            if (d.ghost) d.ghost.remove();
+            d.btn.classList.remove('dragging');
+            try { d.btn.releasePointerCapture(d.pointerId); } catch (err) { /* 已釋放 */ }
+            let target = null;
+            if (commit && d.moved) {
+                drag = d;   // targetAt 需要 drag.id
+                target = targetAt(x, y);
+                drag = null;
+            }
+            clearMarks();
+            draggedBlockId = null;
+            if (d.moved) {
+                // 拖曳後瀏覽器可能補送一個 click，會被誤判成「點選字卡」，所以短時間內擋掉
+                const blockClick = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+                document.addEventListener('click', blockClick, true);
+                setTimeout(() => document.removeEventListener('click', blockClick, true), 350);
+            }
+            if (!target || isAnswerSubmitted) return;
+            if (target.type === 'block') {
+                handleBlockDrop(d.id, target.id, target.after);
+            } else if (target.type === 'answer') {
+                const i = remainingBlocks.findIndex(b => b.id === d.id);
+                if (i > -1) { selectedBlocks.push(remainingBlocks.splice(i, 1)[0]); renderBlocks(); }
+            } else if (target.type === 'candidates') {
+                const i = selectedBlocks.findIndex(b => b.id === d.id);
+                if (i > -1) { remainingBlocks.push(selectedBlocks.splice(i, 1)[0]); renderBlocks(); }
+            }
+        }
+
+        function onPointerDown(e) {
+            if (e.pointerType === 'mouse' || isAnswerSubmitted || drag) return;
+            const btn = e.target.closest('.word-block');
+            if (!btn || btn.dataset.id === undefined) return;
+            btn.draggable = false;   // 避免 iOS 長按啟動原生拖放，與這裡的自訂拖曳打架
+            drag = { id: Number(btn.dataset.id), btn, pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, ghost: null, moved: false };
+            try { btn.setPointerCapture(e.pointerId); } catch (err) { /* 部分瀏覽器不支援 */ }
+        }
+
+        function onPointerMove(e) {
+            if (!drag || e.pointerId !== drag.pointerId) return;
+            if (!drag.moved) {
+                if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < DRAG_THRESHOLD) return;
+                drag.moved = true;
+                draggedBlockId = drag.id;
+                const rect = drag.btn.getBoundingClientRect();
+                const ghost = drag.btn.cloneNode(true);
+                ghost.classList.add('touch-drag-ghost');
+                ghost.style.width = rect.width + 'px';
+                ghost.style.height = rect.height + 'px';
+                document.body.appendChild(ghost);
+                drag.ghost = ghost;
+                drag.offsetX = drag.startX - rect.left;
+                drag.offsetY = drag.startY - rect.top;
+                drag.btn.classList.add('dragging');
+            }
+            e.preventDefault();
+            drag.ghost.style.left = (e.clientX - drag.offsetX) + 'px';
+            drag.ghost.style.top = (e.clientY - drag.offsetY) + 'px';
+            clearMarks();
+            const t = targetAt(e.clientX, e.clientY);
+            if (!t) return;
+            if (t.type === 'block') t.el.classList.add('drag-over', t.after ? 'insert-after' : 'insert-before');
+            else t.el.classList.add('touch-drop-target');
+        }
+
+        function onPointerUp(e) {
+            if (!drag || e.pointerId !== drag.pointerId) return;
+            endDrag(true, e.clientX, e.clientY);
+        }
+        function onPointerCancel(e) {
+            if (!drag || e.pointerId !== drag.pointerId) return;
+            endDrag(false);
+        }
+
+        [answerContainer, candidatesContainer].forEach(container => {
+            container.addEventListener('pointerdown', onPointerDown);
+            container.addEventListener('pointermove', onPointerMove);
+            container.addEventListener('pointerup', onPointerUp);
+            container.addEventListener('pointercancel', onPointerCancel);
+        });
     }
 
     // Handle block dropping for reordering and swapping with visual insert support
@@ -2237,7 +2367,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleAudio() {
         if (openingCountdownActive) return;
         if (gameAudio.paused) {
+            if (!canSetVolume) bgm.pause();
             gameAudio.play().catch(e => {
+                ensureBgm();
                 console.error("播放音檔失敗:", e);
             });
         } else {
