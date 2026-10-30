@@ -5661,3 +5661,13 @@ body:has(#intro-card:not(.hidden)) #intro-card .warning-box {
     body:has(#game-card:not(.hidden)) .speed-btn { min-width: 28px; padding: 0 3px; font-size: .7rem; }
     body:has(#game-card:not(.hidden)) .badge-dialect { padding: 0 6px; font-size: .7rem; }
 }
+
+/* 手機的故事畫面：阿黑不縮小，放大並置中在畫面正中間（對話框正上方） */
+@media (max-width: 760px), (max-height: 520px) {
+    .story-standing-kuro {
+        left: 50%;
+        right: auto;
+        translate: -50% 0;
+        width: clamp(240px, 68vw, 320px);
+    }
+}
