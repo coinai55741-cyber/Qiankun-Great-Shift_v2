@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalScore = 0;
     const QUESTION_SCORE = 16;        // 每題 16 分，五題共 80 分（毛筆另有 20 分，合計 100）
     const WRONG_PENALTY = 4;          // 答錯一次扣 4 分：16 → 12 → 8 → 4 → 0
-    const MAX_WRONG_ATTEMPTS = 5;     // 第 5 次答錯時伯公自動協助過橋（此時該題分數早已扣完，本題 0 分）
+    const MAX_WRONG_ATTEMPTS = 4;     // 第 4 次答錯時伯公自動協助過橋（此時該題分數剛好扣完，本題 0 分）
     const BRUSH_MAX_SCORE = 20;       // 毛筆書寫最高 20 分
     let questionScore = QUESTION_SCORE;
     let questionAttempts = 0;
@@ -82,9 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (soundEnabled && bgm.paused) bgm.play().catch(() => {});
     }
 
+    // iPhone／iPad 的 Safari（含 LINE 內建瀏覽器）不允許網頁調整 audio.volume，永遠是最大聲，
+    // 壓低背景音樂沒有效果、會蓋掉題目語音。這種裝置改成「語音播放時暫停背景音樂，播完再接著放」。
+    const canSetVolume = (() => {
+        try { const probe = new Audio(); probe.volume = 0.5; return probe.volume === 0.5; } catch (e) { return false; }
+    })();
+
     // 題目語音播放時把背景音樂壓低，聽力才聽得清楚。
+    let unlockingAudio = false;   // 解鎖用的靜音檔播放期間，不要觸發壓低背景音樂
     function setBgmDucked(ducked) {
-        bgm.volume = ducked ? BGM_DUCKED_VOLUME : BGM_VOLUME;
+        if (unlockingAudio) return;
+        if (canSetVolume) bgm.volume = ducked ? BGM_DUCKED_VOLUME : BGM_VOLUME;
+        else if (ducked) bgm.pause();
+        else ensureBgm();
     }
     function duckBgmWhilePlaying(voice) {
         if (!voice) return;
@@ -128,6 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
             else { setSoundEnabled(true); playSfx('click'); }
         });
     }
+    // iOS Safari 規定每個 <audio> 都要先在「點擊」當下播放過一次，之後才能由程式自動播放。
+    // 題目語音是倒數結束後才自動播的，沒解鎖就會被擋、只剩背景音樂；所以第一次點擊時
+    // 先用一小段靜音檔在 gameAudio 上呼叫 play()，之後換成題目音檔就能自動播放。
+    const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+    function unlockGameAudio() {
+        if (gameAudio.getAttribute('src')) return;   // 已經載入題目就不必解鎖
+        unlockingAudio = true;
+        gameAudio.src = SILENT_WAV;
+        const done = () => {
+            setTimeout(() => {
+                unlockingAudio = false;
+                if (gameAudio.getAttribute('src') === SILENT_WAV) { gameAudio.removeAttribute('src'); gameAudio.load(); }
+            }, 300);
+        };
+        const p = gameAudio.play();
+        if (p && p.then) p.then(done, done); else done();
+    }
+    ['click', 'touchend'].forEach(type => {
+        document.addEventListener(type, function unlockOnce() {
+            document.removeEventListener('click', unlockOnce);
+            document.removeEventListener('touchend', unlockOnce);
+            unlockGameAudio();
+        }, true);
+    });
+
     // 瀏覽器要求先有使用者操作才能播放：第一次點擊／按鍵就開始背景音樂。
     ['pointerdown', 'keydown'].forEach(type => {
         document.addEventListener(type, function startBgmOnce() {
@@ -1365,6 +1400,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameAudio.paused) {
             gameAudio.play().catch(e => {
                 console.log("Autoplay blocked: user interaction required.", e);
+                // 手機瀏覽器擋住自動播放時，讓播放鈕閃動提示「點這裡聽題目」
+                if (playAudioBtn && !openingCountdownActive) playAudioBtn.classList.add('needs-tap');
             });
         }
     }
@@ -2209,6 +2246,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onAudioPlay() {
+        if (unlockingAudio) return;
+        playAudioBtn.classList.remove('needs-tap');
         playAudioBtn.classList.add('playing');
         playAudioBtn.querySelector('.play-icon').classList.add('hidden');
         playAudioBtn.querySelector('.pause-icon').classList.remove('hidden');
@@ -2216,6 +2255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onAudioPause() {
+        if (unlockingAudio) return;
         playAudioBtn.classList.remove('playing');
         playAudioBtn.querySelector('.play-icon').classList.remove('hidden');
         playAudioBtn.querySelector('.pause-icon').classList.add('hidden');
@@ -2532,7 +2572,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bridgeKind = null;
 
         if (questionAttempts >= MAX_WRONG_ATTEMPTS) {
-            // Auto-pass: fifth wrong attempt, Bo-Gong builds the bridge after Ah-Hei shakes off.
+            // Auto-pass: fourth wrong attempt, Bo-Gong builds the bridge after Ah-Hei shakes off.
             questionUsedHelp = true;
             questionHelpType = 'auto';
             recordQuestionOutcome('auto-help', 0);
