@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundwave = document.getElementById('soundwave');
 
     const sfxPath = 'data/music/';
-    const sfxVersion = '20261030-4';
+    const sfxVersion = '20261031-1';
     const sfx = {
         click: new Audio(`${sfxPath}S2_m2_click.mp3?v=${sfxVersion}`),
         wrong: new Audio(`${sfxPath}S2_m2_false.mp3?v=${sfxVersion}`),
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { speaker: '阿黑', text: '呼！過來了！伯公，小明抱怨數學的紀錄已經好好的印在繪卷上囉，其他的內容，我等一下帶回去給你讀！' },
         { speaker: '伯公', text: '好好好，這孩子總是怕數學。繼續吧，看看下一條路上還能幫伯公收集到什麼有趣的對話！' }
     ];
-    const storyVoiceAudio = new Audio('https://dn9mvjhbyvvpc.cloudfront.net/files/71858_2bdea5329f2fdaec3dc9b152a18e8a14.wav');
+    const storyVoiceAudio = new Audio(`${sfxPath}S2_m3_story_voice.mp3?v=${sfxVersion}`);
     storyVoiceAudio.preload = 'auto';
     duckBgmWhilePlaying(storyVoiceAudio);
     storyVoiceAudio.addEventListener('ended', () => {
