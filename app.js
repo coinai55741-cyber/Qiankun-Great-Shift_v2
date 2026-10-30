@@ -61,6 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 右上角喇叭按鈕（與 fukuchange 同款）只開關背景音樂；點擊、答對答錯等音效與題目語音不受影響。
+    // 直接開硬碟上的 index.html（file://）時，頁面來源是「不透明」的：Chrome 的 location.origin 是 'file://'，
+    // 但 postMessage 的 event.origin 卻是 'null'，兩者對不起來，所以要特別處理，否則毛筆頁的訊息會被擋掉。
+    const isOpaqueOrigin = window.location.protocol === 'file:' || window.location.origin === 'null';
+    const messageTargetOrigin = isOpaqueOrigin ? '*' : window.location.origin;
+    const isSameOriginMessage = origin => origin === window.location.origin || (isOpaqueOrigin && origin === 'null');
+
     const BGM_VOLUME = 0.15;
     const BGM_DUCKED_VOLUME = 0.04;
     const soundToggleBtn = document.getElementById('sound-toggle');
@@ -1992,7 +1998,7 @@ document.addEventListener('DOMContentLoaded', () => {
             totalScore: Number(totalScore.toFixed(2)),
             totalElapsedMs: resultElapsedMs,
             totalElapsedText: formatResultTime(resultElapsedMs)
-        }, window.location.origin === 'null' ? '*' : window.location.origin); // file:// has an opaque origin
+        }, messageTargetOrigin);
     }
 
     function openBrushResult() {
@@ -2003,7 +2009,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleBrushMessage(event) {
-        if (event.origin !== window.location.origin || !brushStageFrame || event.source !== brushStageFrame.contentWindow) return;
+        if (!isSameOriginMessage(event.origin) || !brushStageFrame || event.source !== brushStageFrame.contentWindow) return;
         if (event.data?.type === 'brush-close-request') {
             if (!brushCompleted) return;
             hideBrushOverlay();

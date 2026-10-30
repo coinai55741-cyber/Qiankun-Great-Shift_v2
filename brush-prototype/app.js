@@ -141,7 +141,10 @@ function drawStamp(g, cx, cy, size, st) {
    底字範本用這份輪廓畫出，筆順也用同一份中心線比對；查不到的字退回字型底字、不算筆順。 */
 // Opened from disk (file://) fetch() is blocked and the page origin is opaque: fall back to <script> copies
 // of the data (strokes/strokes.js, ../data/quiz/questions_offline.js) and postMessage to '*'.
-const hostOrigin = window.location.origin === 'null' ? '*' : window.location.origin;
+// Chrome 在 file:// 下 location.origin 是 'file://'，但 postMessage 的 event.origin 是 'null'，所以兩種情況都要認。
+const isOpaqueOrigin = window.location.protocol === 'file:' || window.location.origin === 'null';
+const hostOrigin = isOpaqueOrigin ? '*' : window.location.origin;
+const isSameOriginMessage = origin => origin === window.location.origin || (isOpaqueOrigin && origin === 'null');
 const loadScript = src => new Promise(resolve => {
   const s = document.createElement('script');
   s.src = src; s.onload = () => resolve(true); s.onerror = () => resolve(false);
@@ -744,7 +747,7 @@ $('drawQuestion').onclick = loadQuestion;
 $('dialect').onchange = loadQuestion;
 $('restart').onclick = () => { $('result').hidden = true; $('practice').hidden = false; loadQuestion(); window.scrollTo(0, 0); };
 window.addEventListener('message', event => {
-  if (!embedded || event.origin !== window.location.origin || event.source !== window.parent || event.data?.type !== 'brush-session-summary') return;
+  if (!embedded || !isSameOriginMessage(event.origin) || event.source !== window.parent || event.data?.type !== 'brush-session-summary') return;
   hostSummary = event.data;
   drawCard();
   if (event.data.show) revealResult();
