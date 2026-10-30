@@ -1,3 +1,12 @@
+/* 首頁標題用字：Yuji Mai（SIL OFL 1.1），與毛筆紀念章同一款字型，只含「阿黑的客字繪卷」七字；授權見 data/fonts/OFL-YujiMai.txt */
+@font-face {
+    font-family: "YujiMaiTitle";
+    src: url("data/fonts/YujiMai-title.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 @font-face {
     font-family: "GenSekiGothic2TW";
     src: url("data/fonts/GenSekiGothic2TW-R.otf") format("opentype");
@@ -5311,7 +5320,7 @@ body:has(#intro-card:not(.hidden)) #intro-card .intro-header {
     width: min(660px, 70%);
     aspect-ratio: 3 / 1;
     margin: 0;
-    padding: 0 12% 2%;
+    padding: 0 12%;
     border: 0;
     transform: translate(-50%, -22%);
     background: url('data/image/intro-title-scroll.webp') center / contain no-repeat;
@@ -5319,9 +5328,11 @@ body:has(#intro-card:not(.hidden)) #intro-card .intro-header {
 
 body:has(#intro-card:not(.hidden)) #intro-card .intro-header h2 {
     color: #2f2a20;
-    font-size: clamp(1.65rem, 3.2vw, 2.65rem);
-    font-weight: 900;
+    font-family: "YujiMaiTitle", var(--font-hakka) !important;
+    font-size: clamp(2.07rem, 4.025vw, 3.335rem);   /* 電腦版放大 15% */
+    font-weight: 400;
     letter-spacing: .12em;
+    -webkit-text-stroke: .5px currentColor;   /* Yuji Mai 筆畫偏細，補一圈同色描邊 */
     text-shadow: 0 1px rgba(255,255,255,.65);
 }
 
@@ -5473,4 +5484,112 @@ body:has(#intro-card:not(.hidden)) #start-adventure-btn {
     body:has(#intro-card:not(.hidden)) #intro-card.game-card { padding: 104px 40px 98px; }
     body:has(#intro-card:not(.hidden)) #intro-card .intro-story { font-size: .92rem; line-height: 1.62; }
     body:has(#intro-card:not(.hidden)) #intro-card .intro-rules li { font-size: .88rem; }
+}
+
+/* ===========================================================================
+   Dialect picker: fukuchange-style grey pills; the selected pill uses the
+   green of the section banner, with a check icon. The banner title is unchanged.
+   =========================================================================== */
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .55rem;
+    margin: 0;
+}
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn {
+    min-width: 86px;
+    min-height: 0;
+    padding: .35rem .7rem;
+    border: 0;
+    border-radius: 12px;
+    color: #77787a;
+    background: #d9d9d9;
+    box-shadow: none;
+    font-size: .84rem;
+    font-weight: 800;
+}
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn:hover {
+    background: #d9d9d9;
+}
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn.active {
+    color: #fff;
+    background: #698d1f;
+    box-shadow: none;
+}
+body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn.active::after {
+    content: "";
+    flex: 0 0 auto;
+    width: 13px;
+    height: 13px;
+    margin-left: .2rem;
+    background: url('data/ui/check-circle.png') center / contain no-repeat;
+}
+@media (max-width: 560px) {
+    body:has(#intro-card:not(.hidden)) #intro-card .dialect-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    body:has(#intro-card:not(.hidden)) #intro-card .dialect-btn {
+        width: 100%;
+        min-width: 0;
+        padding: .4rem .5rem;
+        font-size: .85rem;
+    }
+}
+
+/* ===========================================================================
+   Sound toggle: same size and look as fukuchange's 音效 button, sitting right
+   after the back button (18px gap, vertically centred in the 40px bar).
+   =========================================================================== */
+body #app > .sound-toggle-btn {
+    position: fixed;
+    top: 7.4px;
+    left: calc(111px + 18px);
+    z-index: 180;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 66.5px;
+    height: 25.2px;
+    padding: 5.6px 11.2px;
+    gap: 2.8px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: #836225;
+    font-family: var(--font-hakka, inherit);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16.8px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+body #app > .sound-toggle-btn img {
+    width: 15.93px;
+    height: 14.32px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+body #app > .sound-toggle-btn:focus-visible {
+    outline: 3px solid #ffd966;
+    outline-offset: 2px;
+}
+body.brush-stage-active #app > .sound-toggle-btn {
+    z-index: 5100;
+}
+
+/* 首頁提醒列：底色柔和閃爍，提醒指導員先預習聽力教材 */
+@keyframes warningBlink {
+    0%, 100% { background-color: rgba(239, 228, 182, .58); box-shadow: 0 0 0 0 rgba(255, 196, 61, 0); }
+    50%      { background-color: rgba(255, 207, 74, .92);  box-shadow: 0 0 14px 2px rgba(255, 196, 61, .55); }
+}
+body:has(#intro-card:not(.hidden)) #intro-card .warning-box {
+    animation: warningBlink 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    body:has(#intro-card:not(.hidden)) #intro-card .warning-box { animation: none; }
 }

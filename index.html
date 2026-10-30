@@ -8,7 +8,7 @@
     <!-- Font Awesome Icons -->
     <!-- Custom Style -->
     <link rel="preload" as="image" href="data/image/S2_m3_story_bg.png?v=20261029-2">
-    <link rel="stylesheet" href="style.css?v=20261030-no-foliage">
+    <link rel="stylesheet" href="style.css?v=20261030-title115">
 </head>
 <body>
     <!-- Background Elements -->
@@ -17,6 +17,7 @@
 
     <div id="app" class="app-container" v-cloak>
         <button class="lobby-back-button" type="button" aria-label="返回列表"><img src="data/ui/back.png" alt="" aria-hidden="true">返回列表</button>
+        <button class="sound-toggle-btn" id="sound-toggle" type="button" aria-pressed="true" aria-label="音效按鈕，目前開啟，點擊關閉音效"><img src="data/ui/sound-icon.svg" alt="" aria-hidden="true">音效</button>
         <button class="lobby-rank-toggle-btn" id="lobby-rank-toggle" type="button" aria-haspopup="dialog" aria-controls="lobby-rank-modal"><span class="star-icon" aria-hidden="true">★</span> 排行榜</button>
         <!-- Header -->
         <header class="app-header hidden">
@@ -119,9 +120,9 @@
                 <ol>
                     <li><strong>仔細聆聽：</strong>仔細聆聽風中傳來的社區客語語音。</li>
                     <li><strong>搭建橋墩：</strong>在阿黑抵達斷崖前，將下方的客語字磚依正確語音順序排列好。</li>
-                    <li><strong>架橋通關：</strong>每題最高 18 分，答錯一次扣 4 分並回到起點重試；第 5 次仍錯時，伯公會自動協助過橋，本題 0 分。</li>
+                    <li><strong>架橋通關：</strong>每題最高 16 分，答錯一次扣 4 分並回到起點重試；第 5 次仍錯時，伯公會自動協助過橋，本題 0 分。</li>
                     <li><strong>求助伯公：</strong>遇到難題可點擊【求助伯公】召喚透明仙橋安全過河，本題以 0 分結算。</li>
-                    <li><strong>揮毫成卷：</strong>完成 5 題排字後，依所選腔調另抽一題五字題書寫。排字共 90 分、毛筆最高 10 分，合計 100 分；排行榜計時包含書寫時間。</li>
+                    <li><strong>揮毫成卷：</strong>完成 5 題排字後，依所選腔調另抽一題五字題書寫。排字共 80 分、毛筆最高 20 分，合計 100 分；排行榜計時包含書寫時間。</li>
                 </ol>
             </div>
             
@@ -340,7 +341,7 @@
     <script src="vue-app.js?v=20260924-kuro-image-assets1"></script>
     <!-- Game data and existing interaction engine -->
     <script src="questions_data.js"></script>
-    <script src="app.js?v=20261030-no-flash"></script>
+    <script src="app.js?v=20261030-title115"></script>
 </body>
 </html>
 

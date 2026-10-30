@@ -9,6 +9,7 @@ const paper = $('paper'), ctx = paper.getContext('2d');
 const makeCanvas = () => { const c = document.createElement('canvas'); c.width = c.height = 512; return c; };
 let question, chars = [], index = 0, strokes = [], saved = [], started = 0, ended = 0, active = null;
 let inked = false, refilled = false, loading = false, loadToken = 0, shareFile = null;
+const BRUSH_MAX = 20;   // 毛筆滿分（與主遊戲 BRUSH_MAX_SCORE 一致）
 let score = 0, feedback = '', timerId = 0, stamp = null;
 if (embedded) document.body.classList.add('embedded');
 if (hostDialect && $('dialect').querySelector(`option[value="${CSS.escape(hostDialect)}"]`)) $('dialect').value = hostDialect;
@@ -38,11 +39,11 @@ const pick = list => list[Math.floor(Math.random() * list.length)];
    style：circle 單線圓章／splash 墨花不規則圓章／square 方章／double 雙線方章／cloud 雲紋邊方章／gold 金邊雙框章
    ========================================================================== */
 const STAMPS = [
-  { min: 9,   name: '墨韻客家', line: '字裡有客家的味道',   style: 'gold' },
-  { min: 7.5, name: '落筆生輝', line: '每一筆都有精神',     style: 'cloud' },
-  { min: 6,   name: '運筆漸穩', line: '筆畫愈來愈穩',       style: 'double' },
-  { min: 4,   name: '墨字初成', line: '字形出來了',         style: 'square' },
-  { min: 2,   name: '墨點初試', line: '第一次落筆，已經很棒', style: 'circle' },
+  { min: .9 * BRUSH_MAX,   name: '墨韻客家', line: '字裡有客家的味道',   style: 'gold' },
+  { min: .75 * BRUSH_MAX, name: '落筆生輝', line: '每一筆都有精神',     style: 'cloud' },
+  { min: .6 * BRUSH_MAX,  name: '運筆漸穩', line: '筆畫愈來愈穩',       style: 'double' },
+  { min: .4 * BRUSH_MAX,  name: '墨字初成', line: '字形出來了',         style: 'square' },
+  { min: .2 * BRUSH_MAX,  name: '墨點初試', line: '第一次落筆，已經很棒', style: 'circle' },
   { min: 0,   name: '墨花亂舞', line: '筆下好熱鬧，請再接再厲！', style: 'splash' }   // 2 分以下，多半是亂寫
 ];
 const stampFor = value => STAMPS.find(st => value >= st.min);
@@ -482,9 +483,9 @@ $('next').onclick = () => {
 
 function finish() {
   audio.pause();
-  score = saved.reduce((s, v) => s + v.value, 0) / 5 * 10;
+  score = saved.reduce((s, v) => s + v.value, 0) / 5 * BRUSH_MAX;
   const coverage = saved.reduce((s, v) => s + v.coverage, 0) / 5;
-  feedback = pick(FEEDBACK_LINES[score >= 8 ? 'high' : score < 2 ? 'scribble' : coverage < .65 ? 'low' : 'mid']);
+  feedback = pick(FEEDBACK_LINES[score >= .8 * BRUSH_MAX ? 'high' : score < .2 * BRUSH_MAX ? 'scribble' : coverage < .65 ? 'low' : 'mid']);
   // 嵌入遊戲時，成果頁只在主程式排行榜按「查看／分享」才打開；寫完當下維持原畫面讓主程式淡出。
   if (!embedded) { $('practice').hidden = true; $('result').hidden = false; }
   $('feedback').textContent = feedback;
@@ -529,16 +530,16 @@ let settleToken = 0;
 function playSettle() {
   const token = ++settleToken;
   const stampEl = $('stamp'), card = document.querySelector('.scroll-card'), tile = $('stampName').parentElement;
-  const finalText = `${score.toFixed(2)} / 10`;
+  const finalText = `${score.toFixed(2)} / ${BRUSH_MAX}`;
   stampEl.classList.remove('pre', 'stamp-in'); card.classList.remove('impact'); tile.classList.remove('hold', 'reveal');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { $('score').textContent = finalText; return; }
   stampEl.classList.add('pre'); tile.classList.add('hold');
-  $('score').textContent = '0.00 / 10';
+  $('score').textContent = `0.00 / ${BRUSH_MAX}`;
   const t0 = performance.now(), DUR = 900;
   const step = now => {
     if (token !== settleToken) return;
     const p = Math.min(1, (now - t0) / DUR), eased = 1 - Math.pow(1 - p, 3);
-    $('score').textContent = p < 1 ? `${(score * eased).toFixed(2)} / 10` : finalText;
+    $('score').textContent = p < 1 ? `${(score * eased).toFixed(2)} / ${BRUSH_MAX}` : finalText;
     if (p < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
@@ -561,7 +562,7 @@ function caption() {
     `【${names[$('dialect').value]}】${question.hakka_hanji}`,
     hostSummary ? `本關總分：${Number(hostSummary.totalScore).toFixed(2)} / 100` : '',
     question.chinese_sentence || '',
-    `書寫 ${score.toFixed(2)} / 10 分 · ${time(ended - started)}`,
+    `書寫 ${score.toFixed(2)} / ${BRUSH_MAX} 分 · ${time(ended - started)}`,
     feedback
   ].filter(Boolean).join('\n');
 }
@@ -617,7 +618,7 @@ async function drawCard() {
   g.fillText('筆墨得分', 315, 842); g.fillText('揮毫時間', 765, 842);
   g.strokeStyle = '#c9bfa5'; g.lineWidth = 2; g.beginPath(); g.moveTo(540, 825); g.lineTo(540, 905); g.stroke();
   g.fillStyle = '#355b4d'; g.font = '52px Hakka';
-  g.fillText(`${score.toFixed(2)} / 10`, 315, 902); g.fillText(time(ended - started), 765, 902);
+  g.fillText(`${score.toFixed(2)} / ${BRUSH_MAX}`, 315, 902); g.fillText(time(ended - started), 765, 902);
   g.fillStyle = '#3b3a2d'; g.font = '27px Hakka'; g.fillText(feedback, 540, 968, 840);
 
   /* 作品紀念章 */

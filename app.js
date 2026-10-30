@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let correctCount = 0;
     let totalScore = 0;
-    let questionScore = 18; // Five listening questions contribute up to 90 points
+    const QUESTION_SCORE = 16;        // 每題 16 分，五題共 80 分（毛筆另有 20 分，合計 100）
+    const WRONG_PENALTY = 4;          // 答錯一次扣 4 分：16 → 12 → 8 → 4 → 0
+    const MAX_WRONG_ATTEMPTS = 5;     // 第 5 次答錯時伯公自動協助過橋（此時該題分數早已扣完，本題 0 分）
+    const BRUSH_MAX_SCORE = 20;       // 毛筆書寫最高 20 分
+    let questionScore = QUESTION_SCORE;
     let questionAttempts = 0;
     let questionUsedHelp = false;
     let questionHelpType = '';
@@ -45,22 +49,87 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundwave = document.getElementById('soundwave');
 
     const sfxPath = 'data/music/';
-    const sfxVersion = '20260722-1';
+    const sfxVersion = '20261030-2';
     const sfx = {
         click: new Audio(`${sfxPath}S2_m2_click.mp3?v=${sfxVersion}`),
         wrong: new Audio(`${sfxPath}S2_m2_false.mp3?v=${sfxVersion}`),
         next: new Audio(`${sfxPath}S2_m2_next.mp3?v=${sfxVersion}`),
-        splash: new Audio(`${sfxPath}S2_m3_splash.mp3?v=${sfxVersion}`)
+        splash: new Audio(`${sfxPath}S2_m3_splash.mp3?v=${sfxVersion}`),
+        pass: new Audio(`${sfxPath}S2_m3_pass.mp3?v=${sfxVersion}`),      // 通過：阿黑平安過橋
+        help: new Audio(`${sfxPath}S2_m3_help.mp3?v=${sfxVersion}`),      // 伯公協助：金橋閃光
+        finish: new Audio(`${sfxPath}S2_m3_finish.mp3?v=${sfxVersion}`)   // 全部通關：進入結果頁
     };
 
+    // 音效開關（與 fukuchange 同一顆喇叭按鈕）：同時控制背景音樂與點擊音效，不影響題目語音。
+    const BGM_VOLUME = 0.15;
+    const BGM_DUCKED_VOLUME = 0.04;
+    const soundToggleBtn = document.getElementById('sound-toggle');
+    const soundToggleIcon = soundToggleBtn ? soundToggleBtn.querySelector('img') : null;
+    let soundEnabled = true;
+    try { soundEnabled = localStorage.getItem('kuro-sound') !== 'off'; } catch (e) { /* 無痕模式等情況就用預設開啟 */ }
+
+    const bgm = new Audio(`${sfxPath}S2_m3_bgmloop.mp3?v=${sfxVersion}`);
+    bgm.loop = true;
+    bgm.volume = BGM_VOLUME;
+
+    function ensureBgm() {
+        if (soundEnabled && bgm.paused) bgm.play().catch(() => {});
+    }
+
+    // 題目語音播放時把背景音樂壓低，聽力才聽得清楚。
+    function setBgmDucked(ducked) {
+        bgm.volume = ducked ? BGM_DUCKED_VOLUME : BGM_VOLUME;
+    }
+    function duckBgmWhilePlaying(voice) {
+        if (!voice) return;
+        voice.addEventListener('play', () => setBgmDucked(true));
+        voice.addEventListener('pause', () => setBgmDucked(false));
+        voice.addEventListener('ended', () => setBgmDucked(false));
+    }
+    duckBgmWhilePlaying(gameAudio);
+
+    function renderSoundToggle() {
+        if (!soundToggleBtn) return;
+        soundToggleBtn.setAttribute('aria-pressed', String(soundEnabled));
+        soundToggleBtn.setAttribute('aria-label', soundEnabled
+            ? '音效按鈕，目前開啟，點擊關閉音效'
+            : '音效按鈕，目前關閉，點擊開啟音效');
+        if (soundToggleIcon) soundToggleIcon.src = soundEnabled ? 'data/ui/sound-icon.svg' : 'data/ui/sound-off-icon.svg';
+    }
+
+    function setSoundEnabled(enabled) {
+        soundEnabled = enabled;
+        try { localStorage.setItem('kuro-sound', enabled ? 'on' : 'off'); } catch (e) { /* ignore */ }
+        renderSoundToggle();
+        if (enabled) ensureBgm();
+        else bgm.pause();
+    }
+
     function playSfx(name) {
+        if (!soundEnabled) return;
         const audio = sfx[name];
         if (!audio) return;
 
+        ensureBgm();
         audio.currentTime = 0;
         audio.volume = 0.75;
         audio.play().catch(() => {});
     }
+
+    renderSoundToggle();
+    if (soundToggleBtn) {
+        soundToggleBtn.addEventListener('click', () => {
+            if (soundEnabled) { playSfx('click'); setSoundEnabled(false); }
+            else { setSoundEnabled(true); playSfx('click'); }
+        });
+    }
+    // 瀏覽器要求先有使用者操作才能播放：第一次點擊／按鍵就開始背景音樂。
+    ['pointerdown', 'keydown'].forEach(type => {
+        document.addEventListener(type, function startBgmOnce() {
+            document.removeEventListener(type, startBgmOnce);
+            ensureBgm();
+        });
+    });
     
     // UI Elements
     const appHeader = document.querySelector('.app-header');
@@ -268,14 +337,15 @@ document.addEventListener('DOMContentLoaded', () => {
         { speaker: '阿黑', text: '汪……指導員，我第一次出任務，聽到村裡小朋友在講客語，可是繪卷突然發光，文字就全部變成字磚掉在地上了……我不知道怎麼排回去呀。' },
         { speaker: '指導員', text: '你是實習小神狗，需要多練習是正常的！' },
         { speaker: '指導員', text: '讓伯公把你的聽力技能加強，你仔細聽好囉～' },
-        { speaker: '背景音效', text: '𠊎試著這題數學還難哦' },
+        { speaker: '某聲音', text: '𠊎試著這題數學還難哦' },
         { speaker: '阿黑', text: '啊！聽到了！小明在抱怨數學啦！順序是：「𠊎」➔「試」➔「著」➔「這」➔「題」➔「數」➔「學」➔「還」➔「難」➔「哦」！' },
-        { speaker: '場景變化', text: '散落的字磚排回正確順序，伯公的仙光把斷橋接了起來。' },
+        { speaker: '字磚變化', text: '散落的字磚排回正確順序，伯公的仙光把斷橋接了起來。' },
         { speaker: '阿黑', text: '呼！過來了！伯公，小明抱怨數學的紀錄已經好好的印在繪卷上囉，其他的內容，我等一下帶回去給你讀！' },
         { speaker: '伯公', text: '好好好，這孩子總是怕數學。繼續吧，看看下一條路上還能幫伯公收集到什麼有趣的對話！' }
     ];
     const storyVoiceAudio = new Audio('https://dn9mvjhbyvvpc.cloudfront.net/files/71858_2bdea5329f2fdaec3dc9b152a18e8a14.wav');
     storyVoiceAudio.preload = 'auto';
+    duckBgmWhilePlaying(storyVoiceAudio);
     storyVoiceAudio.addEventListener('ended', () => {
         if (storyAudioVisualizer) storyAudioVisualizer.classList.remove('is-playing');
     });
@@ -732,8 +802,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderStoryStep() {
         const step = openingStory[storyStepIndex] || openingStory[0];
-        const isStoryAudioStep = step.speaker === '背景音效';
-        const isBridgeStoryStep = step.speaker === '場景變化';
+        const isStoryAudioStep = step.speaker === '某聲音';
+        const isBridgeStoryStep = step.speaker === '字磚變化';
         stopStoryVoice();
         stopStoryBridgeAnimation();
         if (storySpeaker) storySpeaker.textContent = step.speaker;
@@ -1313,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const q = questions[index];
         isAnswerSubmitted = false;
-        questionScore = 18; // Five questions total 90 points
+        questionScore = QUESTION_SCORE;
         questionAttempts = 0;
         questionUsedHelp = false;
         questionHelpType = '';
@@ -1697,7 +1767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             playSfx('wrong');
             // Deduct score for wrong attempt
             questionAttempts++;
-            questionScore = Math.max(0, questionScore - 4);
+            questionScore = Math.max(0, questionScore - WRONG_PENALTY);
             
             // The break point depends on where the cliff ends up, so it is computed once the cliff has arrived.
             pendingWrongCharCount = selectedBlocks.length;
@@ -1727,6 +1797,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function startBridgeBuild(kind) {
         const q = questions[currentQuestionIndex];
         bridgeKind = kind;
+        if (kind === 'golden') playSfx('help');
         bridgeChars = kind === 'golden' && q ? [...getCorrectSequence(q)] : [];
         bridgeBuildProgress = 0;
         bridgeAlpha = 0.8;
@@ -1943,7 +2014,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.data?.type !== 'brush-complete') return;
         if (brushCompleted) return;
         brushCompleted = true;
-        writingScore = Math.max(0, Math.min(10, Number(Number(event.data.score || 0).toFixed(2))));
+        writingScore = Math.max(0, Math.min(BRUSH_MAX_SCORE, Number(Number(event.data.score || 0).toFixed(2))));
         writingResult = event.data;
         totalScore = Number((totalScore + writingScore).toFixed(2));
         hideBrushOverlay();
@@ -1966,6 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 10. Show Results
     function showResults() {
         if (!resultLocked) {
+            playSfx('finish');
             resultElapsedMs = gameStartTime ? Math.max(0, Date.now() - gameStartTime.getTime()) : 0;
             resultLocked = true;
         }
@@ -1991,7 +2063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (resultSummary) {
             const quizScore = Number((totalScore - writingScore).toFixed(2));
-            resultSummary.innerHTML = `排字 ${formatScore(quizScore)} / 90．毛筆 ${formatScore(writingScore)} / 10<br><strong>${star.title}</strong>`;
+            resultSummary.innerHTML = `排字 ${formatScore(quizScore)} / ${QUESTION_SCORE * 5}．毛筆 ${formatScore(writingScore)} / ${BRUSH_MAX_SCORE}<br><strong>${star.title}</strong>`;
         }
 
         if (rankingSection) {
@@ -2014,7 +2086,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <b>注意事項</b>
                     <ol>
                         <li>同分且作答時間相同時，依活動參加先後進行排序。</li>
-                        <li>本關總分 100 分；排字 5 題共 90 分，每題 18 分，錯一次扣 4 分；毛筆書寫最高 10 分。</li>
+                        <li>本關總分 100 分；排字 5 題共 80 分，每題 16 分，錯一次扣 4 分；毛筆書寫最高 20 分。</li>
                     </ol>
                 </aside>
                 <button class="btn btn-primary result-scroll-share-btn" id="open-scroll-share-btn" type="button">查看／分享我的繪卷</button>`;
@@ -2358,6 +2430,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Otherwise, check if dog reached the other side (only if not falling)
             else if (wrongBreakX === null && dogX >= cliffX + getCliffWidth() + getBridgeLandingOverlap() + rs(12)) {
+                if (bridgeKind === 'wood') playSfx('pass');
                 if (shouldAutoTransition) {
                     startAdvance();
                 } else {
@@ -2441,8 +2514,8 @@ document.addEventListener('DOMContentLoaded', () => {
         isWetRecovery = true;
         bridgeKind = null;
 
-        if (questionScore <= 0) {
-            // Auto-pass: score reached 0, Bo-Gong builds the bridge after Ah-Hei shakes off.
+        if (questionAttempts >= MAX_WRONG_ATTEMPTS) {
+            // Auto-pass: fifth wrong attempt, Bo-Gong builds the bridge after Ah-Hei shakes off.
             questionUsedHelp = true;
             questionHelpType = 'auto';
             recordQuestionOutcome('auto-help', 0);
