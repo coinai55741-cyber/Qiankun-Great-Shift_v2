@@ -14,6 +14,30 @@ let score = 0, feedback = '', timerId = 0, stamp = null;
 if (embedded) document.body.classList.add('embedded');
 if (hostDialect && $('dialect').querySelector(`option[value="${CSS.escape(hostDialect)}"]`)) $('dialect').value = hostDialect;
 const audio = new Audio();
+
+/* 音效：檔案放在遊戲根目錄的 data/music/（本頁在子資料夾，所以用 ../）。
+   右上角的喇叭按鈕只關背景音樂，這些操作音效不受影響。 */
+const SFX_BASE = '../data/music/', SFX_VER = '20261030-3';
+function playSfx(name, volume = .75) {
+  const a = new Audio(`${SFX_BASE}${name}.mp3?v=${SFX_VER}`);
+  a.volume = volume; a.play().catch(() => {});
+}
+/* 寫字聲：循環的沙沙聲，筆動得越快越大聲，停住就收聲 */
+const writeLoop = new Audio(`${SFX_BASE}S2_m3_write.mp3?v=${SFX_VER}`);
+writeLoop.loop = true; writeLoop.volume = 0;
+let writeVol = 0;
+function startWriteSound() { writeVol = 0; writeLoop.volume = 0; writeLoop.play().catch(() => {}); }
+function moveWriteSound(speed) {   // speed：畫布單位 / 毫秒
+  const target = speed < .04 ? 0 : Math.min(.8, .18 + speed * .55);
+  writeVol += (target - writeVol) * .4;
+  writeLoop.volume = Math.max(0, Math.min(1, writeVol));
+}
+function stopWriteSound() { writeLoop.pause(); writeLoop.currentTime = 0; writeVol = 0; }
+/* 一般按鈕的按下聲（沾墨有自己的音效） */
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('button');
+  if (b && b.id !== 'ink' && !b.disabled) playSfx('S2_m2_click');
+});
 const clean = s => Array.from(s.replace(/[\p{P}\p{Z}\s]/gu, ''));
 const time = ms => {
   const t = Math.floor(ms / 10);
@@ -317,7 +341,7 @@ $('ink').onclick = () => {
   else refilled = true;
   $('ink').disabled = true;
   usedBefore = -pathLen(strokes);   // 補墨可能發生在一個字寫到一半，目前字已寫的長度不再扣墨
-  dipBrush();
+  dipBrush(); playSfx('S2_m3_ink');
   $('inkLabel').textContent = '墨已備好';
   $('paperHint').textContent = '按住書寫，放開收筆';
   $('status').textContent = refilled ? '墨已補滿，繼續書寫。' : '可以下筆了。慢寫稍粗、快寫稍細。';
@@ -380,7 +404,7 @@ function point(e) {
 }
 paper.onpointerdown = e => {
   if (!inked || ended || loading || active !== null || !e.isPrimary || e.button !== 0) return;
-  e.preventDefault(); paper.setPointerCapture(e.pointerId); active = e.pointerId; strokes.push([point(e)]); render();
+  e.preventDefault(); paper.setPointerCapture(e.pointerId); active = e.pointerId; strokes.push([point(e)]); startWriteSound(); render();
 };
 paper.onpointermove = e => {
   if (active !== e.pointerId) return;
@@ -388,11 +412,11 @@ paper.onpointermove = e => {
   const s = strokes[strokes.length - 1], p = point(e), a = s[s.length - 1];
   const speed = Math.hypot(p.x - a.x, p.y - a.y) / Math.max(1, p.t - a.t);
   p.w = a.w * .65 + Math.max(7, Math.min(23, 23 - speed * 9)) * .35;
-  s.push(p); render();
+  moveWriteSound(speed); s.push(p); render();
 };
 function release(e) {
   if (active !== e.pointerId) return;
-  active = null;
+  active = null; stopWriteSound();
   /* 墨在一筆中途用完時，這一筆仍可寫完（越寫越淡越細）；收筆後才要求補墨 */
   if (inked && inkLeft() <= 0) needRefill();
   render();
@@ -548,7 +572,7 @@ function playSettle() {
     if (token !== settleToken) return;
     void stampEl.offsetWidth;
     stampEl.classList.remove('pre'); stampEl.classList.add('stamp-in');
-    card.classList.add('impact');
+    card.classList.add('impact'); playSfx('S2_m3_stamp');
     tile.classList.remove('hold'); tile.classList.add('reveal');
   }, 1000);
 }

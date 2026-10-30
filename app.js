@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundwave = document.getElementById('soundwave');
 
     const sfxPath = 'data/music/';
-    const sfxVersion = '20261030-2';
+    const sfxVersion = '20261030-4';
     const sfx = {
         click: new Audio(`${sfxPath}S2_m2_click.mp3?v=${sfxVersion}`),
         wrong: new Audio(`${sfxPath}S2_m2_false.mp3?v=${sfxVersion}`),
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         finish: new Audio(`${sfxPath}S2_m3_finish.mp3?v=${sfxVersion}`)   // 全部通關：進入結果頁
     };
 
-    // 音效開關（與 fukuchange 同一顆喇叭按鈕）：同時控制背景音樂與點擊音效，不影響題目語音。
+    // 右上角喇叭按鈕（與 fukuchange 同款）只開關背景音樂；點擊、答對答錯等音效與題目語音不受影響。
     const BGM_VOLUME = 0.15;
     const BGM_DUCKED_VOLUME = 0.04;
     const soundToggleBtn = document.getElementById('sound-toggle');
@@ -92,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!soundToggleBtn) return;
         soundToggleBtn.setAttribute('aria-pressed', String(soundEnabled));
         soundToggleBtn.setAttribute('aria-label', soundEnabled
-            ? '音效按鈕，目前開啟，點擊關閉音效'
-            : '音效按鈕，目前關閉，點擊開啟音效');
+            ? '背景音樂，目前開啟，點擊關閉背景音樂'
+            : '背景音樂，目前關閉，點擊開啟背景音樂');
         if (soundToggleIcon) soundToggleIcon.src = soundEnabled ? 'data/ui/sound-icon.svg' : 'data/ui/sound-off-icon.svg';
     }
 
@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playSfx(name) {
-        if (!soundEnabled) return;
         const audio = sfx[name];
         if (!audio) return;
 
@@ -1755,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBtn.disabled = true;
 
         if (isCorrect) {
-            playSfx('next');
+            playSfx('pass');   // 答對：發光的便橋鋪出來
             correctCount++;
             totalScore += questionScore;
             recordQuestionOutcome('correct', questionScore);
@@ -2430,7 +2429,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Otherwise, check if dog reached the other side (only if not falling)
             else if (wrongBreakX === null && dogX >= cliffX + getCliffWidth() + getBridgeLandingOverlap() + rs(12)) {
-                if (bridgeKind === 'wood') playSfx('pass');
                 if (shouldAutoTransition) {
                     startAdvance();
                 } else {
