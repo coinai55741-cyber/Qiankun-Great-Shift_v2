@@ -11,6 +11,7 @@ app.js              遊戲流程、字卡邏輯、Canvas 動畫、音效
 vue-app.js          Vue 3 最小 shell，目前主要互動仍在 app.js
 questions_data.js   舊版 fallback 題庫，JSON 載入失敗時使用
 data/quiz/          六腔 × 五級 JSON 題庫，主遊戲會動態載入
+data/audio/         題目音檔（mp3）。題庫原本的 .wav 網址實際是 WebM，舊版 iPhone 播不出來，所以用 tools/convert_quiz_audio.py 轉成 mp3 放這裡
 data/image/         遊戲圖層與角色素材
 data/music/         UI 音效與落水音效
 ```

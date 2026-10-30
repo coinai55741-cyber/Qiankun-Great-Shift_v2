@@ -986,7 +986,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70212_449c7d328f29260692995c21a574ac9b.wav",
+    "audio_url": "data/audio/70212_449c7d328f29260692995c21a574ac9b.mp3",
     "hakka_hanji": "𠊎學校有客家山歌比賽。",
     "correct_sequence": [
       "𠊎",
@@ -1020,7 +1020,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70210_27a53cbd40d1b5bda2d29e17fb266ec1.wav",
+    "audio_url": "data/audio/70210_27a53cbd40d1b5bda2d29e17fb266ec1.mp3",
     "hakka_hanji": "還好，𠊎也想學客家山歌。",
     "correct_sequence": [
       "還",
@@ -1054,7 +1054,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70213_53e7967545538d57d2b3f94d6a0049e4.wav",
+    "audio_url": "data/audio/70213_53e7967545538d57d2b3f94d6a0049e4.mp3",
     "hakka_hanji": "叔公在伯公下𢯭手掃地泥。",
     "correct_sequence": [
       "叔",
@@ -1090,7 +1090,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70214_a186d2ac99425114f12c451470d81ed0.wav",
+    "audio_url": "data/audio/70214_a186d2ac99425114f12c451470d81ed0.mp3",
     "hakka_hanji": "𫣆也去𢯭手拈垃圾。",
     "correct_sequence": [
       "𫣆",
@@ -1120,7 +1120,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70215_9271ffcd661c690b9f4e34b3f468802e.wav",
+    "audio_url": "data/audio/70215_9271ffcd661c690b9f4e34b3f468802e.mp3",
     "hakka_hanji": "聽講客家擂茶當好食。",
     "correct_sequence": [
       "聽",
@@ -1152,7 +1152,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70217_31dc7c3f8edf5e2fa56f8d5dadf0881e.wav",
+    "audio_url": "data/audio/70217_31dc7c3f8edf5e2fa56f8d5dadf0881e.mp3",
     "hakka_hanji": "著啊，吾嬤還教𠊎擂茶呢！",
     "correct_sequence": [
       "著",
@@ -1186,7 +1186,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70218_301d3d10e80dcc78019dffab279e9186.wav",
+    "audio_url": "data/audio/70218_301d3d10e80dcc78019dffab279e9186.mp3",
     "hakka_hanji": "外嬤在該滷鹹菜。",
     "correct_sequence": [
       "外",
@@ -1214,7 +1214,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70223_a0699df8f34ac6dd8eed6556c7490576.wav",
+    "audio_url": "data/audio/70223_a0699df8f34ac6dd8eed6556c7490576.mp3",
     "hakka_hanji": "鹹菜煮豬肉湯當好食。",
     "correct_sequence": [
       "鹹",
@@ -1246,7 +1246,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70227_f224d2dbe7971bd82eefb8c4c8090b67.wav",
+    "audio_url": "data/audio/70227_f224d2dbe7971bd82eefb8c4c8090b67.mp3",
     "hakka_hanji": "白雪雪个油桐花開了，當靚。",
     "correct_sequence": [
       "白",
@@ -1282,7 +1282,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "客家社區關懷",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70226_07d93536ac9283a41267158b6ffb18c4.wav",
+    "audio_url": "data/audio/70226_07d93536ac9283a41267158b6ffb18c4.mp3",
     "hakka_hanji": "𫣆共下來去行行啊，順續賞花。",
     "correct_sequence": [
       "𫣆",
@@ -1320,7 +1320,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70229_e62aee1b3a9d1ca50a21fee93ca25648.wav",
+    "audio_url": "data/audio/70229_e62aee1b3a9d1ca50a21fee93ca25648.mp3",
     "hakka_hanji": "今晡日當熱，𠊎緊出汗。",
     "correct_sequence": [
       "今",
@@ -1352,7 +1352,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70230_d76f28202ef724a06b77240187b49aaa.wav",
+    "audio_url": "data/audio/70230_d76f28202ef724a06b77240187b49aaa.mp3",
     "hakka_hanji": "愛多啉水，正毋會熱著哦！",
     "correct_sequence": [
       "愛",
@@ -1386,7 +1386,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70232_1f5cdd60b5de5895d8752afcb5296fb9.wav",
+    "audio_url": "data/audio/70232_1f5cdd60b5de5895d8752afcb5296fb9.mp3",
     "hakka_hanji": "會落雨了，天頂暗摸叮咚。",
     "correct_sequence": [
       "會",
@@ -1420,7 +1420,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70233_ca70fb7c377bde2cda5250c90c6b255f.wav",
+    "audio_url": "data/audio/70233_ca70fb7c377bde2cda5250c90c6b255f.mp3",
     "hakka_hanji": "慘了，𠊎毋記得帶遮呢。",
     "correct_sequence": [
       "慘",
@@ -1522,7 +1522,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70237_01c7e617f5ff16b17d6219f44e446c29.wav",
+    "audio_url": "data/audio/70237_01c7e617f5ff16b17d6219f44e446c29.mp3",
     "hakka_hanji": "寒天到了，變還冷哦。",
     "correct_sequence": [
       "寒",
@@ -1552,7 +1552,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70238_c2f6a3725ec5a5a0712dfdb4be4127ed.wav",
+    "audio_url": "data/audio/70238_c2f6a3725ec5a5a0712dfdb4be4127ed.mp3",
     "hakka_hanji": "記得著加一領外衫。",
     "correct_sequence": [
       "記",
@@ -1582,7 +1582,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70241_606fa88346ce5479841e0beee9e18d5f.wav",
+    "audio_url": "data/audio/70241_606fa88346ce5479841e0beee9e18d5f.mp3",
     "hakka_hanji": "先生講外背个空氣品質毋好。",
     "correct_sequence": [
       "先",
@@ -1620,7 +1620,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "時間與氣候",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70240_3ea6e9a1ca73d7c9d326fb636e19a8f4.wav",
+    "audio_url": "data/audio/70240_3ea6e9a1ca73d7c9d326fb636e19a8f4.mp3",
     "hakka_hanji": "𠊎兜斯留在教室爽好了。",
     "correct_sequence": [
       "𠊎",
@@ -2668,7 +2668,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70244_6be532f0698dfdbf47ebaa5ff545c940.wav",
+    "audio_url": "data/audio/70244_6be532f0698dfdbf47ebaa5ff545c940.mp3",
     "hakka_hanji": "河壩脣个櫻花開到當靚。",
     "correct_sequence": [
       "河",
@@ -2702,7 +2702,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70248_9e4bf65e060ee38a890d0b06531bdf8f.wav",
+    "audio_url": "data/audio/70248_9e4bf65e060ee38a890d0b06531bdf8f.mp3",
     "hakka_hanji": "感覺當像係去到日本共款。",
     "correct_sequence": [
       "感",
@@ -2738,7 +2738,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70252_2747ba4cbe5a849d180470e492130a12.wav",
+    "audio_url": "data/audio/70252_2747ba4cbe5a849d180470e492130a12.mp3",
     "hakka_hanji": "陂塘个鴨還得人惜。",
     "correct_sequence": [
       "陂",
@@ -2768,7 +2768,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70250_fc5121224339b1ec3e7a194124148876.wav",
+    "audio_url": "data/audio/70250_fc5121224339b1ec3e7a194124148876.mp3",
     "hakka_hanji": "𫣆共下來去看鴨泅水。",
     "correct_sequence": [
       "𫣆",
@@ -2800,7 +2800,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70253_26cd94044b6bf76aa0e8710a57d88154.wav",
+    "audio_url": "data/audio/70253_26cd94044b6bf76aa0e8710a57d88154.mp3",
     "hakka_hanji": "社區花園肚花開到淰淰。",
     "correct_sequence": [
       "社",
@@ -2834,7 +2834,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70255_737de39a6fa3c3366a183b2d277991fc.wav",
+    "audio_url": "data/audio/70255_737de39a6fa3c3366a183b2d277991fc.mp3",
     "hakka_hanji": "係啊，還有當多蝶在該飛。",
     "correct_sequence": [
       "係",
@@ -2868,7 +2868,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70258_a359fe05368fb316bdf646482ecadda0.wav",
+    "audio_url": "data/audio/70258_a359fe05368fb316bdf646482ecadda0.mp3",
     "hakka_hanji": "你看，這位有新个路燈。",
     "correct_sequence": [
       "你",
@@ -2900,7 +2900,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70257_baa65c936909d49213e6f4fa609079ae.wav",
+    "audio_url": "data/audio/70257_baa65c936909d49213e6f4fa609079ae.mp3",
     "hakka_hanji": "恁呢暗晡頭較光、較安全。",
     "correct_sequence": [
       "恁",
@@ -2934,7 +2934,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70259_87cab4133a4b17ce9b11261870174f52.wav",
+    "audio_url": "data/audio/70259_87cab4133a4b17ce9b11261870174f52.mp3",
     "hakka_hanji": "社區廣場面前種了當多樹。",
     "correct_sequence": [
       "社",
@@ -2970,7 +2970,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "社區環境與景觀",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70264_c5689b2da55b48fd6dcb8fe5396e0b7d.wav",
+    "audio_url": "data/audio/70264_c5689b2da55b48fd6dcb8fe5396e0b7d.mp3",
     "hakka_hanji": "下幾擺斯做得在樹下尞涼了。",
     "correct_sequence": [
       "下",
@@ -3008,7 +3008,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64723_3b7c93b9b111d135d0c3345e1ea1d486.wav",
+    "audio_url": "data/audio/64723_3b7c93b9b111d135d0c3345e1ea1d486.mp3",
     "hakka_hanji": "樓下阿姨種个花當靚。",
     "correct_sequence": [
       "樓",
@@ -3040,7 +3040,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64725_01a8d059c53bd4f04e6ebbdd91345bb8.wav",
+    "audio_url": "data/audio/64725_01a8d059c53bd4f04e6ebbdd91345bb8.mp3",
     "hakka_hanji": "𫣆來去看阿姨有種哪兜花。",
     "correct_sequence": [
       "𫣆",
@@ -3076,7 +3076,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64017_b37bb30e5290371b24bec9bd23446c0f.wav",
+    "audio_url": "data/audio/64017_b37bb30e5290371b24bec9bd23446c0f.mp3",
     "hakka_hanji": "公園肚有當多人在該打拳。",
     "correct_sequence": [
       "公",
@@ -3112,7 +3112,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64726_49c0b6254faa9d799bbc78c25e2a6d91.wav",
+    "audio_url": "data/audio/64726_49c0b6254faa9d799bbc78c25e2a6d91.mp3",
     "hakka_hanji": "麵店个阿叔乜有去打拳頭哦。",
     "correct_sequence": [
       "麵",
@@ -3150,7 +3150,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64008_fad5d19de813d8f29b1b9ae8c129a75d.wav",
+    "audio_url": "data/audio/64008_fad5d19de813d8f29b1b9ae8c129a75d.mp3",
     "hakka_hanji": "社區圖書館買當多新書。",
     "correct_sequence": [
       "社",
@@ -3184,7 +3184,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64009_8857f7f845261c8d618ab4d183f45157.wav",
+    "audio_url": "data/audio/64009_8857f7f845261c8d618ab4d183f45157.mp3",
     "hakka_hanji": "𫣆共下來去借書。",
     "correct_sequence": [
       "𫣆",
@@ -3212,7 +3212,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64011_13395c56bdbd9939b552e3c57a1b0931.wav",
+    "audio_url": "data/audio/64011_13395c56bdbd9939b552e3c57a1b0931.mp3",
     "hakka_hanji": "學校脣新開一間麵包店。",
     "correct_sequence": [
       "學",
@@ -3246,7 +3246,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64728_d319d9d3e4d224632d824b300c27d6bf.wav",
+    "audio_url": "data/audio/64728_d319d9d3e4d224632d824b300c27d6bf.mp3",
     "hakka_hanji": "𠊎昨晡日既經去買當多好食个麵包了。",
     "correct_sequence": [
       "𠊎",
@@ -3292,7 +3292,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64014_58566710f4ce90dcdf0778f3446d0a1a.wav",
+    "audio_url": "data/audio/64014_58566710f4ce90dcdf0778f3446d0a1a.mp3",
     "hakka_hanji": "該間早餐店个卵餅當好食。",
     "correct_sequence": [
       "該",
@@ -3328,7 +3328,7 @@
     "level": "II",
     "dialect_id": 4,
     "category": "鄰里社區",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64016_b12c6b164d97a76fa40e8ad9769d5a7c.wav",
+    "audio_url": "data/audio/64016_b12c6b164d97a76fa40e8ad9769d5a7c.mp3",
     "hakka_hanji": "𠊎乜當好食佢个卵餅。.",
     "correct_sequence": [
       "𠊎",

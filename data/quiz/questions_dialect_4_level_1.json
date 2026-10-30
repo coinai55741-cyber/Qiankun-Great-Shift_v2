@@ -4,7 +4,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73943_377f4d2645f70d31094f45b161348a18.wav",
+    "audio_url": "data/audio/73943_377f4d2645f70d31094f45b161348a18.mp3",
     "hakka_hanji": "𠊎个牙齒還疾哦！",
     "correct_sequence": [
       "𠊎",
@@ -32,7 +32,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73948_9dac4bfd08123c17d96e6aaaa2d95d00.wav",
+    "audio_url": "data/audio/73948_9dac4bfd08123c17d96e6aaaa2d95d00.mp3",
     "hakka_hanji": "你係毋係食忒多糖仔咧？",
     "correct_sequence": [
       "你",
@@ -66,7 +66,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73957_18dff8c9124be5687f6b9e05e5134635.wav",
+    "audio_url": "data/audio/73957_18dff8c9124be5687f6b9e05e5134635.mp3",
     "hakka_hanji": "你寒著咧，係無？",
     "correct_sequence": [
       "你",
@@ -92,7 +92,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73971_a22d72a3cb390c0075ca9fcd6b380e99.wav",
+    "audio_url": "data/audio/73971_a22d72a3cb390c0075ca9fcd6b380e99.mp3",
     "hakka_hanji": "著，鼻空緊流鼻水。",
     "correct_sequence": [
       "著",
@@ -120,7 +120,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73972_3e25d2a7c8667df03b29e7200c9188f1.wav",
+    "audio_url": "data/audio/73972_3e25d2a7c8667df03b29e7200c9188f1.mp3",
     "hakka_hanji": "昨晡日跌倒，膝頭烏青咧。",
     "correct_sequence": [
       "昨",
@@ -154,7 +154,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73973_b5d87606bebbe5931fe272b538482b3b.wav",
+    "audio_url": "data/audio/73973_b5d87606bebbe5931fe272b538482b3b.mp3",
     "hakka_hanji": "無要緊，藥仔膏膏啊斯會好。",
     "correct_sequence": [
       "無",
@@ -190,7 +190,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73975_45e9d46854ed48196b83b3afae4a6686.wav",
+    "audio_url": "data/audio/73975_45e9d46854ed48196b83b3afae4a6686.mp3",
     "hakka_hanji": "你个頭那毛忒長，遮著目珠咧。",
     "correct_sequence": [
       "你",
@@ -228,7 +228,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73980_2e89b90b4850a5504750a64152a5769d.wav",
+    "audio_url": "data/audio/73980_2e89b90b4850a5504750a64152a5769d.mp3",
     "hakka_hanji": "晨早阿姆愛渡𠊎去剪頭那毛",
     "correct_sequence": [
       "晨",
@@ -266,7 +266,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73989_97f39558916e7e351b8d1a933429867d.wav",
+    "audio_url": "data/audio/73989_97f39558916e7e351b8d1a933429867d.mp3",
     "hakka_hanji": "褲當像變短咧。",
     "correct_sequence": [
       "褲",
@@ -292,7 +292,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "身體認識",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73983_aca6759e91bff3aa79b590e00e3182c0.wav",
+    "audio_url": "data/audio/73983_aca6759e91bff3aa79b590e00e3182c0.mp3",
     "hakka_hanji": "因為你又較挷想咧。",
     "correct_sequence": [
       "因",
@@ -322,7 +322,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74439_8b64ce5c29bc567987dc0745ff064db5.wav",
+    "audio_url": "data/audio/74439_8b64ce5c29bc567987dc0745ff064db5.mp3",
     "hakka_hanji": "𠊎今晡日試著當想愛睡哦！",
     "correct_sequence": [
       "𠊎",
@@ -358,7 +358,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74460_59bb27ee37ed2adbf4399d570e37ad81.wav",
+    "audio_url": "data/audio/74460_59bb27ee37ed2adbf4399d570e37ad81.mp3",
     "hakka_hanji": "係毋係昨晡日忒暗睡？",
     "correct_sequence": [
       "係",
@@ -390,7 +390,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74461_b77ca92b32821118aaa82ea7b01a9710.wav",
+    "audio_url": "data/audio/74461_b77ca92b32821118aaa82ea7b01a9710.mp3",
     "hakka_hanji": "大自家愛去哪位？",
     "correct_sequence": [
       "大",
@@ -418,7 +418,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74464_88cc57608a50f19cfbc402fbc9a4edc2.wav",
+    "audio_url": "data/audio/74464_88cc57608a50f19cfbc402fbc9a4edc2.mp3",
     "hakka_hanji": "先生講愛去操場排列仔。",
     "correct_sequence": [
       "先",
@@ -452,7 +452,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74465_21bc798ddc55d5dedb7e49fef166ff58.wav",
+    "audio_url": "data/audio/74465_21bc798ddc55d5dedb7e49fef166ff58.mp3",
     "hakka_hanji": "你愛啉牛乳無？",
     "correct_sequence": [
       "你",
@@ -478,7 +478,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74466_e4142f67c64ae4a029390be8708161fe.wav",
+    "audio_url": "data/audio/74466_e4142f67c64ae4a029390be8708161fe.mp3",
     "hakka_hanji": "𠊎這下無想愛啉。",
     "correct_sequence": [
       "𠊎",
@@ -506,7 +506,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74468_07dedf447946b9521b1d3e0f84eea17b.wav",
+    "audio_url": "data/audio/74468_07dedf447946b9521b1d3e0f84eea17b.mp3",
     "hakka_hanji": "等𠊎一下哦，𠊎去提鉛筆。",
     "correct_sequence": [
       "等",
@@ -540,7 +540,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74469_c6843ab238f42712fe4df12ae8a69d72.wav",
+    "audio_url": "data/audio/74469_c6843ab238f42712fe4df12ae8a69d72.mp3",
     "hakka_hanji": "好，𠊎在這位等你。",
     "correct_sequence": [
       "好",
@@ -568,7 +568,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74471_f8e49b8303796160a5342eeb0a6077fe.wav",
+    "audio_url": "data/audio/74471_f8e49b8303796160a5342eeb0a6077fe.mp3",
     "hakka_hanji": "你有上安親班無？",
     "correct_sequence": [
       "你",
@@ -596,7 +596,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "簡易表達",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74473_6380bf527bfa3390a1ea0a230004f22d.wav",
+    "audio_url": "data/audio/74473_6380bf527bfa3390a1ea0a230004f22d.mp3",
     "hakka_hanji": "無，𠊎姆會教𠊎功課。",
     "correct_sequence": [
       "無",
@@ -942,7 +942,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70179_0c026a5e9be69aebe3b05d02ca352727.wav",
+    "audio_url": "data/audio/70179_0c026a5e9be69aebe3b05d02ca352727.mp3",
     "hakka_hanji": "落雨了，𠊎毋記得帶遮。",
     "correct_sequence": [
       "落",
@@ -974,7 +974,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70180_b6ec6f0202c113dcc6f7b4150a7dc1c7.wav",
+    "audio_url": "data/audio/70180_b6ec6f0202c113dcc6f7b4150a7dc1c7.mp3",
     "hakka_hanji": "好得晨早𠊎有帶遮出門。",
     "correct_sequence": [
       "好",
@@ -1008,7 +1008,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70181_ad12b8271e3c55cd4a98e793c07bd501.wav",
+    "audio_url": "data/audio/70181_ad12b8271e3c55cd4a98e793c07bd501.mp3",
     "hakka_hanji": "昨暗晡響雷公還得人驚。",
     "correct_sequence": [
       "昨",
@@ -1042,7 +1042,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70182_71a512435cea3486ec07d4bbde9135b9.wav",
+    "audio_url": "data/audio/70182_71a512435cea3486ec07d4bbde9135b9.mp3",
     "hakka_hanji": "係啊，𠊎都囥到被竇肚。",
     "correct_sequence": [
       "係",
@@ -1074,7 +1074,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70185_18d1f5d0f87f02a13f6ccc3a6cfc07d4.wav",
+    "audio_url": "data/audio/70185_18d1f5d0f87f02a13f6ccc3a6cfc07d4.mp3",
     "hakka_hanji": "天時還熱哦，當想愛吹冷氣。",
     "correct_sequence": [
       "天",
@@ -1110,7 +1110,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70184_9da06f72e65e5872c539e9a0b5abd793.wav",
+    "audio_url": "data/audio/70184_9da06f72e65e5872c539e9a0b5abd793.mp3",
     "hakka_hanji": "𠊎乜熱到會佇毋著了。",
     "correct_sequence": [
       "𠊎",
@@ -1142,7 +1142,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70188_8ee9f26bdf415047d7f4e6d29e06e291.wav",
+    "audio_url": "data/audio/70188_8ee9f26bdf415047d7f4e6d29e06e291.mp3",
     "hakka_hanji": "晨早出門還冷哦！",
     "correct_sequence": [
       "晨",
@@ -1170,7 +1170,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "時間與天氣",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70189_3a71b876133d0ff7901c0efbd58d7d82.wav",
+    "audio_url": "data/audio/70189_3a71b876133d0ff7901c0efbd58d7d82.mp3",
     "hakka_hanji": "𠊎著了幾下領衫還係會冷。",
     "correct_sequence": [
       "𠊎",
@@ -1206,7 +1206,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73990_cefcbb3b5b135f0b4b9a0f46a943b4ea.wav",
+    "audio_url": "data/audio/73990_cefcbb3b5b135f0b4b9a0f46a943b4ea.mp3",
     "hakka_hanji": "今晡日放學，阿公愛來接𠊎！",
     "correct_sequence": [
       "今",
@@ -1242,7 +1242,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73996_076738db424e9d05a86d0cd37168fef5.wav",
+    "audio_url": "data/audio/73996_076738db424e9d05a86d0cd37168fef5.mp3",
     "hakka_hanji": "係哦，𠊎總下係阿嬤來接。",
     "correct_sequence": [
       "係",
@@ -1276,7 +1276,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/73997_9b8a167d7e86bfa074977ee19ecd2e4e.wav",
+    "audio_url": "data/audio/73997_9b8a167d7e86bfa074977ee19ecd2e4e.mp3",
     "hakka_hanji": "𠊎叔伯阿哥送𠊎一臺細車仔。",
     "correct_sequence": [
       "𠊎",
@@ -1314,7 +1314,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74001_1044b518ac6058a3877ec86351ed1603.wav",
+    "audio_url": "data/audio/74001_1044b518ac6058a3877ec86351ed1603.mp3",
     "hakka_hanji": "堵好𠊎表阿姊乜送𠊎一臺細火車。",
     "correct_sequence": [
       "堵",
@@ -1356,7 +1356,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74003_935fc5a45366d0f9a9a0f7185e1ad8e7.wav",
+    "audio_url": "data/audio/74003_935fc5a45366d0f9a9a0f7185e1ad8e7.mp3",
     "hakka_hanji": "你个頭那毛䌈到還靚哦！",
     "correct_sequence": [
       "你",
@@ -1390,7 +1390,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74005_90896011700f4c38dc2f507f104914a9.wav",
+    "audio_url": "data/audio/74005_90896011700f4c38dc2f507f104914a9.mp3",
     "hakka_hanji": "這係阿姊摎𠊎䌈个。",
     "correct_sequence": [
       "這",
@@ -1420,7 +1420,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74007_786dcd960bea7069219f23051b383fea.wav",
+    "audio_url": "data/audio/74007_786dcd960bea7069219f23051b383fea.mp3",
     "hakka_hanji": "𠊎好摎阿嬤共下䀴電視。",
     "correct_sequence": [
       "𠊎",
@@ -1454,7 +1454,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74009_8596a2b38c0cbd92ef1f2fb61b7af4e8.wav",
+    "audio_url": "data/audio/74009_8596a2b38c0cbd92ef1f2fb61b7af4e8.mp3",
     "hakka_hanji": "𠊎好摎阿姆共下做點心。",
     "correct_sequence": [
       "𠊎",
@@ -1488,7 +1488,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74012_9b6112cc643887f0bf6bd182dd92cf34.wav",
+    "audio_url": "data/audio/74012_9b6112cc643887f0bf6bd182dd92cf34.mp3",
     "hakka_hanji": "𠊎姑講愛渡𠊎去䀴電影。",
     "correct_sequence": [
       "𠊎",
@@ -1522,7 +1522,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "親屬稱謂",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/74419_ee4e11fa9b1cd38acf77e9484b1f9866.wav",
+    "audio_url": "data/audio/74419_ee4e11fa9b1cd38acf77e9484b1f9866.mp3",
     "hakka_hanji": "𠊎舅乜講愛渡𠊎去 䀴。",
     "correct_sequence": [
       "𠊎",
@@ -2182,7 +2182,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70193_e0bff16c37e0d0bd7cd195a7fc7005aa.wav",
+    "audio_url": "data/audio/70193_e0bff16c37e0d0bd7cd195a7fc7005aa.mp3",
     "hakka_hanji": "花園肚个花還香哦。",
     "correct_sequence": [
       "花",
@@ -2212,7 +2212,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70191_2f4b34e4086ac1a0066455c9facad75d.wav",
+    "audio_url": "data/audio/70191_2f4b34e4086ac1a0066455c9facad75d.mp3",
     "hakka_hanji": "你看還有糖蜂在該飛。",
     "correct_sequence": [
       "你",
@@ -2244,7 +2244,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70195_6d3c59f28546640afb45b592edcb547f.wav",
+    "audio_url": "data/audio/70195_6d3c59f28546640afb45b592edcb547f.mp3",
     "hakka_hanji": "你愛去溜滑梯該位爽無？",
     "correct_sequence": [
       "你",
@@ -2278,7 +2278,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70196_c74f9d2621a30aca13b2067e61db4eb2.wav",
+    "audio_url": "data/audio/70196_c74f9d2621a30aca13b2067e61db4eb2.mp3",
     "hakka_hanji": "𠊎較好撼晃槓。",
     "correct_sequence": [
       "𠊎",
@@ -2304,7 +2304,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70197_87e1eb255096cf54a95163726fa668a1.wav",
+    "audio_url": "data/audio/70197_87e1eb255096cf54a95163726fa668a1.mp3",
     "hakka_hanji": "𠊎最好坐在大樹下。",
     "correct_sequence": [
       "𠊎",
@@ -2334,7 +2334,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70199_633e39d66e01bfe0a7684457980b5ed3.wav",
+    "audio_url": "data/audio/70199_633e39d66e01bfe0a7684457980b5ed3.mp3",
     "hakka_hanji": "樹下有風，當涼。",
     "correct_sequence": [
       "樹",
@@ -2360,7 +2360,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70202_92f3348e4e63c7d5ea80b11f3f3c78ba.wav",
+    "audio_url": "data/audio/70202_92f3348e4e63c7d5ea80b11f3f3c78ba.mp3",
     "hakka_hanji": "哪位有便所？",
     "correct_sequence": [
       "哪",
@@ -2384,7 +2384,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70204_d9062bd235cdccaa30025d62395b7003.wav",
+    "audio_url": "data/audio/70204_d9062bd235cdccaa30025d62395b7003.mp3",
     "hakka_hanji": "對這片去斯會看著。",
     "correct_sequence": [
       "對",
@@ -2414,7 +2414,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70205_12269d6cda2495c4d5af5ed59863cfea.wav",
+    "audio_url": "data/audio/70205_12269d6cda2495c4d5af5ed59863cfea.mp3",
     "hakka_hanji": "你看哦！天頂有一蕊愛心雲。",
     "correct_sequence": [
       "你",
@@ -2450,7 +2450,7 @@
     "level": "I",
     "dialect_id": 4,
     "category": "生活空間與景物",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70208_7881e66c665e6e6226de5bab0537b084.wav",
+    "audio_url": "data/audio/70208_7881e66c665e6e6226de5bab0537b084.mp3",
     "hakka_hanji": "正經欸，像棉花糖共款。",
     "correct_sequence": [
       "正",

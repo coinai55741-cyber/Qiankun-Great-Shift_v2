@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const playAudioBtn = document.getElementById('play-audio-btn');
     const soundwave = document.getElementById('soundwave');
 
+    // 題庫（含音檔路徑）更新時改這個版本號，避免瀏覽器還拿著舊題庫
+    const QUIZ_DATA_VERSION = '20261031-audio';
     const sfxPath = 'data/music/';
     const sfxVersion = '20261031-1';
     const sfx = {
@@ -682,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.QUIZ_OFFLINE) return Promise.resolve(pick());
         return new Promise(resolve => {
             const script = document.createElement('script');
-            script.src = 'data/quiz/questions_offline.js?v=20261029-offline1';
+            script.src = `data/quiz/questions_offline.js?v=${QUIZ_DATA_VERSION}`;
             script.onload = () => resolve(pick());
             script.onerror = () => {
                 console.warn('無法載入離線題庫', script.src);
@@ -753,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fetchPromises = [];
                     for (let l = 1; l <= 5; l++) {
                         fetchPromises.push(
-                            fetch(`data/quiz/questions_dialect_${dialectId}_level_${l}.json`)
+                            fetch(`data/quiz/questions_dialect_${dialectId}_level_${l}.json?v=${QUIZ_DATA_VERSION}`)
                                 .then(res => res.json())
                                 .catch(err => {
                                     console.warn(`無法載入腔調 ${dialectId} 級別 ${l}`, err);

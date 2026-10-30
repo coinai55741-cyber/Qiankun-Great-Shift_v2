@@ -300,12 +300,12 @@ async function loadQuestion() {
     let lists;
     try {
       lists = await Promise.all([1, 2, 3, 4, 5].map(async n => {
-        const r = await fetch(`../data/quiz/questions_dialect_${$('dialect').value}_level_${n}.json`);
+        const r = await fetch(`../data/quiz/questions_dialect_${$('dialect').value}_level_${n}.json?v=20261031-audio`);
         if (!r.ok) throw Error();
         return r.json();
       }));
     } catch {
-      if (!window.QUIZ_OFFLINE) await loadScript('../data/quiz/questions_offline.js');
+      if (!window.QUIZ_OFFLINE) await loadScript('../data/quiz/questions_offline.js?v=20261031-audio');
       const offline = window.QUIZ_OFFLINE && window.QUIZ_OFFLINE[$('dialect').value];
       if (!offline) throw Error();
       lists = [offline];
@@ -315,7 +315,8 @@ async function loadQuestion() {
     if (!pool.length) throw Error();
     question = pool[Math.floor(Math.random() * pool.length)];
     chars = clean(question.hakka_hanji);
-    audio.src = question.audio_url;
+    // 題庫裡的本機音檔路徑（data/audio/…）是相對於網站根目錄，本頁在子資料夾，要補上一層
+    audio.src = question.audio_url.replace(/^data\//, '../data/');
     $('sentence').textContent = question.hakka_hanji;
     $('meaning').textContent = question.chinese_sentence || '';
     $('source').textContent = `${names[$('dialect').value]} · 第 ${question.level} 級 · ${question.category}`;

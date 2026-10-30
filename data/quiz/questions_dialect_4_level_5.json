@@ -748,7 +748,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64752_35fea2bb5e57aa2a5ce4d1b7df76f400.wav",
+    "audio_url": "data/audio/64752_35fea2bb5e57aa2a5ce4d1b7df76f400.mp3",
     "hakka_hanji": "吾爺哀這駁仔輒常加班，無時間煮飯。",
     "correct_sequence": [
       "吾",
@@ -792,7 +792,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64400_8b5d2ca70ff4c20b39cd59b3b4be207e.wav",
+    "audio_url": "data/audio/64400_8b5d2ca70ff4c20b39cd59b3b4be207e.mp3",
     "hakka_hanji": "𠊎乜開始學煮菜，𢯭手屋下事。",
     "correct_sequence": [
       "𠊎",
@@ -830,7 +830,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64414_685f7b3db401221b0b9dd5cb39c67527.wav",
+    "audio_url": "data/audio/64414_685f7b3db401221b0b9dd5cb39c67527.mp3",
     "hakka_hanji": "吾老弟全毋整理自家个間房。",
     "correct_sequence": [
       "吾",
@@ -868,7 +868,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64415_b7c74b7d6e6c786de5115377e49df403.wav",
+    "audio_url": "data/audio/64415_b7c74b7d6e6c786de5115377e49df403.mp3",
     "hakka_hanji": "你使得教佢整理，共下拚掃較緊。",
     "correct_sequence": [
       "你",
@@ -908,7 +908,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64423_2a8026ddba212af23950d99a0b70fbe1.wav",
+    "audio_url": "data/audio/64423_2a8026ddba212af23950d99a0b70fbe1.mp3",
     "hakka_hanji": "𠊎和阿姊輒常為著用洗浴堂冤家。",
     "correct_sequence": [
       "𠊎",
@@ -950,7 +950,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64424_eea65cffe39f6564f419b089a38998e5.wav",
+    "audio_url": "data/audio/64424_eea65cffe39f6564f419b089a38998e5.mp3",
     "hakka_hanji": "使得先講好時間，互相體諒。",
     "correct_sequence": [
       "使",
@@ -986,7 +986,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64425_913eeae77a81d86dad5df1839fcc84aa.wav",
+    "audio_url": "data/audio/64425_913eeae77a81d86dad5df1839fcc84aa.mp3",
     "hakka_hanji": "阿爸講拜六愛帶歸屋下人去蹶山。",
     "correct_sequence": [
       "阿",
@@ -1028,7 +1028,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64753_b41026871e090439b4ab545b47a768ae.wav",
+    "audio_url": "data/audio/64753_b41026871e090439b4ab545b47a768ae.mp3",
     "hakka_hanji": "還好哦，𠊎做得和你兜去蹶山無？",
     "correct_sequence": [
       "還",
@@ -1068,7 +1068,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64459_a9ba70305860731231dedc22a7273456.wav",
+    "audio_url": "data/audio/64459_a9ba70305860731231dedc22a7273456.mp3",
     "hakka_hanji": "昨晡日𠊎和阿嬤共下做麻粢，還歡喜哦。",
     "correct_sequence": [
       "昨",
@@ -1114,7 +1114,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "家庭生活",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64754_75158d5ca2ca0bca9d08c85b5de15912.wav",
+    "audio_url": "data/audio/64754_75158d5ca2ca0bca9d08c85b5de15912.mp3",
     "hakka_hanji": "屋下人共下做事个時節盡幸福了。",
     "correct_sequence": [
       "屋",
@@ -1156,7 +1156,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70436_bd4235c7c7dd47e20e94a173b1f4beed.wav",
+    "audio_url": "data/audio/70436_bd4235c7c7dd47e20e94a173b1f4beed.mp3",
     "hakka_hanji": "學校這下當在該辦義賣，你愛去參加無？",
     "correct_sequence": [
       "學",
@@ -1202,7 +1202,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70438_ca6aa1097c8330abe9c8de7ed5871833.wav",
+    "audio_url": "data/audio/70438_ca6aa1097c8330abe9c8de7ed5871833.mp3",
     "hakka_hanji": "當然愛去啊，恁呢做得𢯭手還較多需要个人！",
     "correct_sequence": [
       "當",
@@ -1252,7 +1252,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70440_c721ab15bacbcbe6b12f3e8ddaa12971.wav",
+    "audio_url": "data/audio/70440_c721ab15bacbcbe6b12f3e8ddaa12971.mp3",
     "hakka_hanji": "上擺个淨灘活動，正經拈著當多垃圾。",
     "correct_sequence": [
       "上",
@@ -1296,7 +1296,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70442_a2ee9aa150d99caf9992cfb1cb389fd0.wav",
+    "audio_url": "data/audio/70442_a2ee9aa150d99caf9992cfb1cb389fd0.mp3",
     "hakka_hanji": "著啊，下幾擺𫣆使得邀請還較多同學共下去。",
     "correct_sequence": [
       "著",
@@ -1346,7 +1346,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70450_0f7d1b23840c123c74818d2fdf0a843a.wav",
+    "audio_url": "data/audio/70450_0f7d1b23840c123c74818d2fdf0a843a.mp3",
     "hakka_hanji": "你知家扶中心在該尋課輔義工無？",
     "correct_sequence": [
       "你",
@@ -1388,7 +1388,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70451_687508641daa63a13b5ab073d5503600.wav",
+    "audio_url": "data/audio/70451_687508641daa63a13b5ab073d5503600.mp3",
     "hakka_hanji": "𠊎逐禮拜六都去教小朋友寫功課。",
     "correct_sequence": [
       "𠊎",
@@ -1430,7 +1430,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70456_2826661597c1c10324696bccf8870c6f.wav",
+    "audio_url": "data/audio/70456_2826661597c1c10324696bccf8870c6f.mp3",
     "hakka_hanji": "頭下看著路脣有著傷个貓子，愛仰結煞呢？",
     "correct_sequence": [
       "頭",
@@ -1478,7 +1478,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70458_535b6fd4774c5cc283e9939e8eb50a56.wav",
+    "audio_url": "data/audio/70458_535b6fd4774c5cc283e9939e8eb50a56.mp3",
     "hakka_hanji": "𠊎知有一個動保團體使得𢯭手。",
     "correct_sequence": [
       "𠊎",
@@ -1518,7 +1518,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70459_94e120173815da77e638bd861128c7b3.wav",
+    "audio_url": "data/audio/70459_94e120173815da77e638bd861128c7b3.mp3",
     "hakka_hanji": "隔壁街路个壁畫當靚，係志工畫个。",
     "correct_sequence": [
       "隔",
@@ -1560,7 +1560,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社會參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70460_cc1132bddb6d35b3c5bac2cea8e6f5ab.wav",
+    "audio_url": "data/audio/70460_cc1132bddb6d35b3c5bac2cea8e6f5ab.mp3",
     "hakka_hanji": "有影無？下二擺有機會𠊎乜愛參與！",
     "correct_sequence": [
       "有",
@@ -1602,7 +1602,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70518_46228f8a37ca69e5a2086250e5fe326d.wav",
+    "audio_url": "data/audio/70518_46228f8a37ca69e5a2086250e5fe326d.mp3",
     "hakka_hanji": "你有看過相片裡背个大峽谷無？",
     "correct_sequence": [
       "你",
@@ -1642,7 +1642,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70514_9ee1c3c244ecd44b734d6794af276a8d.wav",
+    "audio_url": "data/audio/70514_9ee1c3c244ecd44b734d6794af276a8d.mp3",
     "hakka_hanji": "還湛斗哦，𠊎當想去美國看看啊。",
     "correct_sequence": [
       "還",
@@ -1682,7 +1682,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70523_a4e0d9a450c839eb657541c4260f76a6.wav",
+    "audio_url": "data/audio/70523_a4e0d9a450c839eb657541c4260f76a6.mp3",
     "hakka_hanji": "聽講撒哈拉沙漠个日頭落山當壯觀。",
     "correct_sequence": [
       "聽",
@@ -1726,7 +1726,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70527_42af9b1de9f35c6d6c03f5f332ffb6ae.wav",
+    "audio_url": "data/audio/70527_42af9b1de9f35c6d6c03f5f332ffb6ae.mp3",
     "hakka_hanji": "還過暗晡頭使得看著滿天星。",
     "correct_sequence": [
       "還",
@@ -1764,7 +1764,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70528_32885e07d6c7ef3763dad7fe880ab5d6.wav",
+    "audio_url": "data/audio/70528_32885e07d6c7ef3763dad7fe880ab5d6.mp3",
     "hakka_hanji": "非洲草坪有當多野生動物。",
     "correct_sequence": [
       "非",
@@ -1800,7 +1800,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70530_ea6a76c11fd43d5dea5f026f3cf2f817.wav",
+    "audio_url": "data/audio/70530_ea6a76c11fd43d5dea5f026f3cf2f817.mp3",
     "hakka_hanji": "係啊，有獅、象還有長頸鹿。",
     "correct_sequence": [
       "係",
@@ -1834,7 +1834,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70533_d2cef4f881963b8a67937defc64ef489.wav",
+    "audio_url": "data/audio/70533_d2cef4f881963b8a67937defc64ef489.mp3",
     "hakka_hanji": "𠊎昨晡日在該看南極企鵝个影片。",
     "correct_sequence": [
       "𠊎",
@@ -1876,7 +1876,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70535_6d3d5b1041a9d9f1f9979628f2287b7f.wav",
+    "audio_url": "data/audio/70535_6d3d5b1041a9d9f1f9979628f2287b7f.mp3",
     "hakka_hanji": "佢兜行路个樣款還得人惜。",
     "correct_sequence": [
       "佢",
@@ -1912,7 +1912,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70543_efe4e665a807752b54e79d1e917d5ec1.wav",
+    "audio_url": "data/audio/70543_efe4e665a807752b54e79d1e917d5ec1.mp3",
     "hakka_hanji": "亞馬遜雨林有當多種生物。",
     "correct_sequence": [
       "亞",
@@ -1948,7 +1948,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "世界自然地景",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70541_7aa425af911881b05d0c3c6ed19fe195.wav",
+    "audio_url": "data/audio/70541_7aa425af911881b05d0c3c6ed19fe195.mp3",
     "hakka_hanji": "打爽這下當多都會毋見撇了。",
     "correct_sequence": [
       "打",
@@ -2752,7 +2752,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64523_85199fcdfe22bab67d6ea8a82125f61b.wav",
+    "audio_url": "data/audio/64523_85199fcdfe22bab67d6ea8a82125f61b.mp3",
     "hakka_hanji": "下禮拜學校有科展比賽，你有參加無？",
     "correct_sequence": [
       "下",
@@ -2796,7 +2796,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64524_0725f85d0fc10c05e6af9a35c1d88f80.wav",
+    "audio_url": "data/audio/64524_0725f85d0fc10c05e6af9a35c1d88f80.mp3",
     "hakka_hanji": "有啊，𠊎兜个主題係環保能源。",
     "correct_sequence": [
       "有",
@@ -2834,7 +2834,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64527_dd41bc62fb36a15b0b12446412dea2a9.wav",
+    "audio_url": "data/audio/64527_dd41bc62fb36a15b0b12446412dea2a9.mp3",
     "hakka_hanji": "班會个時節，班導講愛共下設計班服。",
     "correct_sequence": [
       "班",
@@ -2878,7 +2878,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64526_7a45163b808f45485371b69cec66a310.wav",
+    "audio_url": "data/audio/64526_7a45163b808f45485371b69cec66a310.mp3",
     "hakka_hanji": "有影無？該𠊎兜做得畫兜心色个圖案！",
     "correct_sequence": [
       "有",
@@ -2922,7 +2922,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64528_158621309116aec0cc9ab08e8d68d3ad.wav",
+    "audio_url": "data/audio/64528_158621309116aec0cc9ab08e8d68d3ad.mp3",
     "hakka_hanji": "這學期个實驗課當有意思。",
     "correct_sequence": [
       "這",
@@ -2958,7 +2958,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64531_d515774fb7a54b014dc7b536bcb57c2d.wav",
+    "audio_url": "data/audio/64531_d515774fb7a54b014dc7b536bcb57c2d.mp3",
     "hakka_hanji": "化學先生講下禮拜愛做新个實驗！",
     "correct_sequence": [
       "化",
@@ -3000,7 +3000,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64532_8f968f6f994506c87bf26bb17fa1e3e1.wav",
+    "audio_url": "data/audio/64532_8f968f6f994506c87bf26bb17fa1e3e1.mp3",
     "hakka_hanji": "社團个學長都當照顧老弟老妹。",
     "correct_sequence": [
       "社",
@@ -3040,7 +3040,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64534_e967f13f3953429a1a4b3d97ec0b5284.wav",
+    "audio_url": "data/audio/64534_e967f13f3953429a1a4b3d97ec0b5284.mp3",
     "hakka_hanji": "著啊，佢兜教𠊎兜當多經驗。",
     "correct_sequence": [
       "著",
@@ -3076,7 +3076,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64535_ba0aa270e0c19b1e4b6b7f84193f5ff4.wav",
+    "audio_url": "data/audio/64535_ba0aa270e0c19b1e4b6b7f84193f5ff4.mp3",
     "hakka_hanji": "今餔日體育課學个排球戰術還難哦。",
     "correct_sequence": [
       "今",
@@ -3120,7 +3120,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "學校教育",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64536_70093b83d9178741680d052ee3bb28a4.wav",
+    "audio_url": "data/audio/64536_70093b83d9178741680d052ee3bb28a4.mp3",
     "hakka_hanji": "毋過𫣆多練習就會進步。",
     "correct_sequence": [
       "毋",
@@ -3154,7 +3154,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70462_3803e2e7aaca86e8b49131a2ab2e4b0f.wav",
+    "audio_url": "data/audio/70462_3803e2e7aaca86e8b49131a2ab2e4b0f.mp3",
     "hakka_hanji": "學校講愛推行減塑膠政策，你試著仰脣？",
     "correct_sequence": [
       "學",
@@ -3200,7 +3200,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70464_a26556f537579b5dcfce979c40913575.wav",
+    "audio_url": "data/audio/70464_a26556f537579b5dcfce979c40913575.mp3",
     "hakka_hanji": "𠊎試著當好啊，做得減少環境污染。",
     "correct_sequence": [
       "𠊎",
@@ -3242,7 +3242,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70466_bf7adccc7087060e3172f4bec965579a.wav",
+    "audio_url": "data/audio/70466_bf7adccc7087060e3172f4bec965579a.mp3",
     "hakka_hanji": "𫣆社區附近愛設新个垃圾分類站。",
     "correct_sequence": [
       "𫣆",
@@ -3284,7 +3284,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70470_527c66e7dc445a54dc5886883c887d61.wav",
+    "audio_url": "data/audio/70470_527c66e7dc445a54dc5886883c887d61.mp3",
     "hakka_hanji": "恁呢垃圾回收會還較利便。",
     "correct_sequence": [
       "恁",
@@ -3320,7 +3320,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70471_860632a56e309cd9ca67be97c3e65cd1.wav",
+    "audio_url": "data/audio/70471_860632a56e309cd9ca67be97c3e65cd1.mp3",
     "hakka_hanji": "學校附近个青紅燈重新調整時間了。",
     "correct_sequence": [
       "學",
@@ -3364,7 +3364,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70474_38dd26cbff217e57188d485cf6508724.wav",
+    "audio_url": "data/audio/70474_38dd26cbff217e57188d485cf6508724.mp3",
     "hakka_hanji": "希望做得改善上下課个交通問題。",
     "correct_sequence": [
       "希",
@@ -3406,7 +3406,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70478_f7cf0fac275592f9ba6b640d5b1d6651.wav",
+    "audio_url": "data/audio/70478_f7cf0fac275592f9ba6b640d5b1d6651.mp3",
     "hakka_hanji": "你知無？政府在該推行社區共餐計畫。",
     "correct_sequence": [
       "你",
@@ -3450,7 +3450,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70479_d0329108e63033b45a455c212c8c40a6.wav",
+    "audio_url": "data/audio/70479_d0329108e63033b45a455c212c8c40a6.mp3",
     "hakka_hanji": "這對老人家來講係一個當好个福利。",
     "correct_sequence": [
       "這",
@@ -3494,7 +3494,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70480_363737fbe3b08c767b47372da539b25e.wav",
+    "audio_url": "data/audio/70480_363737fbe3b08c767b47372da539b25e.mp3",
     "hakka_hanji": "社區新个鐵馬路斯會起好了。",
     "correct_sequence": [
       "社",
@@ -3532,7 +3532,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "公共政策的認識與參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70487_3c15497a795976d09ce4498e36cf6654.wav",
+    "audio_url": "data/audio/70487_3c15497a795976d09ce4498e36cf6654.mp3",
     "hakka_hanji": "希望使得分騎鐵馬个人騎車較安全。",
     "correct_sequence": [
       "希",
@@ -4002,7 +4002,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64508_e93a11fe7142ba64ee64a04bc363e456.wav",
+    "audio_url": "data/audio/64508_e93a11fe7142ba64ee64a04bc363e456.mp3",
     "hakka_hanji": "聽講社區在該徵求環保志工。",
     "correct_sequence": [
       "聽",
@@ -4040,7 +4040,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64507_baab26e64a797af31aa6fc08403a0c81.wav",
+    "audio_url": "data/audio/64507_baab26e64a797af31aa6fc08403a0c81.mp3",
     "hakka_hanji": "社區環境愛大家共下整理，𠊎上個禮拜就報名了。",
     "correct_sequence": [
       "社",
@@ -4094,7 +4094,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64513_ce95d5f61587ea2274928fa170e6132d.wav",
+    "audio_url": "data/audio/64513_ce95d5f61587ea2274928fa170e6132d.mp3",
     "hakka_hanji": "公園个路燈壞撇了，愛和麼人講呢？",
     "correct_sequence": [
       "公",
@@ -4136,7 +4136,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64511_04a0fe651995feace88054b40ffd68e3.wav",
+    "audio_url": "data/audio/64511_04a0fe651995feace88054b40ffd68e3.mp3",
     "hakka_hanji": "使得打電話分里長，佢會𢯭手處理。",
     "correct_sequence": [
       "使",
@@ -4178,7 +4178,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64759_a72660aae8014d50487c3fbf0fc037bb.wav",
+    "audio_url": "data/audio/64759_a72660aae8014d50487c3fbf0fc037bb.mp3",
     "hakka_hanji": "社區和學校共下辦運動會，你會參加無？",
     "correct_sequence": [
       "社",
@@ -4224,7 +4224,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64763_584764b21274d4bb9372f51800380249.wav",
+    "audio_url": "data/audio/64763_584764b21274d4bb9372f51800380249.mp3",
     "hakka_hanji": "會啊，𠊎和阿公共下參加趣味競賽。",
     "correct_sequence": [
       "會",
@@ -4266,7 +4266,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64517_7f2ca99152ead1abac22340283c5f68c.wav",
+    "audio_url": "data/audio/64517_7f2ca99152ead1abac22340283c5f68c.mp3",
     "hakka_hanji": "社區在該尋人講古分細子人聽。",
     "correct_sequence": [
       "社",
@@ -4306,7 +4306,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64765_8aafa704f04f8e2eeecab2f474a644d1.wav",
+    "audio_url": "data/audio/64765_8aafa704f04f8e2eeecab2f474a644d1.mp3",
     "hakka_hanji": "𠊎當好講古，𠊎使得去做志工！",
     "correct_sequence": [
       "𠊎",
@@ -4344,7 +4344,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64519_b93b4d5efb0f957d0f05a21e1a02aa40.wav",
+    "audio_url": "data/audio/64519_b93b4d5efb0f957d0f05a21e1a02aa40.mp3",
     "hakka_hanji": "社區在該討論係毋係愛抗議起高壓電塔。        ",
     "correct_sequence": [
       "社",
@@ -4392,7 +4392,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "社區參與",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/64521_a02a7bdb69df9dc731882f0fa45a1e2c.wav",
+    "audio_url": "data/audio/64521_a02a7bdb69df9dc731882f0fa45a1e2c.mp3",
     "hakka_hanji": "𫣆來去了解看啊，還過表達一下意見。        ",
     "correct_sequence": [
       "𫣆",
@@ -4436,7 +4436,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70496_bc02269cfffbc22a9ade3034d9196ffd.wav",
+    "audio_url": "data/audio/70496_bc02269cfffbc22a9ade3034d9196ffd.mp3",
     "hakka_hanji": "上擺學校辦个原住民文化展當好爽！",
     "correct_sequence": [
       "上",
@@ -4480,7 +4480,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70497_dcc231d8588941a2f3e835adc6cc5326.wav",
+    "audio_url": "data/audio/70497_dcc231d8588941a2f3e835adc6cc5326.mp3",
     "hakka_hanji": "𠊎在該位乜學了幾下個排灣族个手工藝。",
     "correct_sequence": [
       "𠊎",
@@ -4528,7 +4528,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70499_0c25681733627700636bcc29b91593f0.wav",
+    "audio_url": "data/audio/70499_0c25681733627700636bcc29b91593f0.mp3",
     "hakka_hanji": "昨晡日新住民阿姨教大家做越南春捲。",
     "correct_sequence": [
       "昨",
@@ -4574,7 +4574,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70500_952cbb33c34540f393c6ba3fcc685f19.wav",
+    "audio_url": "data/audio/70500_952cbb33c34540f393c6ba3fcc685f19.mp3",
     "hakka_hanji": "春捲口感清爽，𠊎當中意。",
     "correct_sequence": [
       "春",
@@ -4608,7 +4608,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70504_bc7642e7438d41ae4421d45e3119fbbd.wav",
+    "audio_url": "data/audio/70504_bc7642e7438d41ae4421d45e3119fbbd.mp3",
     "hakka_hanji": "外嬤教𠊎做客家擂茶，當好食。",
     "correct_sequence": [
       "外",
@@ -4646,7 +4646,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70502_33ee9e0da0171ec699999077e3d5b89b.wav",
+    "audio_url": "data/audio/70502_33ee9e0da0171ec699999077e3d5b89b.mp3",
     "hakka_hanji": "擂茶當香，還使得自家加中意个料。",
     "correct_sequence": [
       "擂",
@@ -4688,7 +4688,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70509_bedab14a5e3fbc744ae94f35ea2d5dee.wav",
+    "audio_url": "data/audio/70509_bedab14a5e3fbc744ae94f35ea2d5dee.mp3",
     "hakka_hanji": "𠊎班項有一個同學會講馬祖話。",
     "correct_sequence": [
       "𠊎",
@@ -4728,7 +4728,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70506_76eb964ab2fd615c523bf34378db3c92.wav",
+    "audio_url": "data/audio/70506_76eb964ab2fd615c523bf34378db3c92.mp3",
     "hakka_hanji": "聽講馬祖語當像學老話，毋過又無麼共款。",
     "correct_sequence": [
       "聽",
@@ -4776,7 +4776,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70510_244c6d184efe59bbd6eda3f02a76ed30.wav",
+    "audio_url": "data/audio/70510_244c6d184efe59bbd6eda3f02a76ed30.mp3",
     "hakka_hanji": "臺灣有當多語言，手語乜係。",
     "correct_sequence": [
       "臺",
@@ -4812,7 +4812,7 @@
     "level": "V",
     "dialect_id": 4,
     "category": "臺灣多元族群的發展",
-    "audio_url": "https://dn9mvjhbyvvpc.cloudfront.net/files/70511_d7845768abf7631bbe40cb0852e08986.wav",
+    "audio_url": "data/audio/70511_d7845768abf7631bbe40cb0852e08986.mp3",
     "hakka_hanji": "𫣆應該愛學習對方个語言，正係正經个尊重。",
     "correct_sequence": [
       "𫣆",
