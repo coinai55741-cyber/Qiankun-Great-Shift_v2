@@ -7,7 +7,7 @@
     python tools/convert_quiz_audio.py          （需要 ffmpeg）
 
 會做的事：
-  1. 掃描 data/quiz/*.json 與 data/quiz/questions_offline.js，找出 https://dn9mvjhbyvvpc.cloudfront.net/files/*.wav（與 .webm）
+  1. 掃描 data/quiz/*.json、data/quiz/questions_offline.js 與備用題庫 questions_data.js，找出 https://dn9mvjhbyvvpc.cloudfront.net/files/*.wav（與 .webm）
   2. 下載 -> 轉成 mp3（單聲道 24kHz 32kbps，語音夠用）-> data/audio/<原檔名>.mp3；已存在的就跳過
   3. 把上面那些檔案裡成功轉好的網址改成 data/audio/<原檔名>.mp3（相對於網站根目錄）
 重新用 data/quiz/download_quiz.py 抓題庫後，再執行一次本程式即可把新的 .wav 轉掉。
@@ -30,7 +30,7 @@ URLS = {}   # 檔名 -> 原始網址
 
 
 def targets():
-    return sorted(list(QUIZ_DIR.glob("*.json")) + [QUIZ_DIR / "questions_offline.js"])
+    return sorted(list(QUIZ_DIR.glob("*.json")) + [QUIZ_DIR / "questions_offline.js", ROOT / "questions_data.js"])
 
 
 def convert(name):
