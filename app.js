@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const storyCanvas = document.getElementById('story-canvas');
     const storyBackgroundImage = new Image();
     let storyBackgroundFailed = false;
-    storyBackgroundImage.src = 'data/image/S2_m3_story_bg.png?v=20261029-2';
+    storyBackgroundImage.src = 'data/image/S2_m3_story_bg.webp?v=20261029-2';
     storyBackgroundImage.addEventListener('load', () => {
         if (storyCard && !storyCard.classList.contains('hidden')) drawStoryScene();
     });
@@ -337,17 +337,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAdvanceSpeed = () => rs(16) * speedMultiplier;
 
     const runnerAssetPath = 'data/image/';
-    const runnerAssetVersion = '20261019-fast-flow1';
+    const runnerAssetVersion = '20261031-webp1';
     const useRunnerImageLayers = true;
     const runnerAssets = {
-        mountains: loadRunnerImage('S2_m3_yamaloop.png'),
-        village: loadRunnerImage('S2_m3_village.png'),
-        grass: loadRunnerImage('S2_m3_grass.png'),
-        floorLoop: loadRunnerImage('S2_m3_floorloop.png'),
-        floorLeft: loadRunnerImage('S2_m3_floorL.png'),
-        floorRight: loadRunnerImage('S2_m3_floorR.png'),
-        bridge: loadRunnerImage('S2_m3_bridgeA.png'),
-        brokenBridge: loadRunnerImage('S2_m3_bridgeB.png'),
+        mountains: loadRunnerImage('S2_m3_yamaloop.webp'),
+        village: loadRunnerImage('S2_m3_village.webp'),
+        grass: loadRunnerImage('S2_m3_grass.webp'),
+        floorLoop: loadRunnerImage('S2_m3_floorloop.webp'),
+        floorLeft: loadRunnerImage('S2_m3_floorL.webp'),
+        floorRight: loadRunnerImage('S2_m3_floorR.webp'),
+        bridge: loadRunnerImage('S2_m3_bridgeA.webp'),
+        brokenBridge: loadRunnerImage('S2_m3_bridgeB.webp'),
         kuroRun: loadRunnerImage('S2_m3_kuro_run_transparent.gif'),
         kuroRunFrames: [
             loadRunnerImage('kuro_high_frames_keyed/kuro_high_00.png'),
@@ -359,13 +359,13 @@ document.addEventListener('DOMContentLoaded', () => {
             loadRunnerImage('kuro_high_frames_keyed/kuro_high_06.png'),
             loadRunnerImage('kuro_high_frames_keyed/kuro_high_07.png')
         ],
-        kuroFalling: loadRunnerImage('S2_m3_kuro_falling.png'),
-        kuroWet: loadRunnerImage('S2_m3_kuro_wet_shaking.png'),
+        kuroFalling: loadRunnerImage('S2_m3_kuro_falling.webp'),
+        kuroWet: loadRunnerImage('S2_m3_kuro_wet_shaking.webp'),
         kuroWetShakeFrames: [
-            loadRunnerImage('S2_m3_kuro_wet_shake_frame01.png'),
-            loadRunnerImage('S2_m3_kuro_wet_shake_frame02.png')
+            loadRunnerImage('S2_m3_kuro_wet_shake_frame01.webp'),
+            loadRunnerImage('S2_m3_kuro_wet_shake_frame02.webp')
         ],
-        bokong: loadRunnerImage('S2_m3_bokon1.png')
+        bokong: loadRunnerImage('S2_m3_bokon1.webp')
     };
 
 
@@ -397,11 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const resultStageImages = {
-        1: 'data/image/kuro_five_stages_v2/stage1_instructor_blank_scroll_no_leash_yellow_scarf.png',
-        2: 'data/image/kuro_five_stages_v2/stage2_wet_embarrassed.png',
-        3: 'data/image/kuro_five_stages_v2/stage3_rice_ridge_scroll.png',
-        4: 'data/image/kuro_five_stages_v2/stage4_bogong_pat.png',
-        5: 'data/image/kuro_five_stages_v2/stage5_bogong_golden_scroll_mouth_handoff.png'
+        1: 'data/image/kuro_five_stages_v2/stage1_instructor_blank_scroll_no_leash_yellow_scarf.webp',
+        2: 'data/image/kuro_five_stages_v2/stage2_wet_embarrassed.webp',
+        3: 'data/image/kuro_five_stages_v2/stage3_rice_ridge_scroll.webp',
+        4: 'data/image/kuro_five_stages_v2/stage4_bogong_pat.webp',
+        5: 'data/image/kuro_five_stages_v2/stage5_bogong_golden_scroll_mouth_handoff.webp'
     };
 
     function loadRunnerImage(fileName) {
@@ -744,9 +744,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const STORY_AVATARS = {
-        '伯公': { src: 'data/image/S2_m3_bokon1.png', className: 'avatar-bokong' },
-        '阿黑': { src: 'data/image/S2_m3_kuro_sit.png', className: 'avatar-kuro' },
-        '指導員': { src: 'data/image/S2_m3_p1.png', className: 'avatar-guide' }
+        '伯公': { src: 'data/image/S2_m3_bokon1.webp', className: 'avatar-bokong' },
+        '阿黑': { src: 'data/image/S2_m3_kuro_sit.webp', className: 'avatar-kuro' },
+        '指導員': { src: 'data/image/S2_m3_p1.webp', className: 'avatar-guide' }
     };
 
     function renderStoryStep() {

@@ -246,13 +246,13 @@ transition_in  下一題進場
 
 ```text
 天空底色
-S2_m3_grass.png
-S2_m3_yamaloop.png
-S2_m3_village.png
+S2_m3_grass.webp
+S2_m3_yamaloop.webp
+S2_m3_village.webp
 河面 / 斷口底色
-S2_m3_floorloop.png
-S2_m3_floorR.png / S2_m3_floorL.png
-S2_m3_bridgeA.png / S2_m3_bridgeB.png
+S2_m3_floorloop.webp
+S2_m3_floorR.webp / S2_m3_floorL.webp
+S2_m3_bridgeA.webp / S2_m3_bridgeB.webp
 水花粒子
 阿黑
 ```
@@ -262,14 +262,14 @@ Canvas 規則是「先畫在下，後畫在上」，沒有 Photoshop 那種可�
 目前素材：
 
 ```text
-data/image/S2_m3_yamaloop.png       遠山循環圖
-data/image/S2_m3_village.png        村莊循環圖
-data/image/S2_m3_grass.png          中景草地補空隙
-data/image/S2_m3_floorloop.png      平面地板循環圖
-data/image/S2_m3_floorL.png         右側斷崖圖
-data/image/S2_m3_floorR.png         左側斷崖圖
-data/image/S2_m3_bridgeA.png        完整橋
-data/image/S2_m3_bridgeB.png        斷橋，從完整橋左半裁切
+data/image/S2_m3_yamaloop.webp       遠山循環圖
+data/image/S2_m3_village.webp        村莊循環圖
+data/image/S2_m3_grass.webp          中景草地補空隙
+data/image/S2_m3_floorloop.webp      平面地板循環圖
+data/image/S2_m3_floorL.webp         右側斷崖圖
+data/image/S2_m3_floorR.webp         左側斷崖圖
+data/image/S2_m3_bridgeA.webp        完整橋
+data/image/S2_m3_bridgeB.webp        斷橋，從完整橋左半裁切
 data/image/S2_m3_kuro_run.png       阿黑目前遊戲使用圖
 ```
 
@@ -280,13 +280,13 @@ data/image/S2_m3_kuro_run.png       阿黑目前遊戲使用圖
 完整橋使用：
 
 ```text
-S2_m3_bridgeA.png
+S2_m3_bridgeA.webp
 ```
 
 答錯後使用：
 
 ```text
-S2_m3_bridgeB.png
+S2_m3_bridgeB.webp
 ```
 
 斷橋 B 是從 A 左半切出，因此 B 與 A 使用相同左上定位，並以 A 的寬度比例縮放。

@@ -5080,7 +5080,7 @@ body:has(#game-card:not(.hidden)) #hint-btn .fa-lightbulb::before {
    Swap the artwork by changing --parallax-image. app.js (setupParallax) drives --parallax-y.
    ========================================================================== */
 :root {
-    --parallax-image: url('data/image/S2_m3_story_bg.png');
+    --parallax-image: url('data/image/S2_m3_story_bg.webp');
 }
 
 .parallax-bg {
