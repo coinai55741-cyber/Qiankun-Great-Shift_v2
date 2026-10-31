@@ -9,7 +9,7 @@
 
 @font-face {
     font-family: "GenSekiGothic2TW";
-    src: url("data/fonts/GenSekiGothic2TW-R.otf") format("opentype");
+    src: url("data/fonts/GenSekiGothic2TW-R.woff2?v=20261031-sub") format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -17,7 +17,7 @@
 
 @font-face {
     font-family: "GenSekiGothic2TW";
-    src: url("data/fonts/GenSekiGothic2TW-B.otf") format("opentype");
+    src: url("data/fonts/GenSekiGothic2TW-B.woff2?v=20261031-sub") format("woff2");
     font-weight: 700 900;
     font-style: normal;
     font-display: swap;
@@ -4032,15 +4032,15 @@ body:has(#story-card:not(.hidden)) #story-card .story-actions {
     }
 
     body:has(#story-card:not(.hidden)) #story-card .story-dialogue {
-        min-height: 148px !important;
-        padding: 14px 18px 14px !important;
+        min-height: 148px;
+        padding: 14px 18px 14px;
     }
 
     body:has(#story-card:not(.hidden)) #story-card .story-copy,
     body:has(#story-card:not(.hidden)) #story-card .story-dialogue p {
-        max-width: calc(100vw - 36px) !important;
-        font-size: .92rem !important;
-        line-height: 1.45 !important;
+        max-width: calc(100vw - 36px);
+        font-size: .92rem;
+        line-height: 1.45;
     }
 
     body:has(#story-card:not(.hidden)) #story-card .story-actions {
@@ -4163,7 +4163,7 @@ body:has(#results-card:not(.hidden)) #results-card *,
 body:has(#results-card:not(.hidden)) .result-summary-card,
 body:has(#results-card:not(.hidden)) .result-ranking-card,
 body:has(#results-card:not(.hidden)) .sentence-review-card {
-    font-family: var(--font-hakka) !important;
+    font-family: var(--font-hakka);
 }
 
 body:has(#results-card:not(.hidden)) #results-card.results-card {
@@ -4266,7 +4266,7 @@ body:has(#results-card:not(.hidden)) .result-summary-card .stat-box {
     align-items: center;
     gap: 8px;
     border: 0;
-    border-right: 1px solid rgba(131, 98, 37, .38) !important;
+    border-right: 1px solid rgba(131, 98, 37, .38);
     border-radius: 0;
     background: transparent;
     box-shadow: none;
@@ -4316,7 +4316,7 @@ body:has(#results-card:not(.hidden)) #result-back-btn {
 
 body:has(#results-card:not(.hidden)) #restart-btn {
     width: auto;
-    height: 46px !important;
+    height: 46px;
     margin: 0;
     background: #836225;
     color: #fff;
@@ -4383,21 +4383,21 @@ body:has(#results-card:not(.hidden)) .result-rank-list li {
 
 body:has(#results-card:not(.hidden)) .result-rank-list li.rank-first {
     border: 2px solid #f3ce25;
-    background: #fff176 !important;
+    background: #fff176;
 }
 
 body:has(#results-card:not(.hidden)) .result-rank-list li.rank-second {
-    background: #c9c9c9 !important;
+    background: #c9c9c9;
 }
 
 body:has(#results-card:not(.hidden)) .result-rank-list li.rank-third {
-    background: #d98a32 !important;
+    background: #d98a32;
 }
 
 body:has(#results-card:not(.hidden)) .result-rank-list li.mine {
     margin-top: 16px;
     border: 3px solid #f7d134;
-    background: #fff8c5 !important;
+    background: #fff8c5;
 }
 
 body:has(#results-card:not(.hidden)) .result-rank-place {
@@ -4485,19 +4485,19 @@ body:has(#results-card:not(.hidden)) .review-play-btn {
 
 @media (max-width: 760px) {
     body:has(#results-card:not(.hidden)) #results-card.results-card {
-        width: min(430px, calc(100vw - 24px)) !important;
-        gap: 42px !important;
+        width: min(430px, calc(100vw - 24px));
+        gap: 42px;
     }
 
     body:has(#results-card:not(.hidden)) .result-summary-card,
     body:has(#results-card:not(.hidden)) .result-ranking-card,
     body:has(#results-card:not(.hidden)) .sentence-review-card {
-        width: 100% !important;
-        padding: 22px 14px !important;
+        width: 100%;
+        padding: 22px 14px;
     }
 
     body:has(#results-card:not(.hidden)) .result-summary-card .stats-grid {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
     }
 
     body:has(#results-card:not(.hidden)) .result-summary-card .stat-box {
@@ -4511,14 +4511,14 @@ body:has(#results-card:not(.hidden)) .review-play-btn {
 
     body:has(#results-card:not(.hidden)) .result-rank-head,
     body:has(#results-card:not(.hidden)) .result-rank-list li {
-        grid-template-columns: 44px minmax(76px, 1fr) 48px 92px !important;
-        font-size: .82rem !important;
-        padding-left: 6px !important;
-        padding-right: 6px !important;
+        grid-template-columns: 44px minmax(76px, 1fr) 48px 92px;
+        font-size: .82rem;
+        padding-left: 6px;
+        padding-right: 6px;
     }
 
     body:has(#results-card:not(.hidden)) .result-summary-actions {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
     }
 
 }
@@ -4578,10 +4578,10 @@ body:has(#game-card:not(.hidden)) #game-card.opening-countdown .mission-panel {
         width: min(520px, calc(100vw - 24px));
         min-width: 0;
         margin: 0 auto 28px;
-        padding: 16px !important;
-        border-radius: 18px !important;
-        background: rgba(255, 255, 255, .95) !important;
-        box-shadow: 0 12px 26px rgba(82, 58, 27, .12) !important;
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, .95);
+        box-shadow: 0 12px 26px rgba(82, 58, 27, .12);
     }
 
     body:has(#intro-card:not(.hidden)) > #app .lobby-rank-banner {
@@ -4711,7 +4711,7 @@ body:has(#results-card:not(.hidden)) .review-hakka-line {
 }
 
 body:has(#results-card:not(.hidden)) .review-translation-line {
-    color: #8a5d2a !important;
+    color: #8a5d2a;
     font-size: clamp(1rem, 1.35vw, 1.22rem);
     line-height: 1.55;
     font-weight: 800;
@@ -4743,30 +4743,30 @@ body:has(#results-card:not(.hidden)) .review-audio-icon-btn.is-playing i {
 
 @media (max-width: 760px) {
     body:has(#results-card:not(.hidden)) .simple-review-item {
-        grid-template-columns: 1fr auto !important;
+        grid-template-columns: 1fr auto;
         grid-template-areas:
             'meta audio'
-            'sentence sentence' !important;
-        gap: 16px !important;
-        padding: 20px 16px !important;
+            'sentence sentence';
+        gap: 16px;
+        padding: 20px 16px;
     }
 
     body:has(#results-card:not(.hidden)) .simple-review-item .review-card-head {
-        align-items: flex-start !important;
-        padding-right: 0 !important;
-        border-right: 0 !important;
+        align-items: flex-start;
+        padding-right: 0;
+        border-right: 0;
     }
 
     body:has(#results-card:not(.hidden)) .simple-review-item .review-badges {
-        align-items: flex-start !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     body:has(#results-card:not(.hidden)) .review-audio-icon-btn {
-        width: 58px !important;
-        height: 58px !important;
-        font-size: 1.4rem !important;
+        width: 58px;
+        height: 58px;
+        font-size: 1.4rem;
     }
 }
 
@@ -4905,7 +4905,7 @@ body:has(#game-card:not(.hidden)) #hint-btn .fa-lightbulb::before {
     }
 
     body:has(#intro-card:not(.hidden)) > #app .lobby-leaderboard {
-        display: none !important;
+        display: none;
     }
 }
 
