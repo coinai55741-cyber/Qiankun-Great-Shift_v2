@@ -2,19 +2,34 @@
 
 本專案是 2D 橫向跑酷式客語聽力排列遊戲。玩家聽一段客語音檔，將下方單字卡依照聽到的客語漢字順序排列；排對後阿黑過橋，排錯則斷橋、落水、扣分並重試。
 
-目前版本為純靜態前端，可直接部署在 GitHub Pages。核心檔案如下：
+目前版本為純靜態前端，沒有建置步驟（不需要 npm / bundler），可直接部署在 GitHub Pages 或任何靜態主機。核心檔案如下：
 
 ```text
 index.html          主畫面 DOM 結構
 style.css           版面與 UI 樣式
-app.js              遊戲流程、字卡邏輯、Canvas 動畫、音效
-vue-app.js          Vue 3 最小 shell，目前主要互動仍在 app.js
+app.js              遊戲流程、字卡邏輯、Canvas 動畫、音效、結果頁、毛筆頁串接
+vue-app.js          極小的啟動檔（只移除 v-cloak），遊戲互動全部在 app.js，並未使用 Vue
 questions_data.js   舊版 fallback 題庫，JSON 載入失敗時使用
+brush-prototype/    毛筆書寫關卡（以 iframe 嵌在遊戲裡，也有獨立倉庫版本，見下方「毛筆頁」）
 data/quiz/          六腔 × 五級 JSON 題庫，主遊戲會動態載入
 data/audio/         題目音檔（mp3）。題庫原本的 .wav 網址實際是 WebM，舊版 iPhone 播不出來，所以用 tools/convert_quiz_audio.py 轉成 mp3 放這裡
-data/image/         遊戲圖層與角色素材
-data/music/         UI 音效與落水音效
+data/image/         遊戲圖層與角色素材（大張圖是 WebP，原始 PNG 在 tools/image-source/）
+data/fonts/         字型（子集化後的 woff2，原始 OTF 在 tools/font-source/）
+data/music/         背景音樂、UI 音效與毛筆音效
+data/ui/            UI 小圖示（排行獎牌、返回鈕等）
+tools/              素材轉檔、音效產生、截圖回歸驗證等工具（見「素材與工具」）
+design-assets/      設計來源圖（不是遊戲執行時會載入的檔案）
+CREDITS.md          素材、字型、資料來源與授權清單
 ```
+
+## 交接重點（先看這裡）
+
+1. **排行榜目前是假資料。** `app.js` 的 `leaderboardTop`、`leaderboardStats`（名次、參賽人數、遊玩次數）是寫死的示範資料，結果頁和首頁排行榜都讀這份。正式上線前要接真正的成績服務；玩家分數與時間在結果頁已經算好，只差送出與讀回。
+2. **沒有後端，也沒有玩家帳號。** 唯一存在瀏覽器裡的資料是音效開關（`localStorage` 的 `kuro-sound`）。
+3. **題目語音來自外部網址。** 題庫 `audio_url` 大多指向 `https://dn9mvjhbyvvpc.cloudfront.net/files/…`（mp3 / m4a / mp4）；只有原本是 .wav 的那批已轉成本機 `data/audio/*.mp3`。換題庫來源時，重新下載題庫後要再跑一次 `tools/convert_quiz_audio.py`。
+4. **改了素材、CSS 或 JS 要換版本號。** 頁面用 `?v=` 字串避免舊快取，見下方「快取版本號」。
+5. **沒有自動化測試。** 只有畫面回歸工具（`tools/css_snapshot.mjs` + `tools/css_compare.py`），能抓到版面變化，抓不到計分等遊戲邏輯錯誤；改動後要人工完整玩一輪（答對、答錯、錯滿四次、求助伯公、毛筆頁、結果頁）。
+6. **素材授權請先看 `CREDITS.md`**，其中標示「待確認」的項目需要由專案負責人補上。
 
 ## 遊戲玩法流程
 
@@ -270,7 +285,11 @@ data/image/S2_m3_floorL.webp         右側斷崖圖
 data/image/S2_m3_floorR.webp         左側斷崖圖
 data/image/S2_m3_bridgeA.webp        完整橋
 data/image/S2_m3_bridgeB.webp        斷橋，從完整橋左半裁切
-data/image/S2_m3_kuro_run.png       阿黑目前遊戲使用圖
+data/image/kuro_high_frames_keyed/kuro_high_00～07.png    阿黑跑步 8 格逐格動畫（Canvas 逐格切換）
+data/image/S2_m3_kuro_falling.webp   阿黑落下
+data/image/S2_m3_kuro_wet_shaking.webp、S2_m3_kuro_wet_shake_frame01/02.webp   阿黑落水後甩水
+data/image/S2_m3_bokon1.webp         伯公（協助過橋、故事頁）
+data/image/kuro_five_stages_v2/      結果頁依成績顯示的五階段阿黑圖
 ```
 
 注意：`floorL / floorR / floorloop` 原圖高度皆為 311px，因此在 Canvas 中應使用相同顯示高度，避免草皮線對不齊。
@@ -314,10 +333,18 @@ gameAudio.src = q.audio_url;
 UI 音效在 `data/music/`：
 
 ```text
-S2_m2_click.mp3    點擊、字卡操作
-S2_m2_false.mp3    答錯
-S2_m2_next.mp3     答對、下一題
-S2_m3_splash.mp3   阿黑落水
+S2_m2_click.mp3       點擊、字卡操作
+S2_m2_false.mp3       答錯
+S2_m2_next.mp3        答對、下一題
+S2_m3_splash.mp3      阿黑落水
+S2_m3_pass.mp3        通過（tools/generate_sfx.py 產生）
+S2_m3_help.mp3        伯公協助（tools/generate_sfx.py 產生）
+S2_m3_finish.mp3      全部通關（tools/generate_sfx.py 產生）
+S2_m3_ink.mp3         毛筆沾墨（tools/generate_sfx.py 產生）
+S2_m3_write.mp3       毛筆寫字，可無縫循環（tools/generate_sfx.py 產生）
+S2_m3_stamp.mp3       毛筆蓋章（tools/generate_sfx.py 產生）
+S2_m3_bgmloop.mp3     背景音樂，16 小節可循環（tools/generate_bgm.py 產生）
+S2_m3_story_voice.mp3 故事頁示範語音
 ```
 
 音效管理在 `app.js`：
@@ -327,9 +354,59 @@ const sfxPath = "data/music/";
 function playSfx(name) { ... }
 ```
 
+## 素材與工具
+
+原始素材不放進執行路徑，執行時載入的是轉檔後的版本；要換素材請改原始檔再重新轉檔。
+
+| 工具 | 用途 | 需要 |
+| --- | --- | --- |
+| `tools/subset_fonts.py` | 把 `tools/font-source/GenSekiGothic2TW-{R,B}.otf`（各約 15 MB）縮成只含用得到字的 woff2，輸出到 `data/fonts/`。題庫或文案出現新的罕用字、畫面上該字變成別的字型時重跑 | fonttools、brotli |
+| `tools/convert_images.py` | 把 `data/image/` 下超過 40 KB 的 PNG 轉成 WebP（品質 90、保留透明），原始 PNG 收進 `tools/image-source/`。轉完要把程式裡的 `.png` 路徑改成 `.webp` | Pillow |
+| `tools/convert_quiz_audio.py` | 題庫裡實際是 WebM 的 `.wav` 網址轉成本機 mp3（`data/audio/`），並改寫題庫網址；重新抓題庫後再跑一次 | ffmpeg |
+| `tools/generate_bgm.py`、`tools/generate_sfx.py` | 用程式合成背景音樂與遊戲／毛筆音效，輸出到 `data/music/` | numpy、ffmpeg |
+| `data/quiz/download_quiz.py` | 從題庫服務下載 30 個 JSON | requests |
+| `data/quiz/build_offline_bundle.py` | 把 8 字以下題目打包成 `questions_offline.js`，讓 `index.html` 直接用 `file://` 開也能玩；題庫 JSON 變動後要重跑 | — |
+| `tools/css_snapshot.mjs` + `tools/css_compare.py` | 畫面回歸驗證，見下一節 | playwright-core、Chrome、Pillow、numpy |
+
+## 快取版本號
+
+頁面對自己的資源加了 `?v=` 字串，避免瀏覽器與 CDN 留著舊檔。改了對應檔案就要換字串，否則使用者可能拿到新 HTML 配舊檔：
+
+```text
+index.html     style.css?v=…、app.js?v=…、vue-app.js?v=…、questions_data.js?v=…
+app.js         QUIZ_DATA_VERSION（題庫 JSON）、runnerAssetVersion（Canvas 圖層）、sfxVersion（音效）
+brush-prototype/index.html   style.css?v=…、app.js?v=…
+brush-prototype/style.css    字型網址的 ?v=…
+```
+
+`style.css` 裡用 `url()` 載入的圖（例如故事背景 `S2_m3_story_bg.webp`）沒有版本字串，換圖時請換檔名，或連同 `style.css?v=` 一起換。
+
+## 畫面回歸驗證
+
+改 CSS 或版面後，用截圖比對確認沒有意外變化（這套工具不會檢查遊戲邏輯）：
+
+```text
+python -m http.server 8791                 （專案根目錄，另開一個終端機）
+node tools/css_snapshot.mjs before         走過故事、首頁、答題、毛筆、結果、分享，在 6 種視窗大小各拍一輪
+（修改 style.css）
+node tools/css_snapshot.mjs after
+python tools/css_compare.py before after   列出有差異的截圖，並輸出洋紅色差異圖
+```
+
+注意：同時最多跑 2 個視窗大小，更多會讓點擊逾時；故事最後一頁與伯公雲的動畫在寬螢幕偶爾會因載入時機不同而差異，重跑一次確認；圖片轉成有損 WebP 後，逐像素比對會有細小雜訊，要看「差異很大的像素」才有意義。
+
+## 毛筆頁
+
+`brush-prototype/` 是毛筆書寫關卡：從題庫抽五字題，玩家一字一格書寫，系統依筆跡與筆順評分（最高 20 分），完成後產生 1080×1350 的作品圖卡供分享。
+
+- 主遊戲在最後一題後以 iframe 載入 `brush-prototype/index.html?embedded=1&dialect=…`，寫完用 `postMessage`（`brush-complete`，附分數與筆跡）回傳給 `app.js`。
+- 筆畫資料 `brush-prototype/strokes/strokes.json` 由 `brush-prototype/tools/build_strokes.py` 產生（題庫換字後要重跑），授權見 `CREDITS.md`。
+- 詳細說明、評分方式與已知限制見 `brush-prototype/README.md`。
+- 這個資料夾另有一份獨立部署的倉庫 `writing-brush`（https://github.com/coinai55741-cyber/writing-brush）。同步方式：複製 `index.html`、`app.js`、`style.css`，並把 `../data/` 改成 `data/`；獨立倉庫的 README、音效註解與題庫網址（沒有 `?v=`、音檔網址不補路徑）是它自己的版本，同步時不要覆蓋。
+
 ## 目前部署
 
-目前已推到：
+網站全是相對路徑，沒有建置步驟，整個資料夾（排除 `tools/`、`design-assets/`、`promo/` 這類不會被網頁載入的目錄也可以）放到任何靜態主機的子目錄或根目錄都能運作。換部署位置不需要改程式。目前已推到：
 
 ```text
 https://github.com/coinai55741-cyber/Qiankun-Great-Shift_v2
@@ -366,5 +443,5 @@ data/music/
 1. 將題庫載入邏輯從 `questionsData` 初始化判斷中拆出，讓 `data/quiz/` 成為完全獨立的正式資料源，`questions_data.js` 只作為可移除的開發備援。
 2. 若之後需要更精準控題，可在開始頁加入「等級 / 分類」篩選，目前版本是同一腔調 I～V 級合併後篩 `hakka_char_count <= 8`，再隨機取 10 題。
 3. 題庫上架前仍需檢查字卡數量，建議 4～8 字；若要支援 9～12 字，需同步確認回答區換行、橋磚寬度與手機橫式高度。
-4. 阿黑跑步未來可改為「逐格動畫」：準備一張 sprite sheet，裡面排列 6 格阿黑跑步姿勢，再由 Canvas 逐格切換播放；目前 Canvas 仍使用單張角色圖 `S2_m3_kuro_run.png`。
-5. 若需記錄玩家成績、帳號、老師後台編輯題目，靜態頁不夠，需要後端 API 或資料庫。
+4. 阿黑跑步目前已是 8 格逐格動畫（`kuro_high_frames_keyed/`）。若想減少請求數，可改成一張 sprite sheet。
+5. 若需記錄玩家成績、帳號、老師後台編輯題目，靜態頁不夠，需要後端 API 或資料庫；排行榜目前只是假資料（見「交接重點」）。
