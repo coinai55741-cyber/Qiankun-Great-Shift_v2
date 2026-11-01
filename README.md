@@ -18,7 +18,6 @@ data/fonts/         字型（子集化後的 woff2，原始 OTF 在 tools/font-s
 data/music/         背景音樂、UI 音效與毛筆音效
 data/ui/            UI 小圖示（排行獎牌、返回鈕等）
 tools/              素材轉檔、音效產生、截圖回歸驗證等工具（見「素材與工具」）
-design-assets/      設計來源圖（不是遊戲執行時會載入的檔案）
 CREDITS.md          素材、字型、資料來源與授權清單
 ```
 
@@ -29,7 +28,7 @@ CREDITS.md          素材、字型、資料來源與授權清單
 3. **題目語音來自外部網址。** 題庫 `audio_url` 大多指向 `https://dn9mvjhbyvvpc.cloudfront.net/files/…`（mp3 / m4a / mp4）；只有原本是 .wav 的那批已轉成本機 `data/audio/*.mp3`。換題庫來源時，重新下載題庫後要再跑一次 `tools/convert_quiz_audio.py`。
 4. **改了素材、CSS 或 JS 要換版本號。** 頁面用 `?v=` 字串避免舊快取，見下方「快取版本號」。
 5. **沒有自動化測試。** 只有畫面回歸工具（`tools/css_snapshot.mjs` + `tools/css_compare.py`），能抓到版面變化，抓不到計分等遊戲邏輯錯誤；改動後要人工完整玩一輪（答對、答錯、錯滿四次、求助伯公、毛筆頁、結果頁）。
-6. **素材授權請先看 `CREDITS.md`**，其中標示「待確認」的項目需要由專案負責人補上。
+6. **素材授權請看 `CREDITS.md`**：哪些已確認、哪些是負責人聲明、哪些還待補。
 
 ## 遊戲玩法流程
 
@@ -406,7 +405,7 @@ python tools/css_compare.py before after   列出有差異的截圖，並輸出�
 
 ## 目前部署
 
-網站全是相對路徑，沒有建置步驟，整個資料夾（排除 `tools/`、`design-assets/`、`promo/` 這類不會被網頁載入的目錄也可以）放到任何靜態主機的子目錄或根目錄都能運作。換部署位置不需要改程式。目前已推到：
+網站全是相對路徑，沒有建置步驟，整個資料夾（`tools/` 不會被網頁載入，可以不放）放到任何靜態主機的子目錄或根目錄都能運作。換部署位置不需要改程式。目前已推到：
 
 ```text
 https://github.com/coinai55741-cyber/Qiankun-Great-Shift_v2
