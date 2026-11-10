@@ -433,7 +433,7 @@ const SCORE_W = 20;      // 計分用的固定筆寬（畫布單位），與畫�
 const SCRIBBLE_STROKE_W = 30, SCRIBBLE_FROM = 2.5, SCRIBBLE_TO = 5;   // 亂寫偵測：路徑長度倍數 2.5 起扣分，5 倍以上扣到最重
 const CHANCE_F1 = .25;   // 隨便畫幾條線經過底字，F1 也有兩三成（底字筆畫粗、墨也有寬度）；這部分視為碰巧蓋到，不算分
 const ORDER_NEAR = 34;   // 標準筆畫中心線上的點，距離你的筆跡在這個範圍內才算「寫到」
-const ORDER_BONUS = .15; // 筆順全對時，每字最多加的比例（只加分，不扣分）
+const ORDER_BONUS = .15; // 筆順佔單字分的比例（形狀佔其餘 0.85）；只有形狀完美且筆順全對才是滿分
 const STRICT_FROM = .7, STRICT_POW = 1.5;   // 單字分超過 0.7 後改用曲線：越接近滿分越難拿（0.8→0.76、0.9→0.86、0.95→0.93），0.7 以下不變
 
 /* 依固定間距重取樣：保留順序，讓快筆（點很稀）也能比對 */
@@ -490,8 +490,14 @@ function assess() {
   const tangle = Math.max(0, Math.min(1, (ratio - SCRIBBLE_FROM) / (SCRIBBLE_TO - SCRIBBLE_FROM)));
   const skill = Math.max(0, (f1 - CHANCE_F1) / (1 - CHANCE_F1)) * (1 - .8 * tangle);
   const order = assessOrder();
-  /* 筆順加分跟著形狀好壞走：形狀分數不到 0.5 時按比例縮小，亂畫就算碰巧順序對也拿不到 */
-  const raw = Math.min(1, skill + (order ? ORDER_BONUS * order.order * Math.min(1, skill / .5) : 0));
+  /* 形狀佔 (1 − ORDER_BONUS)、筆順佔 ORDER_BONUS，按比例相加而不是加完再封頂：
+     只有形狀完美重合且筆順全對才會到 1，高分段每多貼近一點都能多拿小數分，避免大家擠在滿分。
+     筆順分跟著形狀好壞走：形狀分數不到 0.5 時按比例縮小，亂畫就算碰巧順序對也拿不到；
+     再乘上辨識到的筆畫比例（covered / total），只寫到少數幾筆時不會拿到整份筆順分 */
+  const sd = STROKE_DATA && STROKE_DATA[chars[index]];
+  const orderPart = order ? ORDER_BONUS * order.order * (order.covered / order.total) * Math.min(1, skill / .5) : 0;
+  // 沒有筆順資料的字（退回字型底字）無法算筆順，改由形狀單獨計滿分，避免這種字最高只有 0.85
+  const raw = sd && sd.m.length >= 2 ? (1 - ORDER_BONUS) * skill + orderPart : skill;
   const value = raw <= STRICT_FROM ? raw : STRICT_FROM + (1 - STRICT_FROM) * Math.pow((raw - STRICT_FROM) / (1 - STRICT_FROM), STRICT_POW);
   return { coverage, precision, f1, ratio, order, value };
 }
